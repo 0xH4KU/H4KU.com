@@ -452,6 +452,182 @@ Before submitting a PR, ensure:
 - [ ] ESLint shows no errors
 - [ ] All functions have proper error handling
 
+## Accessibility Guidelines
+
+### Focus Indicators
+
+All interactive elements must have visible focus indicators:
+
+```css
+/* Already provided globally in global.css */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+```
+
+### ARIA Labels
+
+```tsx
+// ✅ DO: Add aria-label to icon-only buttons
+<button aria-label="Close dialog" onClick={handleClose}>
+  <X size={16} />
+</button>
+
+// ✅ DO: Hide decorative elements from screen readers
+<div aria-hidden="true">
+  <DecorativeGraphic />
+</div>
+
+// ✅ DO: Mark main content area
+<main role="main" id="main-content">
+  <ContentView />
+</main>
+```
+
+### Keyboard Navigation
+
+```tsx
+// ✅ DO: Support keyboard events
+const handleKeyDown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter') selectItem();
+  if (e.key === 'ArrowUp') moveFocusUp();
+  if (e.key === 'ArrowDown') moveFocusDown();
+};
+
+// ✅ DO: Ensure tab order is logical
+<button tabIndex={0}>First</button>
+<button tabIndex={0}>Second</button>
+```
+
+### Skip Links
+
+For keyboard users, provide skip links:
+
+```tsx
+// Already implemented in App.tsx
+<a href="#main-content" className="skip-link">
+  Skip to main content
+</a>
+```
+
+## Animation Guidelines
+
+### Reduced Motion Support
+
+**Always respect `prefers-reduced-motion`:**
+
+```tsx
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
+function AnimatedComponent() {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: prefersReducedMotion ? 0 : 0.3
+      }}
+    >
+      Content
+    </motion.div>
+  );
+}
+```
+
+### CSS Animations
+
+```css
+/* ✅ DO: Use CSS variables for durations */
+.animated {
+  transition: transform var(--transition-normal);
+}
+
+/* Global reduced motion support is already in global.css */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+## Performance Guidelines
+
+### Debouncing User Input
+
+Use `useDebounce` for expensive operations:
+
+```tsx
+import { useDebounce } from '@/hooks/useDebounce';
+
+function SearchComponent() {
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 300);
+
+  // Use debouncedQuery for expensive operations
+  const results = useMemo(() => {
+    return searchData(debouncedQuery);
+  }, [debouncedQuery]);
+}
+```
+
+### Persistent Preferences
+
+Use `useLocalStorage` for user preferences:
+
+```tsx
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+
+function MyComponent() {
+  const [preference, setPreference] = useLocalStorage('key', 'default');
+  // Automatically syncs with localStorage
+}
+```
+
+### Image Error Handling
+
+All images should handle loading errors:
+
+```tsx
+<img
+  src={imageSrc}
+  alt={altText}
+  onError={(e) => {
+    e.currentTarget.src = FALLBACK_IMAGE;
+  }}
+/>
+```
+
+## URL Routing Guidelines
+
+### Route Structure
+
+All navigation should sync with URLs:
+
+```tsx
+// ✅ DO: Use React Router for navigation
+import { useNavigate } from 'react-router-dom';
+
+function MyComponent() {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate('/folder/123');
+  };
+}
+```
+
+### URL Patterns
+
+Follow these URL conventions:
+- Home: `/`
+- Folders: `/folder/{id}` or `/folder/{parent}/{child}`
+- Pages: `/page/{id}`
+
 ## Testing Guidelines (Future)
 
 When tests are added:
@@ -466,14 +642,22 @@ describe('MyComponent', () => {
     render(<MyComponent title="Test" />);
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
+
+  it('is keyboard accessible', () => {
+    render(<MyComponent />);
+    const button = screen.getByRole('button');
+    button.focus();
+    expect(button).toHaveFocus();
+  });
 });
 ```
 
 ## Questions?
 
 If you have questions about these guidelines, please:
-1. Check the [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed architecture info
-2. Check existing code for examples
-3. Open a discussion on GitHub
+1. Check the [CHANGELOG.md](./CHANGELOG.md) for recent changes (2025-11-06)
+2. Check the [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed architecture info
+3. Check existing code for examples
+4. Open a discussion on GitHub
 
 Thank you for contributing!

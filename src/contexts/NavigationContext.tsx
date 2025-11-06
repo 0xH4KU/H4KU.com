@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useMemo, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useEffect,
+  ReactNode,
+} from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, ViewType, WorkItem } from '@/types';
 import {
@@ -12,6 +20,8 @@ interface NavigationContextValue {
   currentPath: string[];
   currentView: ViewType | null;
   lightboxImage: WorkItem | null;
+  lightboxGallery: WorkItem[];
+  lightboxIndex: number;
   allFolders: ReturnType<typeof flattenFolders>;
   breadcrumbSegments: Array<{ id: string; label: string }>;
   activePath: string;
@@ -19,8 +29,10 @@ interface NavigationContextValue {
   navigateBack: () => void;
   resetToHome: () => void;
   handleBreadcrumbSelect: (id: string, index: number) => void;
-  openLightbox: (image: WorkItem) => void;
+  openLightbox: (image: WorkItem, gallery: WorkItem[]) => void;
   closeLightbox: () => void;
+  navigateToNextImage: () => void;
+  navigateToPrevImage: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextValue | undefined>(
@@ -28,9 +40,14 @@ const NavigationContext = createContext<NavigationContextValue | undefined>(
 );
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [currentPath, setCurrentPath] = useState<string[]>(['home']);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
   const [lightboxImage, setLightboxImage] = useState<WorkItem | null>(null);
+  const [lightboxGallery, setLightboxGallery] = useState<WorkItem[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const allFolders = useMemo(() => flattenFolders(mockData.folders), []);
 
@@ -54,6 +71,79 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   );
 
   const activePath = useMemo(() => currentPath.join('/'), [currentPath]);
+
+  // Initialize from URL on mount
+  useEffect(() => {
+    if (isInitialized) return;
+
+    const pathFromUrl = location.pathname;
+    if (pathFromUrl === '/' || pathFromUrl === '') {
+      setIsInitialized(true);
+      return;
+    }
+
+    const segments = pathFromUrl.split('/').filter(Boolean);
+
+    if (segments.length === 0) {
+      setIsInitialized(true);
+      return;
+    }
+
+    // Check if it's a page
+    if (segments[0] === 'page') {
+      const pageId = segments[1];
+      const page = mockData.pages.find(p => p.id === pageId);
+      if (page) {
+        setCurrentPath(['home', page.id]);
+        setCurrentView({ type: 'txt', data: page });
+      }
+      setIsInitialized(true);
+      return;
+    }
+
+    // Check if it's a folder path
+    if (segments[0] === 'folder') {
+      const folderIds = segments.slice(1);
+      const folder = findFolderByPath(mockData.folders, folderIds);
+      if (folder) {
+        setCurrentPath(['home', ...folderIds]);
+        setCurrentView({ type: 'folder', data: folder });
+      }
+    }
+
+    setIsInitialized(true);
+  }, [location.pathname, isInitialized]);
+
+  // Sync URL when currentPath changes (after initialization)
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    if (currentPath.length <= 1) {
+      if (location.pathname !== '/') {
+        navigate('/', { replace: true });
+      }
+      return;
+    }
+
+    const lastSegment = currentPath[currentPath.length - 1];
+
+    // Check if it's a page
+    const page = mockData.pages.find(p => p.id === lastSegment);
+    if (page) {
+      const url = `/page/${page.id}`;
+      if (location.pathname !== url) {
+        navigate(url, { replace: true });
+      }
+      return;
+    }
+
+    // It's a folder
+    const folderPath = currentPath.slice(1).join('/');
+    const url = `/folder/${folderPath}`;
+    if (location.pathname !== url) {
+      navigate(url, { replace: true });
+    }
+  }, [currentPath, navigate, location.pathname, isInitialized]);
 
   const openFolder = (folder: Folder, pathOverride?: string[]) => {
     const resolvedPath =
@@ -134,12 +224,32 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const openLightbox = (image: WorkItem) => {
+  const openLightbox = (image: WorkItem, gallery: WorkItem[]) => {
+    const index = gallery.findIndex(item => item.id === image.id);
     setLightboxImage(image);
+    setLightboxGallery(gallery);
+    setLightboxIndex(index >= 0 ? index : 0);
   };
 
   const closeLightbox = () => {
     setLightboxImage(null);
+    setLightboxGallery([]);
+    setLightboxIndex(0);
+  };
+
+  const navigateToNextImage = () => {
+    if (lightboxGallery.length === 0) return;
+    const nextIndex = (lightboxIndex + 1) % lightboxGallery.length;
+    setLightboxIndex(nextIndex);
+    setLightboxImage(lightboxGallery[nextIndex]);
+  };
+
+  const navigateToPrevImage = () => {
+    if (lightboxGallery.length === 0) return;
+    const prevIndex =
+      (lightboxIndex - 1 + lightboxGallery.length) % lightboxGallery.length;
+    setLightboxIndex(prevIndex);
+    setLightboxImage(lightboxGallery[prevIndex]);
   };
 
   return (
@@ -148,6 +258,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         currentPath,
         currentView,
         lightboxImage,
+        lightboxGallery,
+        lightboxIndex,
         allFolders,
         breadcrumbSegments,
         activePath,
@@ -157,6 +269,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         handleBreadcrumbSelect,
         openLightbox,
         closeLightbox,
+        navigateToNextImage,
+        navigateToPrevImage,
       }}
     >
       {children}

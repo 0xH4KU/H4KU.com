@@ -16,7 +16,7 @@ const Crosshair: React.FC = () => {
   const labelY = Math.min(mousePos.y + 12, maxY);
 
   return (
-    <>
+    <div aria-hidden="true">
       <div
         className={styles['crosshair-x']}
         style={{ transform: `translateY(${mousePos.y}px)` }}
@@ -32,7 +32,7 @@ const Crosshair: React.FC = () => {
         {Math.round(mousePos.x)}, {Math.round(mousePos.y)} | col{' '}
         {Math.round(mousePos.x / 24)}, row {Math.round(mousePos.y / 24)}
       </div>
-    </>
+    </div>
   );
 };
 

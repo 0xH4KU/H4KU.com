@@ -9,6 +9,7 @@ import {
 import { mockData } from '@/data/mockData';
 import { SearchResult } from '@/types';
 import { flattenFolders } from '@/utils/navigation';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchContextValue {
   searchOpen: boolean;
@@ -24,6 +25,7 @@ const SearchContext = createContext<SearchContextValue | undefined>(undefined);
 export function SearchProvider({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const allFolders = useMemo(() => flattenFolders(mockData.folders), []);
 
   // Clear search query when panel closes
@@ -34,11 +36,11 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   }, [searchOpen]);
 
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!debouncedSearchQuery.trim()) {
       return [];
     }
 
-    const query = searchQuery.toLowerCase();
+    const query = debouncedSearchQuery.toLowerCase();
     const results: SearchResult[] = [];
 
     allFolders.forEach(flatFolder => {
@@ -85,7 +87,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     });
 
     return results;
-  }, [searchQuery, allFolders]);
+  }, [debouncedSearchQuery, allFolders]);
 
   const openSearch = () => setSearchOpen(true);
   const closeSearch = () => setSearchOpen(false);

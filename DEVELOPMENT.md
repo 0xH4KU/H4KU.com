@@ -47,12 +47,13 @@ CSS Modules (Scoped Styles)
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| react | 18.3.1 | UI framework |
-| react-dom | 18.3.1 | DOM rendering |
-| react-router-dom | ^6.x | Client-side routing |
+| react | 19.2.0 | UI framework |
+| react-dom | 19.2.0 | DOM rendering |
+| react-router-dom | 7.9.5 | Client-side routing with URL support |
 | typescript | 5.4.5 | Type safety |
 | vite | 7.1.12 | Build tool & dev server |
-| lucide-react | 0.378.0 | Icon library |
+| framer-motion | 12.23.24 | Animation library |
+| lucide-react | 0.552.0 | Icon library |
 
 ### Development Tools
 
@@ -92,7 +93,11 @@ lum.bio/
 │   │   ├── useTheme.ts
 │   │   ├── useNavigation.ts
 │   │   ├── useSearch.ts
-│   │   └── useLocalStorage.ts
+│   │   ├── useLocalStorage.ts
+│   │   ├── useSidebar.ts
+│   │   ├── useCrosshair.ts
+│   │   ├── useDebounce.ts      # NEW: Performance optimization
+│   │   └── useReducedMotion.ts # NEW: Accessibility support
 │   ├── data/                 # Static data
 │   │   └── mockData.ts       # Portfolio content
 │   ├── styles/               # CSS Modules
@@ -711,6 +716,144 @@ import styles from './Component.module.css';
 </ThemeProvider>
 ```
 
+## Recent Enhancements (2025-11-06)
+
+### URL Routing Implementation
+
+The application now uses React Router for full URL-based navigation:
+
+```typescript
+// URL Structure
+/                        → Home (all folders)
+/folder/{id}             → Single folder view
+/folder/{parent}/{child} → Nested folder view
+/page/{id}               → Text page view
+```
+
+**Implementation Details:**
+- NavigationContext syncs with URL changes
+- Browser back/forward buttons work correctly
+- All pages are bookmarkable and shareable
+- Clean RESTful URL structure
+
+### Custom Hooks Library
+
+**useDebounce**
+```typescript
+// Performance: Debounce user input
+const debouncedQuery = useDebounce(searchQuery, 300);
+```
+
+**useReducedMotion**
+```typescript
+// Accessibility: Respect motion preferences
+const prefersReducedMotion = useReducedMotion();
+const animationProps = prefersReducedMotion ? {} : { scale: 1.1 };
+```
+
+**useSidebar**
+```typescript
+// Persistent sidebar width with localStorage
+const { sidebarWidth, isDragging, startDrag } = useSidebar(240);
+```
+
+**useCrosshair**
+```typescript
+// Developer tool: Pixel-perfect alignment
+const { showCrosshair, mousePos } = useCrosshair();
+```
+
+### Accessibility Best Practices
+
+**Focus Indicators:**
+All interactive elements have visible focus states:
+```css
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+```
+
+**Skip Links:**
+Keyboard users can skip to main content:
+```tsx
+<a href="#main-content" className="skip-link">
+  Skip to main content
+</a>
+```
+
+**ARIA Attributes:**
+- `aria-label` on icon buttons
+- `aria-hidden` on decorative elements
+- `role="main"` on content area
+
+**Reduced Motion:**
+All animations respect `prefers-reduced-motion`:
+```tsx
+const variants = useMemo(() => ({
+  initial: { opacity: prefersReducedMotion ? 1 : 0 },
+  animate: { opacity: 1 }
+}), [prefersReducedMotion]);
+```
+
+### Performance Optimizations
+
+**Search Debouncing:**
+```typescript
+// SearchContext.tsx
+const debouncedQuery = useDebounce(searchQuery, 300);
+const searchResults = useMemo(() => {
+  // Expensive search only runs after 300ms pause
+}, [debouncedQuery]);
+```
+
+**Image Error Handling:**
+```typescript
+// LazyImage.tsx
+const handleError = () => {
+  setImageSrc(ERROR_PLACEHOLDER); // Graceful fallback
+};
+```
+
+**Persistent Preferences:**
+- Sidebar width saved to localStorage
+- Theme preference saved to localStorage
+- All preferences restore on reload
+
+### Lightbox Enhancements
+
+**Gallery Navigation:**
+```typescript
+// NavigationContext now tracks gallery
+const {
+  lightboxImage,
+  lightboxGallery,
+  lightboxIndex,
+  navigateToNextImage,
+  navigateToPrevImage
+} = useNavigation();
+```
+
+**Keyboard Support:**
+- `←/→` - Navigate between images
+- `ESC` - Close lightbox
+- Visual counter: "3 / 10"
+
+### Search Improvements
+
+**Keyboard Navigation:**
+```typescript
+// SearchPanel.tsx
+const handleKeyDown = (e: KeyboardEvent) => {
+  if (e.key === 'ArrowDown') setSelectedIndex(prev => prev + 1);
+  if (e.key === 'ArrowUp') setSelectedIndex(prev => prev - 1);
+  if (e.key === 'Enter') selectCurrentResult();
+};
+```
+
+**Visual Feedback:**
+Selected search result highlighted with primary color.
+
 ## Next Steps
 
 - [ ] Add unit tests (Vitest + React Testing Library)
@@ -718,6 +861,8 @@ import styles from './Component.module.css';
 - [ ] Add performance monitoring
 - [ ] Add analytics
 - [ ] Add SEO optimization (meta tags, sitemap)
+- [ ] Consider adding animation preferences toggle in UI
+- [ ] Add keyboard shortcuts documentation modal
 
 ## Resources
 

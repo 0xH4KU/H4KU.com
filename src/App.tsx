@@ -21,11 +21,18 @@ function App() {
       <NavigationProvider>
         <SearchProvider>
           <div className={styles.app}>
+            <a href="#main-content" className="skip-link">
+              Skip to main content
+            </a>
             <Crosshair />
             <TopBar />
             <div className={styles['main-layout']}>
               <Sidebar />
-              <div className={styles['content-area']}>
+              <div
+                id="main-content"
+                className={styles['content-area']}
+                role="main"
+              >
                 <ContentView />
               </div>
             </div>

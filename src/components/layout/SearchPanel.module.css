@@ -52,10 +52,24 @@
   font: inherit;
   cursor: pointer;
   border-bottom: 1px solid var(--color-border-subtle);
+  transition: background-color 0.15s ease;
 }
 
 .search-result:last-child {
   border-bottom: none;
+}
+
+.search-result:hover {
+  background: var(--color-hover-bg, rgba(104, 150, 150, 0.1));
+}
+
+.search-result--selected {
+  background: var(--color-primary);
+  color: var(--color-background);
+}
+
+.search-result--selected .search-result-meta {
+  opacity: 0.8;
 }
 
 .search-result-label {
