@@ -20,3 +20,34 @@
   color: inherit;
   text-decoration: none;
 }
+
+.status-hint {
+  font-size: var(--font-size-xxs);
+  opacity: 0.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.status-right {
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copyright-symbol {
+  font-family: 'Menlo', 'Courier New', monospace;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .status-hint {
+    display: none;
+  }
+}

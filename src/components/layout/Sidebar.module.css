@@ -79,13 +79,36 @@
   transition:
     background-color var(--transition-fast),
     border-color var(--transition-fast),
-    color var(--transition-fast);
+    color var(--transition-fast),
+    transform var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 4px;
+  outline: none;
 }
 
-.social-link:hover {
+.social-link:hover,
+.social-link:focus-visible {
   background: var(--color-secondary);
   border-color: var(--color-secondary);
   color: #fff;
+  transform: translateY(-1px);
+}
+
+.social-link--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-style: dashed;
+  transform: none;
+}
+
+.social-link--disabled:hover,
+.social-link--disabled:focus-visible {
+  background: transparent;
+  border-color: var(--color-text);
+  color: inherit;
 }
 
 .resize-handle {

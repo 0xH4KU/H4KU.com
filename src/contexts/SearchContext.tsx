@@ -7,8 +7,8 @@ import {
   ReactNode,
 } from 'react';
 import { mockData } from '@/data/mockData';
-import { Folder, Page, SearchResult, WorkItem } from '@/types';
-import { flattenFolders, findFolderPathById } from '@/utils/navigation';
+import { SearchResult } from '@/types';
+import { flattenFolders } from '@/utils/navigation';
 
 interface SearchContextValue {
   searchOpen: boolean;
@@ -24,6 +24,7 @@ const SearchContext = createContext<SearchContextValue | undefined>(undefined);
 export function SearchProvider({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const allFolders = useMemo(() => flattenFolders(mockData.folders), []);
 
   // Clear search query when panel closes
   useEffect(() => {
@@ -40,8 +41,6 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     const query = searchQuery.toLowerCase();
     const results: SearchResult[] = [];
 
-    // Search folders
-    const allFolders = flattenFolders(mockData.folders);
     allFolders.forEach(flatFolder => {
       if (flatFolder.folder.name.toLowerCase().includes(query)) {
         results.push({
@@ -86,7 +85,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     });
 
     return results;
-  }, [searchQuery]);
+  }, [searchQuery, allFolders]);
 
   const openSearch = () => setSearchOpen(true);
   const closeSearch = () => setSearchOpen(false);

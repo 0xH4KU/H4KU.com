@@ -20,6 +20,8 @@ const StatusBar: React.FC = () => {
     return 0;
   }, [currentView]);
 
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
+
   return (
     <div className={styles['status-bar']}>
       <div className={styles['status-socials']}>
@@ -37,10 +39,16 @@ const StatusBar: React.FC = () => {
       <span>|</span>
       <span>{itemCount} items</span>
       <span>|</span>
-      <span style={{ fontSize: 'var(--font-size-xxs)', opacity: 0.6 }}>
+      <span className={styles['status-hint']}>
         Press ESC to toggle crosshair
       </span>
-      <span style={{ marginLeft: 'auto' }}>© 2025 lum.bio</span>
+      <span
+        className={styles['status-right']}
+        aria-label={`© ${currentYear} lum.bio`}
+      >
+        <span className={styles['copyright-symbol']}>©</span>
+        <span>{currentYear} lum.bio</span>
+      </span>
     </div>
   );
 };
