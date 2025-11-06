@@ -1,15 +1,11 @@
 import React from 'react';
+import { useCrosshair } from '@/hooks/useCrosshair';
+import styles from './Crosshair.module.css';
 
-interface CrosshairProps {
-  show: boolean;
-  mousePos: {
-    x: number;
-    y: number;
-  };
-}
+const Crosshair: React.FC = () => {
+  const { showCrosshair, mousePos } = useCrosshair();
 
-const Crosshair: React.FC<CrosshairProps> = ({ show, mousePos }) => {
-  if (!show) {
+  if (!showCrosshair) {
     return null;
   }
 
@@ -21,10 +17,20 @@ const Crosshair: React.FC<CrosshairProps> = ({ show, mousePos }) => {
 
   return (
     <>
-      <div className="crosshair-x" style={{ transform: `translateY(${mousePos.y}px)` }} />
-      <div className="crosshair-y" style={{ transform: `translateX(${mousePos.x}px)` }} />
-      <div className="crosshair-label" style={{ transform: `translate(${labelX}px, ${labelY}px)` }}>
-        {Math.round(mousePos.x)}, {Math.round(mousePos.y)} | col {Math.round(mousePos.x / 24)}, row {Math.round(mousePos.y / 24)}
+      <div
+        className={styles['crosshair-x']}
+        style={{ transform: `translateY(${mousePos.y}px)` }}
+      />
+      <div
+        className={styles['crosshair-y']}
+        style={{ transform: `translateX(${mousePos.x}px)` }}
+      />
+      <div
+        className={styles['crosshair-label']}
+        style={{ transform: `translate(${labelX}px, ${labelY}px)` }}
+      >
+        {Math.round(mousePos.x)}, {Math.round(mousePos.y)} | col{' '}
+        {Math.round(mousePos.x / 24)}, row {Math.round(mousePos.y / 24)}
       </div>
     </>
   );

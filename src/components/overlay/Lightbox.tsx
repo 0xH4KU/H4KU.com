@@ -1,43 +1,44 @@
 import React from 'react';
-import { WorkItem } from '@/types';
+import { useNavigation } from '@/contexts/NavigationContext';
+import styles from './Lightbox.module.css';
 
-interface LightboxProps {
-  image: WorkItem | null;
-  onClose: () => void;
-}
+const Lightbox: React.FC = () => {
+  const { lightboxImage, closeLightbox } = useNavigation();
 
-const Lightbox: React.FC<LightboxProps> = ({ image, onClose }) => {
-  if (!image) {
+  if (!lightboxImage) {
     return null;
   }
 
-  const handleOverlayClick = () => onClose();
+  const handleOverlayClick = () => {
+    closeLightbox();
+  };
+
   const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
     event.stopPropagation();
   };
 
   const handleCloseButton = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    onClose();
+    closeLightbox();
   };
 
   return (
-    <div className="lightbox" onClick={handleOverlayClick}>
-      <button className="lightbox-close" onClick={handleCloseButton}>
+    <div className={styles.lightbox} onClick={handleOverlayClick}>
+      <button className={styles['lightbox-close']} onClick={handleCloseButton}>
         ×
       </button>
       <img
-        src={image.full}
-        alt={image.filename}
-        className="lightbox-image"
+        src={lightboxImage.full}
+        alt={lightboxImage.filename}
+        className={styles['lightbox-image']}
         onClick={handleImageClick}
       />
-      <div className="lightbox-info">
-        <span>{image.filename}</span>
+      <div className={styles['lightbox-info']}>
+        <span>{lightboxImage.filename}</span>
         <span>|</span>
-        <span>{image.date}</span>
+        <span>{lightboxImage.date}</span>
         <span>|</span>
-        <span>{image.dimensions}</span>
+        <span>{lightboxImage.dimensions}</span>
       </div>
     </div>
   );

@@ -1,14 +1,8 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+import { useSearch } from '@/contexts/SearchContext';
+import { useNavigation } from '@/contexts/NavigationContext';
 import { SearchResult } from '@/types';
-
-interface SearchPanelProps {
-  open: boolean;
-  query: string;
-  onQueryChange: (value: string) => void;
-  results: SearchResult[];
-  onSelect: (result: SearchResult) => void;
-  onClose: () => void;
-}
+import styles from './SearchPanel.module.css';
 
 const buildPathLabel = (path: string[]): string => {
   if (!path.length) {
@@ -17,42 +11,43 @@ const buildPathLabel = (path: string[]): string => {
   return `lum.bio/${path.join('/')}`;
 };
 
-const SearchPanel: React.FC<SearchPanelProps> = ({
-  open,
-  query,
-  onQueryChange,
-  results,
-  onSelect,
-  onClose,
-}) => {
+const SearchPanel: React.FC = () => {
+  const {
+    searchOpen,
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    closeSearch,
+  } = useSearch();
+  const { navigateTo, openLightbox } = useNavigation();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (open) {
+    if (searchOpen) {
       inputRef.current?.focus();
     }
-  }, [open]);
+  }, [searchOpen]);
 
   useEffect(() => {
-    if (!open) {
+    if (!searchOpen) {
       return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        closeSearch();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
+  }, [searchOpen, closeSearch]);
 
   type FormattedResult = SearchResult & { meta?: string };
 
   const formattedResults = useMemo<FormattedResult[]>(
     () =>
-      results.map((result) => {
+      searchResults.map(result => {
         let meta: string | undefined;
 
         switch (result.type) {
@@ -71,51 +66,76 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
 
         return { ...result, meta };
       }),
-    [results],
+    [searchResults]
   );
 
-  if (!open) {
-    return null;
-  }
+  const handleSelect = (result: SearchResult) => {
+    if (result.type === 'folder') {
+      navigateTo(result.folder, result.path);
+    } else if (result.type === 'page') {
+      navigateTo(result.page);
+    } else if (result.type === 'work') {
+      openLightbox(result.work);
+    }
+    closeSearch();
+  };
+
+  const handleQueryChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const handleClose = () => {
+    closeSearch();
+  };
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && formattedResults.length) {
-      onSelect(formattedResults[0]);
+      handleSelect(formattedResults[0]);
     }
   };
 
+  if (!searchOpen) {
+    return null;
+  }
+
   return (
-    <div className="search-panel">
-      <div className="search-header">
+    <div className={styles['search-panel']}>
+      <div className={styles['search-header']}>
         <input
           ref={inputRef}
           type="text"
-          value={query}
+          value={searchQuery}
           placeholder="Type to search…"
-          onChange={(event) => onQueryChange(event.target.value)}
+          onChange={event => handleQueryChange(event.target.value)}
           onKeyDown={handleInputKeyDown}
         />
-        <button type="button" onClick={onClose} className="search-close-btn">
+        <button
+          type="button"
+          onClick={handleClose}
+          className={styles['search-close-btn']}
+        >
           ×
         </button>
       </div>
-      <div className="search-results">
-        {query.trim().length === 0 && (
-          <div className="search-hint">Start typing to search folders, works, and text files</div>
+      <div className={styles['search-results']}>
+        {searchQuery.trim().length === 0 && (
+          <div className={styles['search-hint']}>
+            Start typing to search folders, works, and text files
+          </div>
         )}
-        {query.trim().length > 0 && formattedResults.length === 0 && (
-          <div className="search-empty">No matches found</div>
+        {searchQuery.trim().length > 0 && formattedResults.length === 0 && (
+          <div className={styles['search-empty']}>No matches found</div>
         )}
-        {formattedResults.map((result) => (
+        {formattedResults.map(result => (
           <button
             key={`${result.type}-${result.id}`}
-            className="search-result"
+            className={styles['search-result']}
             type="button"
-            onClick={() => onSelect(result)}
+            onClick={() => handleSelect(result)}
           >
-            <div className="search-result-label">{result.label}</div>
+            <div className={styles['search-result-label']}>{result.label}</div>
             {'meta' in result && result.meta ? (
-              <div className="search-result-meta">{result.meta}</div>
+              <div className={styles['search-result-meta']}>{result.meta}</div>
             ) : null}
           </button>
         ))}

@@ -5,10 +5,13 @@ export interface FlatFolder {
   path: string[];
 }
 
-export const flattenFolders = (folders: Folder[], ancestors: string[] = []): FlatFolder[] => {
+export const flattenFolders = (
+  folders: Folder[],
+  ancestors: string[] = []
+): FlatFolder[] => {
   const results: FlatFolder[] = [];
 
-  folders.forEach((folder) => {
+  folders.forEach(folder => {
     const currentPath = [...ancestors, folder.id];
     results.push({ folder, path: currentPath });
 
@@ -20,7 +23,10 @@ export const flattenFolders = (folders: Folder[], ancestors: string[] = []): Fla
   return results;
 };
 
-export const findFolderByPath = (folders: Folder[], path: string[]): Folder | null => {
+export const findFolderByPath = (
+  folders: Folder[],
+  path: string[]
+): Folder | null => {
   if (!path.length) {
     return null;
   }
@@ -29,7 +35,7 @@ export const findFolderByPath = (folders: Folder[], path: string[]): Folder | nu
   let currentLevel = folders;
 
   for (const segment of path) {
-    current = currentLevel.find((folder) => folder.id === segment);
+    current = currentLevel.find(folder => folder.id === segment);
     if (!current) {
       return null;
     }
@@ -39,11 +45,16 @@ export const findFolderByPath = (folders: Folder[], path: string[]): Folder | nu
   return current ?? null;
 };
 
-export const findFolderPathById = (folders: Folder[], targetId: string): string[] | null => {
-  const stack: Array<{ folder: Folder; path: string[] }> = folders.map((folder) => ({
-    folder,
-    path: [folder.id],
-  }));
+export const findFolderPathById = (
+  folders: Folder[],
+  targetId: string
+): string[] | null => {
+  const stack: Array<{ folder: Folder; path: string[] }> = folders.map(
+    folder => ({
+      folder,
+      path: [folder.id],
+    })
+  );
 
   while (stack.length) {
     const { folder, path } = stack.pop()!;
@@ -51,7 +62,7 @@ export const findFolderPathById = (folders: Folder[], targetId: string): string[
       return path;
     }
 
-    folder.children?.forEach((child) => {
+    folder.children?.forEach(child => {
       stack.push({ folder: child, path: [...path, child.id] });
     });
   }
@@ -59,7 +70,10 @@ export const findFolderPathById = (folders: Folder[], targetId: string): string[
   return null;
 };
 
-export const findFolderById = (folders: Folder[], targetId: string): Folder | null => {
+export const findFolderById = (
+  folders: Folder[],
+  targetId: string
+): Folder | null => {
   if (!targetId) {
     return null;
   }

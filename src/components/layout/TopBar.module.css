@@ -1,0 +1,72 @@
+.top-bar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 2px solid var(--color-border);
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+  background: var(--color-surface);
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn,
+.theme-btn,
+.search-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-text);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.nav-btn:hover,
+.theme-btn:hover,
+.search-btn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.breadcrumb {
+  flex: 1;
+  font-size: var(--font-size-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.breadcrumb-sep {
+  color: #999;
+}
+
+.breadcrumb-link {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.breadcrumb-link:not([disabled]):hover {
+  color: var(--color-primary);
+}
+
+.breadcrumb-link[disabled] {
+  cursor: default;
+  opacity: 0.7;
+}

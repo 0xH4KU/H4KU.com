@@ -1,0 +1,36 @@
+.crosshair-x,
+.crosshair-y {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.crosshair-x {
+  height: 1px;
+  left: 0;
+  right: 0;
+  background: #689696;
+  opacity: 0.5;
+}
+
+.crosshair-y {
+  width: 1px;
+  top: 0;
+  bottom: 0;
+  background: #689696;
+  opacity: 0.5;
+}
+
+.crosshair-label {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  padding: 4px 8px;
+  font-size: var(--font-size-xxs);
+  border: 1px solid #689696;
+  background: var(--color-crosshair-bg);
+  color: var(--color-crosshair-text);
+  font-family: inherit;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}

@@ -1,78 +1,96 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Moon, Sun, Search } from 'lucide-react';
+import { useNavigation } from '@/contexts/NavigationContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useSearch } from '@/contexts/SearchContext';
+import styles from './TopBar.module.css';
 
-interface TopBarProps {
-  pathSegments: { id: string; label: string }[];
-  canGoBack: boolean;
-  onBack: () => void;
-  onToggleSearch: () => void;
-  onToggleTheme: () => void;
-  theme: 'light' | 'dark';
-  isSearchOpen: boolean;
-  onSelectPath: (index: number) => void;
-}
+const TopBar: React.FC = () => {
+  const {
+    breadcrumbSegments,
+    navigateBack,
+    handleBreadcrumbSelect,
+    currentPath,
+  } = useNavigation();
+  const { theme, toggleTheme } = useTheme();
+  const { searchOpen, openSearch } = useSearch();
 
-const TopBar: React.FC<TopBarProps> = ({
-  pathSegments,
-  canGoBack,
-  onBack,
-  onToggleSearch,
-  onToggleTheme,
-  theme,
-  isSearchOpen,
-  onSelectPath,
-}) => (
-  <div className="top-bar">
-    <div className="nav-buttons">
-      <button className="nav-btn" onClick={onBack} disabled={!canGoBack}>
-        <ChevronLeft size={16} />
-      </button>
-      <button className="nav-btn" disabled>
-        <ChevronRight size={16} />
-      </button>
-    </div>
+  const canGoBack = currentPath.length > 1;
 
-    <div className="breadcrumb">
-      {pathSegments.map((segment, idx) => {
-        const isActive = idx === pathSegments.length - 1;
-        return idx === 0 ? (
-          <button
-            key={segment.id}
-            type="button"
-            className="breadcrumb-link"
-            onClick={() => onSelectPath(idx)}
-            disabled={isActive}
-          >
-            lum.bio
-          </button>
-        ) : (
-          <React.Fragment key={`${segment.id}-${idx}`}>
-            <span className="breadcrumb-sep">/</span>
+  const handleBack = () => {
+    navigateBack();
+  };
+
+  const handleToggleSearch = () => {
+    openSearch();
+  };
+
+  const handleToggleTheme = () => {
+    toggleTheme();
+  };
+
+  const handleSelectPath = (index: number) => {
+    const segment = breadcrumbSegments[index];
+    handleBreadcrumbSelect(segment.id, index);
+  };
+
+  return (
+    <div className={styles['top-bar']}>
+      <div className={styles['nav-buttons']}>
+        <button
+          className={styles['nav-btn']}
+          onClick={handleBack}
+          disabled={!canGoBack}
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <button className={styles['nav-btn']} disabled>
+          <ChevronRight size={16} />
+        </button>
+      </div>
+
+      <div className={styles.breadcrumb}>
+        {breadcrumbSegments.map((segment, idx) => {
+          const isActive = idx === breadcrumbSegments.length - 1;
+          return idx === 0 ? (
             <button
+              key={segment.id}
               type="button"
-              className="breadcrumb-link"
-              onClick={() => onSelectPath(idx)}
+              className={styles['breadcrumb-link']}
+              onClick={() => handleSelectPath(idx)}
               disabled={isActive}
             >
-              {segment.label}
+              lum.bio
             </button>
-          </React.Fragment>
-        );
-      })}
+          ) : (
+            <React.Fragment key={`${segment.id}-${idx}`}>
+              <span className={styles['breadcrumb-sep']}>/</span>
+              <button
+                type="button"
+                className={styles['breadcrumb-link']}
+                onClick={() => handleSelectPath(idx)}
+                disabled={isActive}
+              >
+                {segment.label}
+              </button>
+            </React.Fragment>
+          );
+        })}
+      </div>
+
+      <button
+        className={styles['search-btn']}
+        onClick={handleToggleSearch}
+        aria-pressed={searchOpen}
+      >
+        <Search size={16} />
+      </button>
+
+      <button className={styles['theme-btn']} onClick={handleToggleTheme}>
+        {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+      </button>
     </div>
-
-    <button
-      className="search-btn"
-      onClick={onToggleSearch}
-      aria-pressed={isSearchOpen}
-    >
-      <Search size={16} />
-    </button>
-
-    <button className="theme-btn" onClick={onToggleTheme}>
-      {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-    </button>
-  </div>
-);
+  );
+};
 
 export default TopBar;

@@ -1,38 +1,46 @@
 import React from 'react';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
-import { Folder, MockData, Page, ViewType, WorkItem } from '@/types';
+import { useNavigation } from '@/contexts/NavigationContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { mockData } from '@/data/mockData';
+import { Folder, Page, WorkItem } from '@/types';
+import styles from './ContentView.module.css';
 
 type NavigableItem = Folder | Page;
 
-interface ContentViewProps {
-  currentView: ViewType | null;
-  data: MockData;
-  onNavigate: (item: NavigableItem) => void;
-  onOpenLightbox: (item: WorkItem) => void;
-  onCloseTextView: () => void;
-  theme: 'light' | 'dark';
-}
+const ContentView: React.FC = () => {
+  const { currentView, navigateTo, openLightbox, resetToHome } =
+    useNavigation();
+  const { theme } = useTheme();
 
-const ContentView: React.FC<ContentViewProps> = ({
-  currentView,
-  data,
-  onNavigate,
-  onOpenLightbox,
-  onCloseTextView,
-  theme,
-}) => {
+  const handleNavigate = (item: NavigableItem) => {
+    navigateTo(item);
+  };
+
+  const handleOpenLightbox = (item: WorkItem) => {
+    openLightbox(item);
+  };
+
+  const handleCloseTextView = () => {
+    resetToHome();
+  };
+
   if (currentView?.type === 'txt') {
     return (
-      <div className={`txt-viewer ${theme}`}>
-        <div className="txt-header">
-          <img className="txt-icon" src={paperIcon} alt="Text file icon" />
+      <div className={`${styles['txt-viewer']} ${theme}`}>
+        <div className={styles['txt-header']}>
+          <img
+            className={styles['txt-icon']}
+            src={paperIcon}
+            alt="Text file icon"
+          />
           <span>{currentView.data.name}</span>
-          <button onClick={onCloseTextView} className="close-btn">
+          <button onClick={handleCloseTextView} className={styles['close-btn']}>
             ×
           </button>
         </div>
-        <div className="txt-content">
+        <div className={styles['txt-content']}>
           <pre>{currentView.data.content}</pre>
         </div>
       </div>
@@ -43,35 +51,43 @@ const ContentView: React.FC<ContentViewProps> = ({
     const { items = [], children = [] } = currentView.data;
 
     if (!items.length && !children.length) {
-      return <div className="folder-empty">No items in this folder yet.</div>;
+      return (
+        <div className={styles['folder-empty']}>
+          No items in this folder yet.
+        </div>
+      );
     }
 
     return (
-      <div className="folder-content">
+      <div className={styles['folder-content']}>
         {children.length > 0 && (
-          <div className="file-grid">
-            {children.map((child) => (
+          <div className={styles['file-grid']}>
+            {children.map(child => (
               <div
                 key={child.id}
-                className="file-item"
-                onClick={() => onNavigate(child)}
+                className={styles['file-item']}
+                onClick={() => handleNavigate(child)}
               >
-                <img className="file-icon" src={folderIcon} alt="Folder icon" />
-                <div className="file-name">{child.name}</div>
+                <img
+                  className={styles['file-icon']}
+                  src={folderIcon}
+                  alt="Folder icon"
+                />
+                <div className={styles['file-name']}>{child.name}</div>
               </div>
             ))}
           </div>
         )}
         {items.length > 0 && (
-          <div className="works-grid">
-            {items.map((item) => (
+          <div className={styles['works-grid']}>
+            {items.map(item => (
               <div
                 key={item.id}
-                className="work-item"
-                onClick={() => onOpenLightbox(item)}
+                className={styles['work-item']}
+                onClick={() => handleOpenLightbox(item)}
               >
                 <img src={item.thumb} alt={item.filename} />
-                <div className="work-info">{item.filename}</div>
+                <div className={styles['work-info']}>{item.filename}</div>
               </div>
             ))}
           </div>
@@ -81,25 +97,33 @@ const ContentView: React.FC<ContentViewProps> = ({
   }
 
   return (
-    <div className="file-grid">
-      {data.folders.map((folder) => (
+    <div className={styles['file-grid']}>
+      {mockData.folders.map(folder => (
         <div
           key={folder.id}
-          className="file-item"
-          onClick={() => onNavigate(folder)}
+          className={styles['file-item']}
+          onClick={() => handleNavigate(folder)}
         >
-          <img className="file-icon" src={folderIcon} alt="Folder icon" />
-          <div className="file-name">{folder.name}</div>
+          <img
+            className={styles['file-icon']}
+            src={folderIcon}
+            alt="Folder icon"
+          />
+          <div className={styles['file-name']}>{folder.name}</div>
         </div>
       ))}
-      {data.pages.map((page) => (
+      {mockData.pages.map(page => (
         <div
           key={page.id}
-          className="file-item"
-          onClick={() => onNavigate(page)}
+          className={styles['file-item']}
+          onClick={() => handleNavigate(page)}
         >
-          <img className="file-icon" src={paperIcon} alt="Text file icon" />
-          <div className="file-name">{page.name}</div>
+          <img
+            className={styles['file-icon']}
+            src={paperIcon}
+            alt="Text file icon"
+          />
+          <div className={styles['file-name']}>{page.name}</div>
         </div>
       ))}
     </div>

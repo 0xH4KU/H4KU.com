@@ -1,0 +1,22 @@
+.status-bar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-top: 2px solid var(--color-border);
+  font-size: var(--font-size-xs);
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+  background: var(--color-surface);
+}
+
+.status-socials {
+  display: flex;
+  gap: 8px;
+}
+
+.status-socials a {
+  color: inherit;
+  text-decoration: none;
+}

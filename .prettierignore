@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+build
+
+# Logs
+*.log
+
+# IDE
+.vscode
+.idea
+
+# Config files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Public assets
+public
+
+# Git
+.git
