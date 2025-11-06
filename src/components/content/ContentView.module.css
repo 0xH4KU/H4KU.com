@@ -92,6 +92,7 @@
   margin: 0 auto;
   border: 2px solid var(--color-text);
   background: var(--color-background);
+  overflow: hidden;
 }
 
 .txt-header {

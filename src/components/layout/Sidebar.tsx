@@ -67,17 +67,49 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className={styles['sidebar-footer']}>
-        {socials.map(social => (
-          <a
-            key={social.code}
-            href={social.url}
-            className={styles['social-link']}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {social.code}
-          </a>
-        ))}
+        {socials.map(social => {
+          const rawUrl = social.url ?? '';
+          const url = rawUrl.trim();
+          const isPlaceholder = url.length === 0 || url === '#';
+          const isExternal = /^https?:\/\//i.test(url);
+
+          if (isPlaceholder) {
+            return (
+              <button
+                key={social.code}
+                type="button"
+                className={`${styles['social-link']} ${styles['social-link--disabled']}`}
+                disabled
+                aria-disabled="true"
+                aria-label={`${social.name} coming soon`}
+              >
+                {social.code}
+              </button>
+            );
+          }
+
+          const isMailto = url.startsWith('mailto:');
+          const ariaLabelParts = [`Open ${social.name}`];
+          if (isMailto) {
+            ariaLabelParts.push('(opens email client)');
+          }
+          if (isExternal) {
+            ariaLabelParts.push('(opens in new tab)');
+          }
+
+          return (
+            <a
+              key={social.code}
+              href={url}
+              className={styles['social-link']}
+              target={isExternal ? '_blank' : undefined}
+              rel={isExternal ? 'noopener noreferrer' : undefined}
+              aria-label={ariaLabelParts.join(' ')}
+            >
+              {social.code}
+            </a>
+          );
+        })}
       </div>
 
       <div className={styles['resize-handle']} onMouseDown={handleDragStart} />

@@ -1,7 +1,7 @@
+import { lazy, Suspense } from 'react';
 import {
   ContentView,
   Crosshair,
-  Lightbox,
   Sidebar,
   StatusBar,
   TopBar,
@@ -11,6 +11,9 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { SearchProvider } from '@/contexts/SearchContext';
 import styles from './App.module.css';
+
+// Lazy load heavy components
+const Lightbox = lazy(() => import('@/components').then(module => ({ default: module.Lightbox })));
 
 function App() {
   return (
@@ -27,7 +30,9 @@ function App() {
               </div>
             </div>
             <StatusBar />
-            <Lightbox />
+            <Suspense fallback={null}>
+              <Lightbox />
+            </Suspense>
             <SearchPanel />
           </div>
         </SearchProvider>
