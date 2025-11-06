@@ -96,19 +96,53 @@ const Lightbox: React.FC = () => {
       />
 
       <div className={styles['lightbox-info']}>
-        <span>{lightboxImage.filename}</span>
-        <span>|</span>
-        <span>{lightboxImage.date}</span>
-        <span>|</span>
-        <span>{lightboxImage.dimensions}</span>
-        {showNavigation && (
-          <>
-            <span>|</span>
-            <span>
-              {lightboxIndex + 1} / {lightboxGallery.length}
-            </span>
-          </>
-        )}
+        <div className={styles['lightbox-metadata']}>
+          {lightboxImage.title && (
+            <div className={styles['metadata-title']}>{lightboxImage.title}</div>
+          )}
+          <div className={styles['metadata-basic']}>
+            <span>{lightboxImage.filename}</span>
+            {lightboxImage.date && (
+              <>
+                <span>|</span>
+                <span>{lightboxImage.date}</span>
+              </>
+            )}
+            {lightboxImage.dimensions && (
+              <>
+                <span>|</span>
+                <span>{lightboxImage.dimensions}</span>
+              </>
+            )}
+            {showNavigation && (
+              <>
+                <span>|</span>
+                <span>
+                  {lightboxIndex + 1} / {lightboxGallery.length}
+                </span>
+              </>
+            )}
+          </div>
+          {lightboxImage.description && (
+            <div className={styles['metadata-description']}>
+              {lightboxImage.description}
+            </div>
+          )}
+          {lightboxImage.tags && lightboxImage.tags.length > 0 && (
+            <div className={styles['metadata-tags']}>
+              {lightboxImage.tags.map((tag) => (
+                <span key={tag} className={styles['tag']}>
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {lightboxImage.client && (
+            <div className={styles['metadata-client']}>
+              Client: {lightboxImage.client}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
 import { LazyImage } from '@/components/common/LazyImage';
+import { ContactForm } from '@/components/forms/ContactForm';
 import styles from './ContentView.module.css';
 
 type NavigableItem = Folder | Page;
@@ -148,6 +149,7 @@ const ContentView: React.FC = () => {
             }}
           >
             <pre>{currentView.data.content}</pre>
+            {currentView.data.id === 'contact' && <ContactForm />}
           </motion.div>
         </motion.div>
       );

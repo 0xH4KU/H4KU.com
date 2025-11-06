@@ -1,63 +1,33 @@
 import { MockData } from '@/types';
 
+
 export const mockData: MockData = {
   folders: [
-    {
-      id: 'featured',
-      name: 'Featured',
-      type: 'folder',
-      children: [
-        {
-          id: 'client-a',
-          name: 'Client A',
-          type: 'folder',
-          items: [
-            {
-              id: '1',
-              filename: 'work_01.jpg',
-              thumb: 'https://picsum.photos/seed/1/400/400',
-              full: 'https://picsum.photos/seed/1/1200/1600',
-              date: '2025-01',
-              dimensions: '3000x4000',
-            },
-            {
-              id: '2',
-              filename: 'work_02.jpg',
-              thumb: 'https://picsum.photos/seed/2/400/400',
-              full: 'https://picsum.photos/seed/2/1200/1600',
-              date: '2025-01',
-              dimensions: '3000x4000',
-            },
-          ],
-        },
-        { id: 'client-b', name: 'Client B', type: 'folder', items: [] },
-      ],
-    },
-    {
-      id: '2025',
-      name: '2025',
-      type: 'folder',
-      items: [
-        {
-          id: '3',
-          filename: 'work_03.jpg',
-          thumb: 'https://picsum.photos/seed/3/400/400',
-          full: 'https://picsum.photos/seed/3/1200/1600',
-          date: '2025-02',
-          dimensions: '3000x4000',
-        },
-        {
-          id: '4',
-          filename: 'work_04.jpg',
-          thumb: 'https://picsum.photos/seed/4/400/400',
-          full: 'https://picsum.photos/seed/4/1200/1600',
-          date: '2025-02',
-          dimensions: '3000x4000',
-        },
-      ],
-    },
-    { id: '2024', name: '2024', type: 'folder', items: [] },
-  ],
+  {
+    "id": "featured",
+    "name": "featured",
+    "type": "folder",
+    "children": [
+      {
+        "id": "featured-2025",
+        "name": "2025",
+        "type": "folder"
+      }
+    ]
+  },
+  {
+    "id": "sketches",
+    "name": "sketches",
+    "type": "folder",
+    "children": [
+      {
+        "id": "sketches-2025",
+        "name": "2025",
+        "type": "folder"
+      }
+    ]
+  }
+],
   pages: [
     {
       id: 'about',
@@ -66,15 +36,14 @@ export const mockData: MockData = {
       content: `ABOUT
 ════════════════════════
 
-Hi, I'm a freelance artist specializing in anime-style illustrations and character design.
+Lum (@lummuu_)
+Freelance illustrator
 
-I work with clients worldwide to bring their creative visions to life.
+Anime-style illustrations
+Character design
+Digital art
 
-SKILLS:
-- Character Design
-- Illustration
-- Concept Art
-- Digital Painting`,
+Available for commissions`,
     },
     {
       id: 'contact',
@@ -85,14 +54,16 @@ SKILLS:
 
 Email: hi@lum.bio
 
-For commissions and inquiries, please reach out via email.
+For commissions and inquiries,
+please reach out via email or
+use the contact form.
 
 Response time: 1-2 business days`,
     },
   ],
   socials: [
-    { name: 'Instagram', code: 'IG', url: '#' },
-    { name: 'Twitter', code: 'TW', url: '#' },
+    { name: 'Instagram', code: 'IG', url: 'https://instagram.com/lummuu_' },
+    { name: 'Twitter', code: 'TW', url: 'https://twitter.com/lummuu_' },
     { name: 'Email', code: 'EM', url: 'mailto:hi@lum.bio' },
   ],
 };
