@@ -15,3 +15,21 @@ yarn-error.log*
 
 # Backups
 /backups
+
+# Environment and config files
+.env
+.env.local
+.env.*.local
+src/config/emailjs.ts
+
+# Private documentation (setup guides with sensitive info)
+EmailJS*.md
+reCAPTCHA*.md
+Cloudflare-Pages-*.md
+如何添加作品.md
+SETUP.md
+COMPLETED_TODAY.md
+
+# OS files
+.DS_Store
+Thumbs.db

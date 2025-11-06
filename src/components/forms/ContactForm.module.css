@@ -1,0 +1,110 @@
+.contactForm {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+    'Droid Sans Mono', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.input,
+.textarea {
+  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+    'Droid Sans Mono', monospace;
+  font-size: 14px;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-primary);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+.input:disabled,
+.textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.button {
+  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+    'Droid Sans Mono', monospace;
+  font-size: 14px;
+  padding: 12px 24px;
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border: 2px solid var(--accent-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: bold;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--bg-primary);
+  color: var(--accent-primary);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.message {
+  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+    'Droid Sans Mono', monospace;
+  font-size: 14px;
+  padding: 12px;
+  border: 2px solid;
+  margin-top: 8px;
+}
+
+.success {
+  background: rgba(0, 255, 0, 0.1);
+  border-color: #00ff00;
+  color: var(--text-primary);
+}
+
+.error {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: #ff0000;
+  color: var(--text-primary);
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .input,
+[data-theme='dark'] .textarea {
+  background: var(--bg-secondary);
+}

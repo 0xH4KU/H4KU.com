@@ -4,7 +4,11 @@ export interface WorkItem {
   thumb: string;
   full: string;
   date: string;
-  dimensions: string;
+  dimensions?: string;
+  title?: string;
+  description?: string;
+  tags?: string[];
+  client?: string;
 }
 
 export interface Folder {

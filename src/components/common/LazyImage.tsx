@@ -71,7 +71,12 @@ export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) 
       },
     );
 
-    observer.observe(node);
+    // Use requestAnimationFrame to ensure element is rendered before observing
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        observer.observe(node);
+      });
+    });
 
     return () => {
       observer.disconnect();
