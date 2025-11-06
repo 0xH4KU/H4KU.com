@@ -1,10 +1,39 @@
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+// import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import sitemap from 'vite-plugin-sitemap';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // ViteImageOptimizer({
+    //   png: {
+    //     quality: 85,
+    //   },
+    //   jpeg: {
+    //     quality: 85,
+    //   },
+    //   jpg: {
+    //     quality: 85,
+    //   },
+    //   webp: {
+    //     quality: 85,
+    //   },
+    // }),
+    sitemap({
+      hostname: 'https://lum.bio',
+      dynamicRoutes: [
+        '/',
+        '/folder/2024',
+        '/folder/2025',
+        '/folder/featured',
+        '/page/about',
+        '/page/contact',
+      ],
+    }),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

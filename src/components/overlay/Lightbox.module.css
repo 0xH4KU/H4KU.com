@@ -96,8 +96,61 @@
   margin-top: 20px;
   color: #fff;
   font-size: var(--font-size-sm);
+  max-width: 800px;
+  width: 100%;
+}
+
+.lightbox-metadata {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.metadata-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.metadata-basic {
+  display: flex;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+  opacity: 0.8;
+}
+
+.metadata-description {
+  margin-top: 8px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.metadata-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.tag {
+  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.metadata-client {
+  margin-top: 4px;
+  opacity: 0.7;
+  font-size: 12px;
 }
