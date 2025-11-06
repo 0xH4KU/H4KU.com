@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
 import { LazyImage } from '@/components/common/LazyImage';
@@ -11,75 +12,88 @@ import styles from './ContentView.module.css';
 
 type NavigableItem = Folder | Page;
 
-// 動畫變體配置 - 簡潔直接的動畫
-const defaultEase: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.03, // 更快的 stagger
-      delayChildren: 0,
-    },
-  },
-  exit: {
-    opacity: 0,
-    transition: {
-      duration: 0.15,
-    },
-  },
-} satisfies Variants;
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 }, // 更小的移動
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.25, // 更快的動畫
-      ease: defaultEase, // 自訂 easing，更流暢
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -5,
-    transition: {
-      duration: 0.15,
-    },
-  },
-} satisfies Variants;
-
-const pageVariants = {
-  initial: { opacity: 0, y: 10 },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.2,
-      ease: 'easeOut' as const,
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -10,
-    transition: {
-      duration: 0.15,
-    },
-  },
-} satisfies Variants;
-
 const ContentView: React.FC = () => {
   const { currentView, navigateTo, openLightbox, resetToHome } =
     useNavigation();
   const { theme } = useTheme();
+  const prefersReducedMotion = useReducedMotion();
+
+  // 動畫變體配置 - 簡潔直接的動畫
+  const defaultEase: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
+
+  const containerVariants = useMemo(
+    () =>
+      ({
+        hidden: { opacity: prefersReducedMotion ? 1 : 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: prefersReducedMotion ? 0 : 0.03,
+            delayChildren: 0,
+          },
+        },
+        exit: {
+          opacity: prefersReducedMotion ? 1 : 0,
+          transition: {
+            duration: prefersReducedMotion ? 0 : 0.15,
+          },
+        },
+      }) satisfies Variants,
+    [prefersReducedMotion]
+  );
+
+  const itemVariants = useMemo(
+    () =>
+      ({
+        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 10 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: prefersReducedMotion ? 0 : 0.25,
+            ease: defaultEase,
+          },
+        },
+        exit: {
+          opacity: prefersReducedMotion ? 1 : 0,
+          y: prefersReducedMotion ? 0 : -5,
+          transition: {
+            duration: prefersReducedMotion ? 0 : 0.15,
+          },
+        },
+      }) satisfies Variants,
+    [prefersReducedMotion, defaultEase]
+  );
+
+  const pageVariants = useMemo(
+    () =>
+      ({
+        initial: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 10 },
+        animate: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: prefersReducedMotion ? 0 : 0.2,
+            ease: 'easeOut' as const,
+          },
+        },
+        exit: {
+          opacity: prefersReducedMotion ? 1 : 0,
+          y: prefersReducedMotion ? 0 : -10,
+          transition: {
+            duration: prefersReducedMotion ? 0 : 0.15,
+          },
+        },
+      }) satisfies Variants,
+    [prefersReducedMotion]
+  );
 
   const handleNavigate = (item: NavigableItem) => {
     navigateTo(item);
   };
 
-  const handleOpenLightbox = (item: WorkItem) => {
-    openLightbox(item);
+  const handleOpenLightbox = (item: WorkItem, gallery: WorkItem[]) => {
+    openLightbox(item, gallery);
   };
 
   const handleCloseTextView = () => {
@@ -117,8 +131,8 @@ const ContentView: React.FC = () => {
             <motion.button
               onClick={handleCloseTextView}
               className={styles['close-btn']}
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
+              whileHover={prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
             >
               ×
             </motion.button>
@@ -179,12 +193,16 @@ const ContentView: React.FC = () => {
                   className={styles['file-item']}
                   variants={itemVariants}
                   onClick={() => handleNavigate(child)}
-                  whileHover={{
-                    scale: 1.02,
-                    y: -2,
-                    transition: { duration: 0.15 },
-                  }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={
+                    prefersReducedMotion
+                      ? {}
+                      : {
+                          scale: 1.02,
+                          y: -2,
+                          transition: { duration: 0.15 },
+                        }
+                  }
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                 >
                   <img
                     className={styles['file-icon']}
@@ -209,13 +227,17 @@ const ContentView: React.FC = () => {
                   key={item.id}
                   className={styles['work-item']}
                   variants={itemVariants}
-                  onClick={() => handleOpenLightbox(item)}
-                  whileHover={{
-                    scale: 1.02,
-                    y: -3,
-                    transition: { duration: 0.15 },
-                  }}
-                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleOpenLightbox(item, items)}
+                  whileHover={
+                    prefersReducedMotion
+                      ? {}
+                      : {
+                          scale: 1.02,
+                          y: -3,
+                          transition: { duration: 0.15 },
+                        }
+                  }
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                 >
                   <LazyImage src={item.thumb} alt={item.filename} />
                   <div className={styles['work-info']}>{item.filename}</div>
@@ -243,12 +265,16 @@ const ContentView: React.FC = () => {
             className={styles['file-item']}
             variants={itemVariants}
             onClick={() => handleNavigate(folder)}
-            whileHover={{
-              scale: 1.02,
-              y: -2,
-              transition: { duration: 0.15 },
-            }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={
+              prefersReducedMotion
+                ? {}
+                : {
+                    scale: 1.02,
+                    y: -2,
+                    transition: { duration: 0.15 },
+                  }
+            }
+            whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
           >
             <img
               className={styles['file-icon']}
@@ -264,12 +290,16 @@ const ContentView: React.FC = () => {
             className={styles['file-item']}
             variants={itemVariants}
             onClick={() => handleNavigate(page)}
-            whileHover={{
-              scale: 1.02,
-              y: -2,
-              transition: { duration: 0.15 },
-            }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={
+              prefersReducedMotion
+                ? {}
+                : {
+                    scale: 1.02,
+                    y: -2,
+                    transition: { duration: 0.15 },
+                  }
+            }
+            whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
           >
             <img
               className={styles['file-icon']}

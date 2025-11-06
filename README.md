@@ -4,13 +4,32 @@ A modern, interactive portfolio website built with React, TypeScript, and Vite. 
 
 ## Features
 
+### Core Features
 - **File System Navigation**: Browse portfolio content through an intuitive folder/file interface
 - **Dark/Light Theme**: Automatic theme detection with manual toggle support
 - **Responsive Design**: Optimized for desktop and mobile viewing
-- **Image Lightbox**: Full-screen image viewer for portfolio work
-- **Search Functionality**: Quick search across all portfolio content
-- **Resizable Sidebar**: Customizable navigation panel width
-- **Crosshair Tool**: Precise pixel alignment helper
+- **URL Routing**: Deep linking support - all pages and folders have shareable URLs
+- **Resizable Sidebar**: Customizable navigation panel width with persistent preferences
+
+### Image Gallery
+- **Image Lightbox**: Full-screen image viewer with gallery navigation
+- **Keyboard Navigation**: Use arrow keys (←/→) to browse images, ESC to close
+- **Image Counter**: See your position in the gallery (e.g., "3 / 10")
+- **Error Handling**: Graceful fallback for failed image loads
+
+### Search & Discovery
+- **Quick Search**: Fast search across folders, images, and text files
+- **Keyboard Navigation**: Navigate search results with arrow keys, Enter to select
+- **Debounced Input**: Smooth, performant search experience
+
+### Accessibility & UX
+- **WCAG Compliant**: Focus indicators, skip links, and ARIA labels
+- **Reduced Motion Support**: Respects user's motion preferences
+- **Keyboard Friendly**: Full keyboard navigation support
+- **Screen Reader Optimized**: Proper semantic HTML and ARIA attributes
+
+### Developer Tools
+- **Crosshair Tool**: Precise pixel alignment helper for designers
 
 ## Tech Stack
 

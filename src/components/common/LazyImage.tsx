@@ -3,6 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 const TRANSPARENT_PLACEHOLDER =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
+// Fallback image when loading fails
+const ERROR_PLACEHOLDER =
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5JbWFnZSBmYWlsZWQgdG8gbG9hZDwvdGV4dD48L3N2Zz4=';
+
 interface LazyImageProps {
   src: string;
   alt: string;
@@ -15,6 +19,7 @@ export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) 
     placeholder ?? TRANSPARENT_PLACEHOLDER,
   );
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const previousSrcRef = useRef<string>();
   const placeholderRef = useRef<string | undefined>(placeholder);
@@ -39,6 +44,7 @@ export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) 
       placeholderRef.current ?? TRANSPARENT_PLACEHOLDER;
 
     setIsLoaded(false);
+    setHasError(false);
     setImageSrc(nextPlaceholder);
 
     if (!node) {
@@ -72,6 +78,20 @@ export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) 
     };
   }, [src]);
 
+  const handleError = () => {
+    if (!hasError && imageSrc === src) {
+      setHasError(true);
+      setImageSrc(ERROR_PLACEHOLDER);
+      setIsLoaded(true);
+    }
+  };
+
+  const handleLoad = () => {
+    if (imageSrc === src || imageSrc === ERROR_PLACEHOLDER) {
+      setIsLoaded(true);
+    }
+  };
+
   return (
     <img
       ref={imgRef}
@@ -80,11 +100,8 @@ export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) 
       className={className}
       loading="lazy"
       decoding="async"
-      onLoad={() => {
-        if (imageSrc === src) {
-          setIsLoaded(true);
-        }
-      }}
+      onLoad={handleLoad}
+      onError={handleError}
       style={{
         opacity: isLoaded ? 1 : 0.5,
         transition: 'opacity 0.3s ease-in-out',

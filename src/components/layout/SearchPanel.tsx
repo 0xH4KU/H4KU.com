@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearch } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { SearchResult } from '@/types';
@@ -21,12 +21,19 @@ const SearchPanel: React.FC = () => {
   } = useSearch();
   const { navigateTo, openLightbox } = useNavigation();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     if (searchOpen) {
       inputRef.current?.focus();
+      setSelectedIndex(0);
     }
   }, [searchOpen]);
+
+  // Reset selected index when results change
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [searchResults.length]);
 
   useEffect(() => {
     if (!searchOpen) {
@@ -75,7 +82,8 @@ const SearchPanel: React.FC = () => {
     } else if (result.type === 'page') {
       navigateTo(result.page);
     } else if (result.type === 'work') {
-      openLightbox(result.work);
+      const gallery = result.folder.items || [];
+      openLightbox(result.work, gallery);
     }
     closeSearch();
   };
@@ -89,8 +97,16 @@ const SearchPanel: React.FC = () => {
   };
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && formattedResults.length) {
-      handleSelect(formattedResults[0]);
+    if (event.key === 'Enter' && formattedResults.length > 0) {
+      handleSelect(formattedResults[selectedIndex]);
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setSelectedIndex(prev =>
+        prev < formattedResults.length - 1 ? prev + 1 : prev
+      );
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
     }
   };
 
@@ -126,10 +142,10 @@ const SearchPanel: React.FC = () => {
         {searchQuery.trim().length > 0 && formattedResults.length === 0 && (
           <div className={styles['search-empty']}>No matches found</div>
         )}
-        {formattedResults.map(result => (
+        {formattedResults.map((result, index) => (
           <button
             key={`${result.type}-${result.id}`}
-            className={styles['search-result']}
+            className={`${styles['search-result']} ${index === selectedIndex ? styles['search-result--selected'] : ''}`}
             type="button"
             onClick={() => handleSelect(result)}
           >

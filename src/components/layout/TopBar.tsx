@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Moon, Sun, Search } from 'lucide-react';
+import { ChevronLeft, Moon, Sun, Search } from 'lucide-react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSearch } from '@/contexts/SearchContext';
@@ -41,11 +41,9 @@ const TopBar: React.FC = () => {
           className={styles['nav-btn']}
           onClick={handleBack}
           disabled={!canGoBack}
+          aria-label="Go back"
         >
           <ChevronLeft size={16} />
-        </button>
-        <button className={styles['nav-btn']} disabled>
-          <ChevronRight size={16} />
         </button>
       </div>
 
