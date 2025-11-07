@@ -63,4 +63,10 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'framer-motion'],
   },
+  // 開發伺服器配置
+  server: {
+    host: '0.0.0.0', // 或使用 true，允許網路訪問
+    port: 5173,
+    strictPort: false,
+  },
 });
