@@ -68,9 +68,7 @@ const Sidebar: React.FC = () => {
       const basePath = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
 
       if (item.type === 'folder') {
-        const flatFolder = allFolders.find(
-          flat => flat.folder.id === item.id
-        );
+        const flatFolder = allFolders.find(flat => flat.folder.id === item.id);
         if (!flatFolder) {
           return origin;
         }

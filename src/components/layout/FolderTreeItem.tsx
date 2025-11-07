@@ -59,8 +59,7 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
   };
 
   // Determine icon size and indent based on screen size
-  const isDesktop =
-    typeof window !== 'undefined' && window.innerWidth > 768;
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth > 768;
   const iconSize = isDesktop ? 16 : 18;
   const indent = isDesktop ? 18 + depth * 20 : 20 + depth * 24;
   const childFolders = folder.children ?? [];

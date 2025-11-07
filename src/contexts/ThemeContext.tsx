@@ -58,9 +58,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.body?.setAttribute('data-theme', theme);
 
     const fallbackForTheme = (mode: Theme) =>
-      mode === 'light'
-        ? THEME_COLORS.LIGHT.SURFACE
-        : THEME_COLORS.DARK.SURFACE;
+      mode === 'light' ? THEME_COLORS.LIGHT.SURFACE : THEME_COLORS.DARK.SURFACE;
 
     const getChromeColorForTheme = (mode: Theme) => {
       const fallback = fallbackForTheme(mode);
