@@ -658,6 +658,6 @@ If you have questions about these guidelines, please:
 1. Check the [CHANGELOG.md](./CHANGELOG.md) for recent changes (2025-11-06)
 2. Check the [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed architecture info
 3. Check existing code for examples
-4. Open a discussion on GitHub
+4. Open a discussion on GitLab
 
 Thank you for contributing!

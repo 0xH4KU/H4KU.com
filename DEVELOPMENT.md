@@ -601,7 +601,7 @@ Runs a local server to preview the production build.
 
 **Automatic Deployment:**
 
-1. Push to GitHub
+1. Push to GitLab
 2. Cloudflare Pages automatically builds and deploys
 
 **Build Settings:**
