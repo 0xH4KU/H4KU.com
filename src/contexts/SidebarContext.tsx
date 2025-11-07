@@ -34,7 +34,9 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
       return;
     }
 
-    const mediaQuery = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
+    const mediaQuery = window.matchMedia(
+      `(min-width: ${DESKTOP_BREAKPOINT}px)`
+    );
     setSidebarOpen(mediaQuery.matches);
 
     const handleChange = (event: MediaQueryListEvent) => {

@@ -73,7 +73,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const fallbackThemeColor = theme === 'light' ? '#f5f5f5' : '#1a1a1a';
     const rootStyles = window.getComputedStyle(document.documentElement);
     const chromeColor =
-      rootStyles.getPropertyValue('--color-chrome').trim() || fallbackThemeColor;
+      rootStyles.getPropertyValue('--color-chrome').trim() ||
+      fallbackThemeColor;
 
     const metaThemeColor = ensureMeta();
     metaThemeColor.setAttribute('content', chromeColor);

@@ -53,11 +53,7 @@ const AppContent: React.FC = () => {
         }`}
       >
         <Sidebar />
-        <div
-          id="main-content"
-          className={styles['content-area']}
-          role="main"
-        >
+        <div id="main-content" className={styles['content-area']} role="main">
           <ContentView />
         </div>
       </div>
