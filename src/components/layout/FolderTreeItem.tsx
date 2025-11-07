@@ -63,6 +63,7 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
     typeof window !== 'undefined' && window.innerWidth > 768;
   const iconSize = isDesktop ? 16 : 18;
   const indent = isDesktop ? 18 + depth * 20 : 20 + depth * 24;
+  const childFolders = folder.children ?? [];
 
   return (
     <>
@@ -99,7 +100,7 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
       </Tooltip>
       {hasChildren && isExpanded && (
         <>
-          {folder.children!.map(child => (
+          {childFolders.map(child => (
             <FolderTreeItem
               key={child.id}
               folder={child}

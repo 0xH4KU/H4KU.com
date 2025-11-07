@@ -63,7 +63,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ segments, onSelect }) => {
 
   return (
     <div className={styles.breadcrumb}>
-      {visibleSegments.map((item, idx) => {
+      {visibleSegments.map(item => {
         if (item === 'ellipsis') {
           return (
             <React.Fragment key="ellipsis">

@@ -126,26 +126,32 @@ const Sidebar: React.FC = () => {
     });
   }, [activeSegments, expandFolder, expandedFolders, folderIdSet]);
 
-  const handleNavigate = (item: SidebarEntry) => {
-    navigateTo(item);
-    if (isMobile) {
-      closeSidebar();
-    }
-  };
+  const handleNavigate = useCallback(
+    (item: SidebarEntry) => {
+      navigateTo(item);
+      if (isMobile) {
+        closeSidebar();
+      }
+    },
+    [navigateTo, isMobile, closeSidebar]
+  );
 
-  const handleSearchResultSelect = (result: SearchResult) => {
-    if (result.type === 'folder') {
-      navigateTo(result.folder, result.path);
-    } else if (result.type === 'page') {
-      navigateTo(result.page);
-    } else if (result.type === 'work') {
-      const gallery = result.folder.items || [];
-      openLightbox(result.work, gallery);
-    }
-    if (isMobile) {
-      closeSidebar();
-    }
-  };
+  const handleSearchResultSelect = useCallback(
+    (result: SearchResult) => {
+      if (result.type === 'folder') {
+        navigateTo(result.folder, result.path);
+      } else if (result.type === 'page') {
+        navigateTo(result.page);
+      } else if (result.type === 'work') {
+        const gallery = result.folder.items || [];
+        openLightbox(result.work, gallery);
+      }
+      if (isMobile) {
+        closeSidebar();
+      }
+    },
+    [navigateTo, openLightbox, isMobile, closeSidebar]
+  );
 
   const handleDragStart = () => {
     startDrag();
