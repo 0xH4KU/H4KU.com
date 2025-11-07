@@ -32,6 +32,12 @@ export default defineConfig({
         '/page/about',
         '/page/contact',
       ],
+      robots: [
+        {
+          userAgent: '*',
+          allow: '/',
+        },
+      ],
     }),
   ],
   resolve: {
