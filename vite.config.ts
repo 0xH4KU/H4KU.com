@@ -2,7 +2,8 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 // import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
-import sitemap from 'vite-plugin-sitemap';
+// Temporarily disable sitemap plugin due to robots.txt file access issues in CF Pages
+// import sitemap from 'vite-plugin-sitemap';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -22,23 +23,24 @@ export default defineConfig({
     //     quality: 85,
     //   },
     // }),
-    sitemap({
-      hostname: 'https://lum.bio',
-      dynamicRoutes: [
-        '/',
-        '/folder/2024',
-        '/folder/2025',
-        '/folder/featured',
-        '/page/about',
-        '/page/contact',
-      ],
-      robots: [
-        {
-          userAgent: '*',
-          allow: '/',
-        },
-      ],
-    }),
+    // Temporarily disabled due to CF Pages build issues
+    // sitemap({
+    //   hostname: 'https://lum.bio',
+    //   dynamicRoutes: [
+    //     '/',
+    //     '/folder/2024',
+    //     '/folder/2025',
+    //     '/folder/featured',
+    //     '/page/about',
+    //     '/page/contact',
+    //   ],
+    //   robots: [
+    //     {
+    //       userAgent: '*',
+    //       allow: '/',
+    //     },
+    //   ],
+    // }),
   ],
   resolve: {
     alias: {
