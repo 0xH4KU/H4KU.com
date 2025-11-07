@@ -20,7 +20,6 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
-src/config/emailjs.ts
 
 # Private documentation (setup guides with sensitive info)
 EmailJS*.md

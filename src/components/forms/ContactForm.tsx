@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import emailjs from '@emailjs/browser';
-import { EMAILJS_CONFIG } from '@/config/emailjs';
+import { EMAILJS_CONFIG, isEmailJSConfigured } from '@/config/emailjs';
 import styles from './ContactForm.module.css';
 
 interface FormData {
@@ -85,12 +85,20 @@ export function ContactForm() {
       return;
     }
 
+    // Check if EmailJS is configured
+    if (!isEmailJSConfigured()) {
+      setStatus({
+        type: 'error',
+        message: 'Email service is not configured. Please contact me directly at hi@lum.bio',
+      });
+      return;
+    }
+
     setStatus({ type: 'loading' });
     setLastSubmitTime(now); // 記錄提交時間
 
     try {
-      // EmailJS credentials from config file
-      // See EmailJS設置指南.md for setup instructions
+      // EmailJS credentials from environment variables
       await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
