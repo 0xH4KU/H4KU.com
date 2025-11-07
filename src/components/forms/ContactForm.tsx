@@ -38,7 +38,7 @@ export function ContactForm() {
       // 假裝成功，但不實際發送
       setStatus({
         type: 'success',
-        message: 'Message sent successfully! I\'ll get back to you soon.',
+        message: "Message sent successfully! I'll get back to you soon.",
       });
       setFormData({ name: '', email: '', message: '' });
       return;
@@ -50,7 +50,8 @@ export function ContactForm() {
     if (now - lastSubmitTime < 60000) {
       setStatus({
         type: 'error',
-        message: 'Please wait a moment before sending another message (1 minute cooldown)',
+        message:
+          'Please wait a moment before sending another message (1 minute cooldown)',
       });
       return;
     }
@@ -89,7 +90,8 @@ export function ContactForm() {
     if (!isEmailJSConfigured()) {
       setStatus({
         type: 'error',
-        message: 'Email service is not configured. Please contact me directly at hi@lum.bio',
+        message:
+          'Email service is not configured. Please contact me directly at hi@lum.bio',
       });
       return;
     }
@@ -112,7 +114,7 @@ export function ContactForm() {
 
       setStatus({
         type: 'success',
-        message: 'Message sent successfully! I\'ll get back to you soon.',
+        message: "Message sent successfully! I'll get back to you soon.",
       });
 
       // Reset form
@@ -121,7 +123,8 @@ export function ContactForm() {
       console.error('EmailJS Error:', error);
       setStatus({
         type: 'error',
-        message: 'Failed to send message. Please try again or email directly at hi@lum.bio',
+        message:
+          'Failed to send message. Please try again or email directly at hi@lum.bio',
       });
     }
   };
@@ -129,7 +132,7 @@ export function ContactForm() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -205,7 +208,7 @@ export function ContactForm() {
             id="website"
             name="website"
             value={honeypot}
-            onChange={(e) => setHoneypot(e.target.value)}
+            onChange={e => setHoneypot(e.target.value)}
             tabIndex={-1}
             autoComplete="off"
           />

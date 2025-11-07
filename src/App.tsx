@@ -13,7 +13,9 @@ import { SearchProvider } from '@/contexts/SearchContext';
 import styles from './App.module.css';
 
 // Lazy load heavy components
-const Lightbox = lazy(() => import('@/components').then(module => ({ default: module.Lightbox })));
+const Lightbox = lazy(() =>
+  import('@/components').then(module => ({ default: module.Lightbox }))
+);
 
 function App() {
   return (

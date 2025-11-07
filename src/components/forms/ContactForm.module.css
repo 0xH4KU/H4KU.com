@@ -17,7 +17,8 @@
 }
 
 .label {
-  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+  font-family:
+    'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
     'Droid Sans Mono', monospace;
   font-size: 14px;
   line-height: 1.4;
@@ -26,7 +27,8 @@
 
 .input,
 .textarea {
-  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+  font-family:
+    'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
     'Droid Sans Mono', monospace;
   font-size: 14px;
   padding: 8px 12px;
@@ -55,7 +57,8 @@
 }
 
 .button {
-  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+  font-family:
+    'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
     'Droid Sans Mono', monospace;
   font-size: 14px;
   padding: 12px 24px;
@@ -83,7 +86,8 @@
 }
 
 .message {
-  font-family: 'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
+  font-family:
+    'ProFont', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
     'Droid Sans Mono', monospace;
   font-size: 14px;
   padding: 12px;

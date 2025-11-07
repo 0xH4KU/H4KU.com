@@ -14,9 +14,14 @@ interface LazyImageProps {
   placeholder?: string;
 }
 
-export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) {
+export function LazyImage({
+  src,
+  alt,
+  className,
+  placeholder,
+}: LazyImageProps) {
   const [imageSrc, setImageSrc] = useState<string>(
-    placeholder ?? TRANSPARENT_PLACEHOLDER,
+    placeholder ?? TRANSPARENT_PLACEHOLDER
   );
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -40,8 +45,7 @@ export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) 
     previousSrcRef.current = src;
 
     const node = imgRef.current;
-    const nextPlaceholder =
-      placeholderRef.current ?? TRANSPARENT_PLACEHOLDER;
+    const nextPlaceholder = placeholderRef.current ?? TRANSPARENT_PLACEHOLDER;
 
     setIsLoaded(false);
     setHasError(false);
@@ -68,7 +72,7 @@ export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) 
       {
         rootMargin: '150px',
         threshold: 0.01,
-      },
+      }
     );
 
     // Use requestAnimationFrame to ensure element is rendered before observing
