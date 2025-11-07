@@ -57,13 +57,25 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       // Search work items within folder
       if (flatFolder.folder.items) {
         flatFolder.folder.items.forEach(workItem => {
-          const matchesFilename = workItem.filename.toLowerCase().includes(query);
+          const matchesFilename = workItem.filename
+            .toLowerCase()
+            .includes(query);
           const matchesTitle = workItem.title?.toLowerCase().includes(query);
-          const matchesDescription = workItem.description?.toLowerCase().includes(query);
-          const matchesTags = workItem.tags?.some(tag => tag.toLowerCase().includes(query));
+          const matchesDescription = workItem.description
+            ?.toLowerCase()
+            .includes(query);
+          const matchesTags = workItem.tags?.some(tag =>
+            tag.toLowerCase().includes(query)
+          );
           const matchesClient = workItem.client?.toLowerCase().includes(query);
 
-          if (matchesFilename || matchesTitle || matchesDescription || matchesTags || matchesClient) {
+          if (
+            matchesFilename ||
+            matchesTitle ||
+            matchesDescription ||
+            matchesTags ||
+            matchesClient
+          ) {
             results.push({
               type: 'work',
               id: workItem.id,

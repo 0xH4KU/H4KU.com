@@ -1,33 +1,32 @@
 import { MockData } from '@/types';
 
-
 export const mockData: MockData = {
   folders: [
-  {
-    "id": "featured",
-    "name": "featured",
-    "type": "folder",
-    "children": [
-      {
-        "id": "featured-2025",
-        "name": "2025",
-        "type": "folder"
-      }
-    ]
-  },
-  {
-    "id": "sketches",
-    "name": "sketches",
-    "type": "folder",
-    "children": [
-      {
-        "id": "sketches-2025",
-        "name": "2025",
-        "type": "folder"
-      }
-    ]
-  }
-],
+    {
+      id: 'featured',
+      name: 'featured',
+      type: 'folder',
+      children: [
+        {
+          id: 'featured-2025',
+          name: '2025',
+          type: 'folder',
+        },
+      ],
+    },
+    {
+      id: 'sketches',
+      name: 'sketches',
+      type: 'folder',
+      children: [
+        {
+          id: 'sketches-2025',
+          name: '2025',
+          type: 'folder',
+        },
+      ],
+    },
+  ],
   pages: [
     {
       id: 'about',

@@ -46,7 +46,10 @@ const ContentView: React.FC = () => {
   const itemVariants = useMemo(
     () =>
       ({
-        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 10 },
+        hidden: {
+          opacity: prefersReducedMotion ? 1 : 0,
+          y: prefersReducedMotion ? 0 : 10,
+        },
         visible: {
           opacity: 1,
           y: 0,
@@ -69,7 +72,10 @@ const ContentView: React.FC = () => {
   const pageVariants = useMemo(
     () =>
       ({
-        initial: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 10 },
+        initial: {
+          opacity: prefersReducedMotion ? 1 : 0,
+          y: prefersReducedMotion ? 0 : 10,
+        },
         animate: {
           opacity: 1,
           y: 0,
@@ -132,7 +138,9 @@ const ContentView: React.FC = () => {
             <motion.button
               onClick={handleCloseTextView}
               className={styles['close-btn']}
-              whileHover={prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }}
+              whileHover={
+                prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }
+              }
               whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
             >
               ×
@@ -316,11 +324,7 @@ const ContentView: React.FC = () => {
   };
 
   // 統一返回，包裹 AnimatePresence
-  return (
-    <AnimatePresence mode="wait">
-      {renderContent()}
-    </AnimatePresence>
-  );
+  return <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>;
 };
 
 export default ContentView;

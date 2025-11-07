@@ -98,7 +98,9 @@ const Lightbox: React.FC = () => {
       <div className={styles['lightbox-info']}>
         <div className={styles['lightbox-metadata']}>
           {lightboxImage.title && (
-            <div className={styles['metadata-title']}>{lightboxImage.title}</div>
+            <div className={styles['metadata-title']}>
+              {lightboxImage.title}
+            </div>
           )}
           <div className={styles['metadata-basic']}>
             <span>{lightboxImage.filename}</span>
@@ -130,7 +132,7 @@ const Lightbox: React.FC = () => {
           )}
           {lightboxImage.tags && lightboxImage.tags.length > 0 && (
             <div className={styles['metadata-tags']}>
-              {lightboxImage.tags.map((tag) => (
+              {lightboxImage.tags.map(tag => (
                 <span key={tag} className={styles['tag']}>
                   #{tag}
                 </span>

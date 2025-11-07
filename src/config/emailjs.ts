@@ -12,7 +12,7 @@ export const EMAILJS_CONFIG = {
 export const isEmailJSConfigured = () => {
   return Boolean(
     EMAILJS_CONFIG.SERVICE_ID &&
-    EMAILJS_CONFIG.TEMPLATE_ID &&
-    EMAILJS_CONFIG.PUBLIC_KEY
+      EMAILJS_CONFIG.TEMPLATE_ID &&
+      EMAILJS_CONFIG.PUBLIC_KEY
   );
 };
