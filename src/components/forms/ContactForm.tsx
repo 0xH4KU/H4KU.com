@@ -3,12 +3,11 @@ import emailjs from '@emailjs/browser';
 import { EMAILJS_CONFIG } from '@/config/emailjs';
 import styles from './ContactForm.module.css';
 
-const EMAILJS_IS_CONFIGURED =
-  Boolean(
-    EMAILJS_CONFIG.SERVICE_ID &&
-      EMAILJS_CONFIG.TEMPLATE_ID &&
-      EMAILJS_CONFIG.PUBLIC_KEY
-  );
+const EMAILJS_IS_CONFIGURED = Boolean(
+  EMAILJS_CONFIG.SERVICE_ID &&
+    EMAILJS_CONFIG.TEMPLATE_ID &&
+    EMAILJS_CONFIG.PUBLIC_KEY
+);
 
 interface FormData {
   name: string;
