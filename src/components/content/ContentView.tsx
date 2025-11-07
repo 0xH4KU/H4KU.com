@@ -20,7 +20,10 @@ const ContentView: React.FC = () => {
   const prefersReducedMotion = useReducedMotion();
 
   // 動畫變體配置 - 簡潔直接的動畫
-  const defaultEase: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
+  const defaultEase = useMemo<[number, number, number, number]>(
+    () => [0.25, 0.1, 0.25, 1],
+    []
+  );
 
   const containerVariants = useMemo(
     () =>

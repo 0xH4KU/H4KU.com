@@ -31,8 +31,42 @@
     <meta name="twitter:creator" content="@lummuu_" />
 
     <!-- Theme Color -->
-    <meta name="theme-color" content="#00ffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#00ffff" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" id="theme-color-meta" content="#f5f5f5" />
+
+    <script>
+      (function () {
+        const storageKey = 'lum.bio.theme';
+        let storedTheme = null;
+
+        try {
+          storedTheme = window.localStorage.getItem(storageKey);
+        } catch (error) {
+          // Access to localStorage might fail (private mode, etc.)
+        }
+
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        const resolvedTheme =
+          storedTheme === 'light' || storedTheme === 'dark'
+            ? storedTheme
+            : systemPrefersDark.matches
+              ? 'dark'
+              : 'light';
+
+        document.documentElement.setAttribute('data-theme', resolvedTheme);
+        document.documentElement.style.colorScheme = resolvedTheme;
+
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          const fallbackThemeColor =
+            resolvedTheme === 'light' ? '#f5f5f5' : '#1a1a1a';
+          const rootStyles = window.getComputedStyle(document.documentElement);
+          const chromeColor =
+            rootStyles.getPropertyValue('--color-chrome').trim() ||
+            fallbackThemeColor;
+          metaThemeColor.setAttribute('content', chromeColor);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

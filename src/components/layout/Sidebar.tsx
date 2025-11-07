@@ -2,7 +2,9 @@ import React from 'react';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useSidebar } from '@/hooks/useSidebar';
+import { useWindowSize } from '@/hooks/useWindowSize';
 import { mockData } from '@/data/mockData';
 import { Folder, Page } from '@/types';
 import styles from './Sidebar.module.css';
@@ -10,13 +12,18 @@ import styles from './Sidebar.module.css';
 type SidebarEntry = Folder | Page;
 
 const Sidebar: React.FC = () => {
-  const collapsed = false; // Can be moved to Context if needed
+  const { isSidebarOpen, closeSidebar } = useSidebarContext();
   const { activePath, navigateTo } = useNavigation();
   const { sidebarWidth, startDrag } = useSidebar();
+  const { width } = useWindowSize();
   const { folders, pages, socials } = mockData;
+  const isMobile = width !== undefined && width < 768;
 
   const handleNavigate = (item: SidebarEntry) => {
     navigateTo(item);
+    if (isMobile) {
+      closeSidebar();
+    }
   };
 
   const handleDragStart = () => {
@@ -25,8 +32,10 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-      className={styles.sidebar}
-      style={{ width: collapsed ? 0 : sidebarWidth }}
+      id="app-sidebar"
+      className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
+      style={{ width: !isSidebarOpen ? 0 : sidebarWidth }}
+      aria-hidden={!isSidebarOpen}
     >
       <div className={styles['sidebar-header']}>LUM.BIO</div>
 

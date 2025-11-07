@@ -1,8 +1,9 @@
 import React from 'react';
-import { ChevronLeft, Moon, Sun, Search } from 'lucide-react';
+import { ChevronLeft, Moon, Sun, Search, Menu } from 'lucide-react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSearch } from '@/contexts/SearchContext';
+import { useSidebarContext } from '@/contexts/SidebarContext';
 import styles from './TopBar.module.css';
 
 const TopBar: React.FC = () => {
@@ -14,6 +15,7 @@ const TopBar: React.FC = () => {
   } = useNavigation();
   const { theme, toggleTheme } = useTheme();
   const { searchOpen, openSearch } = useSearch();
+  const { isSidebarOpen, toggleSidebar } = useSidebarContext();
 
   const canGoBack = currentPath.length > 1;
 
@@ -37,6 +39,15 @@ const TopBar: React.FC = () => {
   return (
     <div className={styles['top-bar']}>
       <div className={styles['nav-buttons']}>
+        <button
+          className={`${styles['nav-btn']} ${styles['sidebar-toggle']}`}
+          onClick={toggleSidebar}
+          aria-expanded={isSidebarOpen}
+          aria-controls="app-sidebar"
+          aria-label={`${isSidebarOpen ? 'Close' : 'Open'} sidebar`}
+        >
+          <Menu size={16} />
+        </button>
         <button
           className={styles['nav-btn']}
           onClick={handleBack}
