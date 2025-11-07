@@ -66,7 +66,7 @@ const AppContent: React.FC = () => {
           className={styles['content-area']}
           role="main"
           style={{
-            marginLeft: isMobile ? 0 : (isSidebarOpen ? sidebarWidth : 0),
+            marginLeft: isMobile ? 0 : isSidebarOpen ? sidebarWidth : 0,
           }}
         >
           <ContentView />

@@ -203,7 +203,10 @@ const Sidebar: React.FC = () => {
   // Check if all folders are expanded
   const allFoldersExpanded = useMemo(() => {
     const allFolderIds = allFolders.map(f => f.folder.id);
-    return allFolderIds.length > 0 && allFolderIds.every(id => expandedFolders.has(id));
+    return (
+      allFolderIds.length > 0 &&
+      allFolderIds.every(id => expandedFolders.has(id))
+    );
   }, [allFolders, expandedFolders]);
 
   // Toggle between expand all and collapse all
@@ -421,13 +424,19 @@ const Sidebar: React.FC = () => {
         </button>
         <div className={styles['header-controls']}>
           <Tooltip
-            content={allFoldersExpanded ? "Collapse all folders" : "Expand all folders"}
+            content={
+              allFoldersExpanded ? 'Collapse all folders' : 'Expand all folders'
+            }
             position="bottom"
           >
             <button
               className={`${styles['control-button']} ${allFoldersExpanded ? styles['control-button--active'] : ''}`}
               onClick={handleToggleAll}
-              aria-label={allFoldersExpanded ? "Collapse all folders" : "Expand all folders"}
+              aria-label={
+                allFoldersExpanded
+                  ? 'Collapse all folders'
+                  : 'Expand all folders'
+              }
             >
               {allFoldersExpanded ? (
                 <ChevronsUp size={16} />
