@@ -15,6 +15,10 @@
   gap: 8px;
 }
 
+.sidebar-toggle {
+  display: none;
+}
+
 .nav-btn,
 .theme-btn,
 .search-btn {
@@ -50,7 +54,7 @@
 }
 
 .breadcrumb-sep {
-  color: #999;
+  color: var(--color-text-dim);
 }
 
 .breadcrumb-link {
@@ -69,4 +73,10 @@
 .breadcrumb-link[disabled] {
   cursor: default;
   opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: flex;
+  }
 }

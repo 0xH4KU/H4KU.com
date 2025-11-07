@@ -29,6 +29,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Detect system theme preference
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const updateSystemTheme = () => {
       setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
@@ -44,10 +48,39 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = storedTheme || systemTheme;
   const hasStoredTheme = storedTheme !== null;
 
-  // Apply theme to document
+  // Apply theme to document and meta tag
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
     document.documentElement.setAttribute('data-theme', theme);
-    document.body.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
+    document.body?.setAttribute('data-theme', theme);
+
+    const ensureMeta = () => {
+      let meta = document.querySelector<HTMLMetaElement>(
+        'meta[name="theme-color"]'
+      );
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', 'theme-color');
+        document.head.appendChild(meta);
+      }
+      return meta;
+    };
+
+    const fallbackThemeColor = theme === 'light' ? '#f5f5f5' : '#1a1a1a';
+    const rootStyles = window.getComputedStyle(document.documentElement);
+    const chromeColor =
+      rootStyles.getPropertyValue('--color-chrome').trim() || fallbackThemeColor;
+
+    const metaThemeColor = ensureMeta();
+    metaThemeColor.setAttribute('content', chromeColor);
+
+    // Safari only re-evaluates the color when the node is replaced.
+    const refreshedMeta = metaThemeColor.cloneNode(true) as HTMLMetaElement;
+    metaThemeColor.parentNode?.replaceChild(refreshedMeta, metaThemeColor);
   }, [theme]);
 
   const toggleTheme = () => {

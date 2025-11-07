@@ -5,10 +5,14 @@
   display: flex;
   flex-direction: column;
   background: var(--color-surface);
+  transition:
+    width var(--transition-normal) ease,
+    margin-left var(--transition-normal) ease;
+  overflow: hidden;
 }
 
 .sidebar.collapsed {
-  margin-left: -240px;
+  border-right: none;
 }
 
 .sidebar-header {
@@ -128,14 +132,18 @@
 @media (max-width: 768px) {
   .sidebar {
     position: absolute;
+    top: 0;
     left: 0;
-    top: 48px;
-    bottom: 32px;
-    z-index: 100;
-    margin-left: -240px;
+    height: 100%;
+    z-index: 1000;
+    border-right: 2px solid var(--color-border);
   }
 
-  .sidebar.open {
-    margin-left: 0;
+  .sidebar.collapsed {
+    width: 0 !important; /* Override inline style */
+  }
+
+  .resize-handle {
+    display: none;
   }
 }

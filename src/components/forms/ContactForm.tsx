@@ -40,7 +40,7 @@ export function ContactForm() {
     // 🛡️ Anti-spam Check 1: Honeypot（蜜罐檢查）
     // 如果隱藏欄位被填寫，說明是機器人
     if (honeypot) {
-      console.log('🤖 Bot detected via honeypot');
+      console.warn('🤖 Bot detected via honeypot');
       // 假裝成功，但不實際發送
       setStatus({
         type: 'success',
