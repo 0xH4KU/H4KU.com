@@ -1,0 +1,60 @@
+# GitLab CI/CD Configuration for Lum.bio Portfolio
+
+# Define stages
+stages:
+  - lint-test
+  - build
+
+# Use Node.js 20 Docker image
+image: node:20
+
+# Cache node_modules for faster builds
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+# Lint and Test Job
+lint-and-test:
+  stage: lint-test
+  script:
+    - npm ci
+    - npm run lint
+    - npm run type-check
+    - npm run format:check
+    - npm run test:run
+  # Environment variables from GitLab CI/CD settings
+  variables:
+    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
+    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
+    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Build Job
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm run sync-images
+    - npm run build
+  # Environment variables from GitLab CI/CD settings
+  variables:
+    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
+    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
+    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
+  # Save build artifacts
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 7 days
+  only:
+    - main
+    - develop
+    - merge_requests
+  needs:
+    - lint-and-test

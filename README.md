@@ -69,7 +69,7 @@ src/
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone <your-gitlab-repository-url>
 cd lum.bio
 ```
 
@@ -104,14 +104,14 @@ This project is configured for deployment on **Cloudflare Pages**.
 
 ### Deploy to Cloudflare Pages
 
-1. Push your code to GitHub
+1. Push your code to GitLab
 2. Go to [Cloudflare Pages](https://pages.cloudflare.com/)
-3. Create a new project and connect your GitHub repository
+3. Create a new project and connect your GitLab repository
 4. Use the following build settings:
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
    - **Root directory**: `/`
-   - **Environment variables**: None required
+   - **Environment variables**: Set EmailJS variables in Cloudflare Pages settings
 
 The site will automatically deploy on every push to the main branch.
 
@@ -144,4 +144,4 @@ All rights reserved.
 
 ## Contact
 
-For questions or feedback, please open an issue on GitHub.
+For questions or feedback, please open an issue on GitLab.

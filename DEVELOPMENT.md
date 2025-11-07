@@ -874,4 +874,4 @@ Selected search result highlighted with primary color.
 
 ## Questions?
 
-Check the [CONTRIBUTING.md](./CONTRIBUTING.md) or open a discussion on GitHub.
+Check the [CONTRIBUTING.md](./CONTRIBUTING.md) or open a discussion on GitLab.
