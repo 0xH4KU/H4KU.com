@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+const CROSSHAIR_CLASS = 'crosshair-active';
 
 const isTouchDevice = () => {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
@@ -7,17 +9,79 @@ const isTouchDevice = () => {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 };
 
+const getInitialPosition = () => {
+  if (typeof window === 'undefined') {
+    return { x: 0, y: 0 };
+  }
+  return {
+    x: Math.round(window.innerWidth / 2),
+    y: Math.round(window.innerHeight / 2),
+  };
+};
+
 export function useCrosshair() {
   const [showCrosshair, setShowCrosshair] = useState(() => !isTouchDevice());
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState(getInitialPosition);
+  const latestPointerRef = useRef(mousePos);
+  const showCrosshairRef = useRef(showCrosshair);
+
+  useEffect(() => {
+    showCrosshairRef.current = showCrosshair;
+    if (showCrosshair) {
+      setMousePos(latestPointerRef.current);
+    }
+  }, [showCrosshair]);
+
+  useEffect(() => {
+    latestPointerRef.current = mousePos;
+  }, [mousePos]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const target = document.body;
+    if (!target) {
+      return undefined;
+    }
+
+    if (showCrosshair) {
+      target.classList.add(CROSSHAIR_CLASS);
+    } else {
+      target.classList.remove(CROSSHAIR_CLASS);
+    }
+
+    return () => {
+      target.classList.remove(CROSSHAIR_CLASS);
+    };
+  }, [showCrosshair]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
+    let animationFrame: number | null = null;
+
     const handleMouseMove = (event: MouseEvent) => {
-      setMousePos({ x: event.clientX, y: event.clientY });
+      latestPointerRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+
+      if (!showCrosshairRef.current) {
+        return;
+      }
+
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
+
+      animationFrame = window.requestAnimationFrame(() => {
+        setMousePos(latestPointerRef.current);
+        animationFrame = null;
+      });
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -26,12 +90,15 @@ export function useCrosshair() {
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('keydown', handleKeyDown);
+      if (animationFrame !== null) {
+        cancelAnimationFrame(animationFrame);
+      }
     };
   }, []);
 

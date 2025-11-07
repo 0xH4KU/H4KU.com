@@ -21,7 +21,7 @@ const Lightbox = lazy(() =>
 );
 
 const AppContent: React.FC = () => {
-  const { isSidebarOpen, closeSidebar } = useSidebarContext();
+  const { isSidebarOpen, closeSidebar, sidebarWidth } = useSidebarContext();
   const { width } = useWindowSize();
   use100vh();
   const isMobile = width !== undefined && width < 768;
@@ -61,7 +61,14 @@ const AppContent: React.FC = () => {
             onClick={closeSidebar}
           />
         )}
-        <div id="main-content" className={styles['content-area']} role="main">
+        <div
+          id="main-content"
+          className={styles['content-area']}
+          role="main"
+          style={{
+            marginLeft: isMobile ? 0 : (isSidebarOpen ? sidebarWidth : 0),
+          }}
+        >
           <ContentView />
         </div>
       </div>

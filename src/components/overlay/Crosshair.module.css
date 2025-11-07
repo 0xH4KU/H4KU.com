@@ -10,7 +10,10 @@
   left: 0;
   right: 0;
   background: #689696;
-  opacity: 0.5;
+  opacity: 0.8;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 0 4px rgba(104, 150, 150, 0.5);
 }
 
 .crosshair-y {
@@ -18,7 +21,25 @@
   top: 0;
   bottom: 0;
   background: #689696;
-  opacity: 0.5;
+  opacity: 0.8;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 0 4px rgba(104, 150, 150, 0.5);
+}
+
+.crosshair-center {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #689696;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.5),
+    0 0 0 3px rgba(255, 255, 255, 0.3),
+    0 0 8px rgba(104, 150, 150, 0.8);
 }
 
 .crosshair-label {

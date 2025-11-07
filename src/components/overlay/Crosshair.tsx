@@ -2,6 +2,9 @@ import React from 'react';
 import { useCrosshair } from '@/hooks/useCrosshair';
 import styles from './Crosshair.module.css';
 
+const LINE_THICKNESS = 1;
+const LABEL_OFFSET = 12;
+
 const Crosshair: React.FC = () => {
   const { showCrosshair, mousePos } = useCrosshair();
 
@@ -10,20 +13,31 @@ const Crosshair: React.FC = () => {
   }
 
   const hasWindow = typeof window !== 'undefined';
-  const maxX = hasWindow ? window.innerWidth - 120 : mousePos.x + 12;
-  const maxY = hasWindow ? window.innerHeight - 40 : mousePos.y + 12;
-  const labelX = Math.min(mousePos.x + 12, maxX);
-  const labelY = Math.min(mousePos.y + 12, maxY);
+  const maxX = hasWindow ? window.innerWidth - 120 : mousePos.x + LABEL_OFFSET;
+  const maxY = hasWindow ? window.innerHeight - 40 : mousePos.y + LABEL_OFFSET;
+  const labelX = Math.min(mousePos.x + LABEL_OFFSET, maxX);
+  const labelY = Math.min(mousePos.y + LABEL_OFFSET, maxY);
 
   return (
     <div aria-hidden="true">
       <div
         className={styles['crosshair-x']}
-        style={{ transform: `translateY(${mousePos.y}px)` }}
+        style={{
+          transform: `translateY(${mousePos.y - LINE_THICKNESS / 2}px)`,
+        }}
       />
       <div
         className={styles['crosshair-y']}
-        style={{ transform: `translateX(${mousePos.x}px)` }}
+        style={{
+          transform: `translateX(${mousePos.x - LINE_THICKNESS / 2}px)`,
+        }}
+      />
+      <div
+        className={styles['crosshair-center']}
+        style={{
+          left: `${mousePos.x}px`,
+          top: `${mousePos.y}px`,
+        }}
       />
       <div
         className={styles['crosshair-label']}

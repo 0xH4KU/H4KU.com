@@ -105,6 +105,11 @@ body {
   overflow: hidden;
 }
 
+body.crosshair-active,
+body.crosshair-active * {
+  cursor: none !important;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;

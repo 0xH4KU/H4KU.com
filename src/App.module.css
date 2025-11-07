@@ -52,7 +52,8 @@
   z-index: 10;
   transition:
     transform var(--transition-normal),
-    filter var(--transition-normal);
+    filter var(--transition-normal),
+    margin-left var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-scrim {
