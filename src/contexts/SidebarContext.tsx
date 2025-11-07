@@ -23,6 +23,8 @@ interface SidebarContextType {
   collapseAll: () => void;
   pinnedItems: Set<string>;
   togglePin: (itemId: string) => void;
+  sidebarWidth: number;
+  setSidebarWidth: (width: number) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -38,6 +40,10 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(getInitialSidebarState);
+  const [sidebarWidth, setSidebarWidth] = useLocalStorage<number>(
+    STORAGE_KEYS.SIDEBAR_WIDTH,
+    SIDEBAR_CONFIG.DEFAULT_WIDTH
+  );
   const [expandedFolderIds, setExpandedFolderIds] = useLocalStorage<string[]>(
     STORAGE_KEYS.EXPANDED_FOLDERS,
     []
@@ -166,6 +172,8 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
         collapseAll,
         pinnedItems,
         togglePin,
+        sidebarWidth,
+        setSidebarWidth,
       }}
     >
       {children}

@@ -2,7 +2,6 @@ import React from 'react';
 import { ChevronRight, Pin } from 'lucide-react';
 import folderIcon from '@/assets/folder.gif';
 import { Folder } from '@/types';
-import { Tooltip } from './Tooltip';
 import styles from './Sidebar.module.css';
 
 interface FolderTreeItemProps {
@@ -66,37 +65,35 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
 
   return (
     <>
-      <Tooltip content={folder.name}>
-        <div
-          className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned ? styles['sidebar-item--pinned'] : ''}`}
-          style={{ paddingLeft: `${indent}px` }}
-          onClick={handleRowClick}
-          onContextMenu={handleContextMenu}
-          role="button"
-          tabIndex={0}
-          onKeyDown={handleKeyDown}
-        >
-          {hasChildren && (
-            <button
-              type="button"
-              className={`${styles['expand-icon']} ${isExpanded ? styles['expand-icon--expanded'] : ''}`}
-              aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${folder.name}`}
-              aria-expanded={isExpanded}
-              onClick={handleToggleClick}
-            >
-              <ChevronRight size={iconSize} />
-            </button>
-          )}
-          {!hasChildren && <span className={styles['expand-icon-spacer']} />}
-          <img
-            className={styles['sidebar-icon']}
-            src={folderIcon}
-            alt="Folder icon"
-          />
-          <span className={styles['folder-name']}>{folder.name}</span>
-          {isPinned && <Pin size={14} className={styles['pin-indicator']} />}
-        </div>
-      </Tooltip>
+      <div
+        className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned ? styles['sidebar-item--pinned'] : ''}`}
+        style={{ paddingLeft: `${indent}px` }}
+        onClick={handleRowClick}
+        onContextMenu={handleContextMenu}
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      >
+        {hasChildren && (
+          <button
+            type="button"
+            className={`${styles['expand-icon']} ${isExpanded ? styles['expand-icon--expanded'] : ''}`}
+            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${folder.name}`}
+            aria-expanded={isExpanded}
+            onClick={handleToggleClick}
+          >
+            <ChevronRight size={iconSize} />
+          </button>
+        )}
+        {!hasChildren && <span className={styles['expand-icon-spacer']} />}
+        <img
+          className={styles['sidebar-icon']}
+          src={folderIcon}
+          alt="Folder icon"
+        />
+        <span className={styles['folder-name']}>{folder.name}</span>
+        {isPinned && <Pin size={14} className={styles['pin-indicator']} />}
+      </div>
       {hasChildren && isExpanded && (
         <>
           {childFolders.map(child => (

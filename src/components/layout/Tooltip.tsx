@@ -5,15 +5,18 @@ interface TooltipProps {
   content: string;
   children: React.ReactElement;
   delay?: number;
+  position?: 'top' | 'bottom' | 'auto';
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({
   content,
   children,
-  delay = 500,
+  delay = 0,
+  position: positionProp = 'auto',
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
   const timeoutRef = useRef<number | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
@@ -23,9 +26,22 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
     timeoutRef.current = window.setTimeout(() => {
       const rect = target.getBoundingClientRect();
+
+      // Determine placement based on available space
+      let finalPlacement: 'top' | 'bottom' = 'top';
+
+      if (positionProp === 'auto') {
+        const spaceAbove = rect.top;
+        // If less than 60px space above, show below
+        finalPlacement = spaceAbove < 60 ? 'bottom' : 'top';
+      } else {
+        finalPlacement = positionProp;
+      }
+
+      setPlacement(finalPlacement);
       setPosition({
         x: rect.left + rect.width / 2,
-        y: rect.top - 8,
+        y: finalPlacement === 'bottom' ? rect.bottom + 8 : rect.top - 8,
       });
       setIsVisible(true);
     }, delay);
@@ -54,7 +70,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       })}
       {isVisible && (
         <div
-          className={styles.tooltip}
+          className={`${styles.tooltip} ${placement === 'bottom' ? styles['tooltip--bottom'] : ''}`}
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
