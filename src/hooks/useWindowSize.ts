@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { DEBOUNCE_DELAYS } from '@/config/constants';
 
 interface WindowSize {
   width: number | undefined;
@@ -16,17 +17,38 @@ export function useWindowSize(): WindowSize {
       return;
     }
 
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     function handleResize() {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
+      // Clear existing timeout
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+
+      // Debounce the resize handler
+      timeoutId = setTimeout(() => {
+        setWindowSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+        timeoutId = null;
+      }, DEBOUNCE_DELAYS.RESIZE);
     }
 
-    window.addEventListener('resize', handleResize);
-    handleResize();
+    // Set initial size immediately (no debounce)
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
 
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   return windowSize;

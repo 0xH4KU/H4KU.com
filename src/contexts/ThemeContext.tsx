@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { STORAGE_KEYS, THEME_COLORS } from '@/config/constants';
 
 type Theme = 'light' | 'dark';
 
@@ -18,11 +19,9 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const THEME_STORAGE_KEY = 'lum.bio.theme';
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [storedTheme, setStoredTheme] = useLocalStorage<Theme | null>(
-    THEME_STORAGE_KEY,
+    STORAGE_KEYS.THEME,
     null
   );
   const [systemTheme, setSystemTheme] = useState<Theme>('light');
@@ -58,30 +57,73 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.colorScheme = theme;
     document.body?.setAttribute('data-theme', theme);
 
-    const ensureMeta = () => {
-      let meta = document.querySelector<HTMLMetaElement>(
-        'meta[name="theme-color"]'
-      );
+    const fallbackForTheme = (mode: Theme) =>
+      mode === 'light'
+        ? THEME_COLORS.LIGHT.SURFACE
+        : THEME_COLORS.DARK.SURFACE;
+
+    const getChromeColorForTheme = (mode: Theme) => {
+      const fallback = fallbackForTheme(mode);
+
+      if (mode === theme) {
+        const rootStyles = window.getComputedStyle(document.documentElement);
+        return rootStyles.getPropertyValue('--color-chrome').trim() || fallback;
+      }
+
+      const probe = document.createElement('div');
+      probe.setAttribute('data-theme', mode);
+      probe.style.position = 'absolute';
+      probe.style.pointerEvents = 'none';
+      probe.style.opacity = '0';
+      probe.style.height = '0';
+      probe.style.width = '0';
+      const parent = document.body ?? document.documentElement;
+      parent.appendChild(probe);
+
+      try {
+        const computed = window
+          .getComputedStyle(probe)
+          .getPropertyValue('--color-chrome')
+          .trim();
+        return computed || fallback;
+      } finally {
+        probe.remove();
+      }
+    };
+
+    const ensureThemeMeta = (mode: Theme) => {
+      const selector =
+        mode === 'light'
+          ? 'meta[name="theme-color"][media*="light"]'
+          : 'meta[name="theme-color"][media*="dark"]';
+      let meta = document.querySelector<HTMLMetaElement>(selector);
       if (!meta) {
         meta = document.createElement('meta');
         meta.setAttribute('name', 'theme-color');
+        meta.setAttribute(
+          'media',
+          mode === 'light'
+            ? '(prefers-color-scheme: light)'
+            : '(prefers-color-scheme: dark)'
+        );
         document.head.appendChild(meta);
       }
       return meta;
     };
 
-    const fallbackThemeColor = theme === 'light' ? '#f5f5f5' : '#1a1a1a';
-    const rootStyles = window.getComputedStyle(document.documentElement);
-    const chromeColor =
-      rootStyles.getPropertyValue('--color-chrome').trim() ||
-      fallbackThemeColor;
+    const lightColor = getChromeColorForTheme('light');
+    const darkColor = getChromeColorForTheme('dark');
 
-    const metaThemeColor = ensureMeta();
-    metaThemeColor.setAttribute('content', chromeColor);
+    const metaLight = ensureThemeMeta('light');
+    const metaDark = ensureThemeMeta('dark');
 
-    // Safari only re-evaluates the color when the node is replaced.
-    const refreshedMeta = metaThemeColor.cloneNode(true) as HTMLMetaElement;
-    metaThemeColor.parentNode?.replaceChild(refreshedMeta, metaThemeColor);
+    metaLight.setAttribute('content', lightColor);
+    const refreshedLight = metaLight.cloneNode(true) as HTMLMetaElement;
+    metaLight.parentNode?.replaceChild(refreshedLight, metaLight);
+
+    metaDark.setAttribute('content', darkColor);
+    const refreshedDark = metaDark.cloneNode(true) as HTMLMetaElement;
+    metaDark.parentNode?.replaceChild(refreshedDark, metaDark);
   }, [theme]);
 
   const toggleTheme = () => {

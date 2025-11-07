@@ -50,16 +50,22 @@
   padding: 32px;
   position: relative;
   z-index: 10;
+  transition:
+    transform var(--transition-normal),
+    filter var(--transition-normal);
 }
 
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+.sidebar-scrim {
+  display: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
 }
 
 @media (max-width: 768px) {
@@ -68,7 +74,19 @@
   }
 
   .main-layout.sidebar-open .content-area {
-    filter: blur(4px);
-    pointer-events: none;
+    transform: translateX(12px);
+  }
+
+  .main-layout.sidebar-open .sidebar-scrim {
+    display: block;
+    background: linear-gradient(
+      115deg,
+      rgba(5, 10, 15, 0.65) 0%,
+      rgba(5, 10, 15, 0.35) 55%,
+      rgba(5, 10, 15, 0.1) 100%
+    );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 15;
   }
 }

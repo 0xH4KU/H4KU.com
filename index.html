@@ -31,7 +31,8 @@
     <meta name="twitter:creator" content="@lummuu_" />
 
     <!-- Theme Color -->
-    <meta name="theme-color" id="theme-color-meta" content="#f5f5f5" />
+    <meta name="theme-color" id="theme-color-meta" content="#e8e8e8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
 
     <script>
       (function () {
@@ -55,15 +56,21 @@
         document.documentElement.setAttribute('data-theme', resolvedTheme);
         document.documentElement.style.colorScheme = resolvedTheme;
 
-        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        if (metaThemeColor) {
-          const fallbackThemeColor =
-            resolvedTheme === 'light' ? '#f5f5f5' : '#1a1a1a';
+        // Update both theme-color meta tags
+        const metaLight = document.querySelector('meta[name="theme-color"][media*="light"]');
+        const metaDark = document.querySelector('meta[name="theme-color"][media*="dark"]');
+
+        if (metaLight || metaDark) {
+          const fallbackLight = '#e8e8e8';
+          const fallbackDark = '#0f0f0f';
           const rootStyles = window.getComputedStyle(document.documentElement);
-          const chromeColor =
-            rootStyles.getPropertyValue('--color-chrome').trim() ||
-            fallbackThemeColor;
-          metaThemeColor.setAttribute('content', chromeColor);
+          const chromeColor = rootStyles.getPropertyValue('--color-chrome').trim();
+
+          const lightColor = chromeColor || fallbackLight;
+          const darkColor = chromeColor || fallbackDark;
+
+          if (metaLight) metaLight.setAttribute('content', lightColor);
+          if (metaDark) metaDark.setAttribute('content', darkColor);
         }
       })();
     </script>
