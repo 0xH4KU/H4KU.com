@@ -77,7 +77,7 @@
   --color-crosshair-text: #1a1a1a;
   --grid-line: rgba(0, 0, 0, 0.04);
   --grid-bold: rgba(0, 0, 0, 0.08);
-  --color-chrome: var(--color-background);
+  --color-chrome: var(--color-surface);
 }
 
 /* Dark Theme Variables */
@@ -95,7 +95,7 @@
   --color-crosshair-text: #689696;
   --grid-line: rgba(255, 255, 255, 0.04);
   --grid-bold: rgba(255, 255, 255, 0.08);
-  --color-chrome: var(--color-background);
+  --color-chrome: var(--color-surface);
 }
 
 /* Body Styles */

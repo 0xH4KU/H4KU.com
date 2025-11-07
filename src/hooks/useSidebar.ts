@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
 
-const SIDEBAR_MIN_WIDTH = 180;
-const SIDEBAR_MAX_WIDTH = 320;
-const DEFAULT_WIDTH = 240;
-
-export function useSidebar(initialWidth = DEFAULT_WIDTH) {
-  const [storedWidth, setStoredWidth] = useLocalStorage(
-    'sidebar-width',
+export function useSidebar(
+  initialWidth = SIDEBAR_CONFIG.DEFAULT_WIDTH
+) {
+  const [storedWidth, setStoredWidth] = useLocalStorage<number>(
+    STORAGE_KEYS.SIDEBAR_WIDTH,
     initialWidth
   );
-  const [sidebarWidth, setSidebarWidth] = useState(storedWidth);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(storedWidth);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
@@ -20,8 +19,8 @@ export function useSidebar(initialWidth = DEFAULT_WIDTH) {
 
     const handleMouseMove = (event: MouseEvent) => {
       const clamped = Math.min(
-        Math.max(event.clientX, SIDEBAR_MIN_WIDTH),
-        SIDEBAR_MAX_WIDTH
+        Math.max(event.clientX, SIDEBAR_CONFIG.MIN_WIDTH),
+        SIDEBAR_CONFIG.MAX_WIDTH
       );
       setSidebarWidth(clamped);
     };

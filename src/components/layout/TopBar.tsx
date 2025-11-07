@@ -4,6 +4,7 @@ import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSearch } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
+import Breadcrumb from './Breadcrumb';
 import styles from './TopBar.module.css';
 
 const TopBar: React.FC = () => {
@@ -58,34 +59,7 @@ const TopBar: React.FC = () => {
         </button>
       </div>
 
-      <div className={styles.breadcrumb}>
-        {breadcrumbSegments.map((segment, idx) => {
-          const isActive = idx === breadcrumbSegments.length - 1;
-          return idx === 0 ? (
-            <button
-              key={segment.id}
-              type="button"
-              className={styles['breadcrumb-link']}
-              onClick={() => handleSelectPath(idx)}
-              disabled={isActive}
-            >
-              lum.bio
-            </button>
-          ) : (
-            <React.Fragment key={`${segment.id}-${idx}`}>
-              <span className={styles['breadcrumb-sep']}>/</span>
-              <button
-                type="button"
-                className={styles['breadcrumb-link']}
-                onClick={() => handleSelectPath(idx)}
-                disabled={isActive}
-              >
-                {segment.label}
-              </button>
-            </React.Fragment>
-          );
-        })}
-      </div>
+      <Breadcrumb segments={breadcrumbSegments} onSelect={handleSelectPath} />
 
       <button
         className={styles['search-btn']}

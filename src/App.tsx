@@ -53,6 +53,14 @@ const AppContent: React.FC = () => {
         }`}
       >
         <Sidebar />
+        {showOverlay && (
+          <button
+            type="button"
+            className={styles['sidebar-scrim']}
+            aria-label="Close sidebar"
+            onClick={closeSidebar}
+          />
+        )}
         <div id="main-content" className={styles['content-area']} role="main">
           <ContentView />
         </div>
@@ -62,9 +70,6 @@ const AppContent: React.FC = () => {
         <Lightbox />
       </Suspense>
       <SearchPanel />
-      {showOverlay && (
-        <div className={styles['sidebar-overlay']} onClick={closeSidebar} />
-      )}
     </div>
   );
 };
