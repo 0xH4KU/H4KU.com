@@ -7,7 +7,7 @@
   border-radius: 4px;
   font-size: var(--font-size-sm);
   white-space: nowrap;
-  z-index: 10001;
+  z-index: 99999;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   animation: tooltipFadeIn 0.2s ease-out;
@@ -35,4 +35,27 @@
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: var(--color-text);
+}
+
+.tooltip--bottom {
+  transform: translate(-50%, 0);
+  animation: tooltipFadeInBottom 0.2s ease-out;
+}
+
+.tooltip--bottom::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--color-text);
+}
+
+@keyframes tooltipFadeInBottom {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) translateY(0);
+  }
 }

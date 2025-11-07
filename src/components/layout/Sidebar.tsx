@@ -5,7 +5,6 @@ import folderIcon from '@/assets/folder.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSearch } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
-import { useSidebar } from '@/hooks/useSidebar';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult } from '@/types';
@@ -28,11 +27,12 @@ const Sidebar: React.FC = () => {
     collapseAll,
     pinnedItems,
     togglePin,
+    sidebarWidth,
+    setSidebarWidth,
   } = useSidebarContext();
   const { searchQuery, setSearchQuery, searchResults } = useSearch();
   const { activePath, navigateTo, openLightbox, resetToHome, allFolders } =
     useNavigation();
-  const { sidebarWidth, startDrag } = useSidebar();
   const { width } = useWindowSize();
   const { folders, pages, socials } = mockData;
   const isMobile =
@@ -44,6 +44,7 @@ const Sidebar: React.FC = () => {
     item: SidebarEntry;
   } | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [isDragging, setIsDragging] = useState(false);
 
   const activeSegments = useMemo(
     () => activePath.split('/').filter(Boolean),
@@ -152,8 +153,35 @@ const Sidebar: React.FC = () => {
   );
 
   const handleDragStart = () => {
-    startDrag();
+    setIsDragging(true);
   };
+
+  // Handle sidebar resize
+  useEffect(() => {
+    if (!isDragging) {
+      return;
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const clamped = Math.min(
+        Math.max(event.clientX, SIDEBAR_CONFIG.MIN_WIDTH),
+        SIDEBAR_CONFIG.MAX_WIDTH
+      );
+      setSidebarWidth(clamped);
+    };
+
+    const stopDrag = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', stopDrag);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', stopDrag);
+    };
+  }, [isDragging, setSidebarWidth]);
 
   const handleContextMenu = useCallback(
     (event: React.MouseEvent, item: SidebarEntry) => {
@@ -171,6 +199,21 @@ const Sidebar: React.FC = () => {
     const allFolderIds = allFolders.map(f => f.folder.id);
     expandAll(allFolderIds);
   }, [allFolders, expandAll]);
+
+  // Check if all folders are expanded
+  const allFoldersExpanded = useMemo(() => {
+    const allFolderIds = allFolders.map(f => f.folder.id);
+    return allFolderIds.length > 0 && allFolderIds.every(id => expandedFolders.has(id));
+  }, [allFolders, expandedFolders]);
+
+  // Toggle between expand all and collapse all
+  const handleToggleAll = useCallback(() => {
+    if (allFoldersExpanded) {
+      collapseAll();
+    } else {
+      handleExpandAll();
+    }
+  }, [allFoldersExpanded, collapseAll, handleExpandAll]);
 
   const handleCopyLink = useCallback(
     (item: SidebarEntry) => {
@@ -302,24 +345,23 @@ const Sidebar: React.FC = () => {
     }
 
     return (
-      <Tooltip key={item.id} content={item.name}>
-        <div
-          className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned && showPin ? styles['sidebar-item--pinned'] : ''}`}
-          onClick={() => handleNavigate(item)}
-          onContextMenu={e => handleContextMenu(e, item)}
-        >
-          <span className={styles['expand-icon-spacer']} />
-          <img
-            className={styles['sidebar-icon']}
-            src={isFolder ? folderIcon : paperIcon}
-            alt={isFolder ? 'Folder icon' : 'Text file icon'}
-          />
-          <span className={styles['folder-name']}>{item.name}</span>
-          {isPinned && showPin && (
-            <Pin size={14} className={styles['pin-indicator']} />
-          )}
-        </div>
-      </Tooltip>
+      <div
+        key={item.id}
+        className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned && showPin ? styles['sidebar-item--pinned'] : ''}`}
+        onClick={() => handleNavigate(item)}
+        onContextMenu={e => handleContextMenu(e, item)}
+      >
+        <span className={styles['expand-icon-spacer']} />
+        <img
+          className={styles['sidebar-icon']}
+          src={isFolder ? folderIcon : paperIcon}
+          alt={isFolder ? 'Folder icon' : 'Text file icon'}
+        />
+        <span className={styles['folder-name']}>{item.name}</span>
+        {isPinned && showPin && (
+          <Pin size={14} className={styles['pin-indicator']} />
+        )}
+      </div>
     );
   };
 
@@ -359,7 +401,9 @@ const Sidebar: React.FC = () => {
     <div
       id="app-sidebar"
       className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
-      style={{ width: !isSidebarOpen ? 0 : sidebarWidth }}
+      style={{
+        width: isMobile ? undefined : sidebarWidth,
+      }}
       aria-hidden={!isSidebarOpen}
     >
       <div className={styles['sidebar-header']}>
@@ -376,22 +420,20 @@ const Sidebar: React.FC = () => {
           LUM.BIO
         </button>
         <div className={styles['header-controls']}>
-          <Tooltip content="Expand all folders">
+          <Tooltip
+            content={allFoldersExpanded ? "Collapse all folders" : "Expand all folders"}
+            position="bottom"
+          >
             <button
-              className={styles['control-button']}
-              onClick={handleExpandAll}
-              aria-label="Expand all folders"
+              className={`${styles['control-button']} ${allFoldersExpanded ? styles['control-button--active'] : ''}`}
+              onClick={handleToggleAll}
+              aria-label={allFoldersExpanded ? "Collapse all folders" : "Expand all folders"}
             >
-              <ChevronsDown size={16} />
-            </button>
-          </Tooltip>
-          <Tooltip content="Collapse all folders">
-            <button
-              className={styles['control-button']}
-              onClick={collapseAll}
-              aria-label="Collapse all folders"
-            >
-              <ChevronsUp size={16} />
+              {allFoldersExpanded ? (
+                <ChevronsUp size={16} />
+              ) : (
+                <ChevronsDown size={16} />
+              )}
             </button>
           </Tooltip>
         </div>
