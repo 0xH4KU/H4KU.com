@@ -85,7 +85,7 @@ function handleLogin() {
     redirect_uri: GITLAB_CONFIG.redirectUri,
     response_type: 'code',
     state: state,
-    scope: 'api offline_access',
+    scope: 'api',
     code_challenge: codeChallenge,
     code_challenge_method: 'plain', // GitLab uses plain, not S256
   });
