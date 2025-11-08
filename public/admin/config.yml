@@ -33,41 +33,38 @@ collections:
     summary: "{{name}} • {{folderId | default('[Home]')}}"
     sortable_fields: ['folderId', 'name', 'order', 'date']
     view_filters:
-      - label: "📍 Homepage Only"
+      - label: "📍 Homepage"
         field: folderId
-        pattern: false
-      - label: "📁 All in Folders"
+        pattern: '^$'
+      - label: "📁 In Folders"
         field: folderId
         pattern: '.+'
-      - label: "⭐ Featured (All)"
+    view_groups:
+      - label: "Folder"
         field: folderId
-        pattern: '^featured'
-      - label: "✏️ Sketches (All)"
-        field: folderId
-        pattern: '^sketches'
-      - label: "🗓️ Featured › 2025"
-        field: folderId
-        pattern: '^featured-2025$'
-      - label: "🗓️ Sketches › 2025"
-        field: folderId
-        pattern: '^sketches-2025$'
+        pattern: '(.+)'
     fields:
-      - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., about, contact)", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
-      - {label: "Display Name", name: "name", widget: "string", required: true, hint: "Name shown on the homepage (e.g., About.txt)"}
-      - {label: "Folder Filename Override", name: "filename", widget: "string", required: false, hint: "Optional filename when inside a folder. Defaults to Display Name."}
-      - label: "Folder (optional)"
+      # === Essential fields ===
+      - {label: "ID", name: "id", widget: "string", required: true, hint: "e.g., about, contact", pattern: ['^[a-z0-9-]+$', "lowercase, numbers, hyphens only"]}
+      - {label: "Display Name", name: "name", widget: "string", required: true, hint: "e.g., About.txt"}
+      - {label: "Content", name: "body", widget: "text", required: true}
+
+      # === Organization ===
+      - label: "Folder"
         name: "folderId"
         widget: "relation"
         collection: "folders"
         value_field: "id"
-        search_fields: ['name', 'id', 'parentId']
-        display_fields: ['id']
+        search_fields: ['name', 'id']
+        display_fields: ['{{parentId}}/{{name}}']
         required: false
-        hint: "Choose a folder. Leave empty to show on homepage."
-      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower numbers appear first. Leave blank to sort by date."}
-      - {label: "Published Date", name: "date", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, hint: "Optional date for sorting"}
+        hint: "Leave empty for homepage"
+      - {label: "Sort Order", name: "order", widget: "number", required: false}
+
+      # === Optional ===
+      - {label: "Folder Filename", name: "filename", widget: "string", required: false, hint: "Override display name in folders"}
+      - {label: "Date", name: "date", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false}
       - {label: "Type", name: "type", widget: "hidden", default: "txt"}
-      - {label: "Content", name: "body", widget: "text", required: true, hint: "Page text content"}
 
   # Manage work folder structure
   - name: "folders"
@@ -111,52 +108,47 @@ collections:
     # Enhanced sorting and filtering
     sortable_fields: ['folderId', 'filename', 'order', 'date']
     view_filters:
-      - label: "📍 Homepage Only"
+      - label: "📍 Homepage"
         field: folderId
-        pattern: false
-      - label: "📁 All in Folders"
-        field: folderId
-        pattern: '.+'
-      - label: "⭐ Featured (All)"
+        pattern: '^$'
+      - label: "⭐ Featured"
         field: folderId
         pattern: '^featured'
-      - label: "✏️ Sketches (All)"
+      - label: "✏️ Sketches"
         field: folderId
         pattern: '^sketches'
-      - label: "🗓️ Featured › 2025"
+    view_groups:
+      - label: "Folder"
         field: folderId
-        pattern: '^featured-2025$'
-      - label: "🗓️ Sketches › 2025"
-        field: folderId
-        pattern: '^sketches-2025$'
+        pattern: '(.+)'
     fields:
-      # === Basic information ===
-      - {label: "ID", name: "id", widget: "string", required: true, hint: "Simple identifier (e.g., 1, 2, portrait, landscape). Folder name will be added automatically."}
-      - {label: "Filename", name: "filename", widget: "string", required: true, hint: "Display name (e.g., 1.png, artwork.png)"}
-      - label: "Folder (optional)"
+      # === Essential fields only ===
+      - {label: "Filename", name: "filename", widget: "string", required: true, hint: "Display name (e.g., artwork.png)"}
+      - {label: "Thumbnail", name: "thumb", widget: "image", required: true, hint: "Preview image"}
+      - {label: "Full Image", name: "full", widget: "image", required: true, hint: "High-resolution image"}
+      - {label: "Date", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
+
+      # === Organization ===
+      - label: "Folder"
         name: "folderId"
         widget: "relation"
         collection: "folders"
         value_field: "id"
-        search_fields: ['name', 'id', 'parentId']
-        display_fields: ['id']
+        search_fields: ['name', 'id']
+        display_fields: ['{{parentId}}/{{name}}']
         required: false
-        hint: "Choose any folder. Leave empty to show on homepage."
-      - {label: "Date", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
-      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower numbers appear first. Leave blank to sort by date."}
+        hint: "Leave empty for homepage"
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower = higher position"}
 
-      # === Image fields ===
-      - {label: "Thumbnail", name: "thumb", widget: "image", required: true, hint: "Preview image (recommended: 400x400)"}
-      - {label: "Full Image", name: "full", widget: "image", required: true, hint: "High-resolution image"}
-      - {label: "Dimensions", name: "dimensions", widget: "string", required: false, hint: "e.g., 1920x1080", pattern: ['\d+x\d+', "Format: widthxheight (e.g., 1920x1080)"]}
-
-      # === Optional details ===
-      - {label: "Title", name: "title", widget: "string", required: false, hint: "Optional title for the artwork"}
+      # === Optional details (collapsed by default in Sveltia CMS) ===
+      - {label: "ID", name: "id", widget: "string", required: true, hint: "Auto-generated from filename"}
+      - {label: "Title", name: "title", widget: "string", required: false}
       - {label: "Description", name: "description", widget: "text", required: false}
+      - {label: "Dimensions", name: "dimensions", widget: "string", required: false, hint: "e.g., 1920x1080", pattern: ['\d+x\d+', "widthxheight"]}
       - {label: "Client", name: "client", widget: "string", required: false}
-      - {label: "Tags", name: "tags", widget: "list", required: false, hint: "Add tags, press Enter after each"}
+      - {label: "Tags", name: "tags", widget: "list", required: false}
 
-      # === Hidden fields for compatibility ===
+      # === Hidden fields ===
       - {label: "Item Type", name: "itemType", widget: "hidden", default: "work"}
 
   # Manage social media links
