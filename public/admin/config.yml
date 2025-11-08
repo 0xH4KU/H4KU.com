@@ -27,12 +27,19 @@ collections:
     slug: "{{id}}"
     extension: "md"
     format: "frontmatter"
-    summary: "{{name}} ({{id}})"
-    sortable_fields: ['name', 'id']
+    summary: "{{name}} • {{folderId | default('[Home]')}}"
+    sortable_fields: ['folderId', 'name', 'order', 'date']
+    view_filters:
+      - label: "Homepage Only"
+        field: folderId
+        pattern: ''
+      - label: "In Folders"
+        field: folderId
+        pattern: '.+'
     fields:
       - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., about, contact)", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
       - {label: "Display Name", name: "name", widget: "string", required: true, hint: "Name shown on the homepage (e.g., About.txt)"}
-      - {label: "Folder Filename Override", name: "filename", widget: "string", required: false, hint: "Optional filename displayed when this page lives inside a folder. Defaults to Display Name."}
+      - {label: "Folder Filename Override", name: "filename", widget: "string", required: false, hint: "Optional filename when inside a folder. Defaults to Display Name."}
       - label: "Folder (optional)"
         name: "folderId"
         widget: "relation"
@@ -41,9 +48,9 @@ collections:
         search_fields: ['name', 'id', 'parentId']
         display_fields: ['id']
         required: false
-        hint: "Select a folder to place this page inside. Leave empty to keep it on the homepage."
-      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower numbers appear first. Leave blank for automatic ordering."}
-      - {label: "Published Date", name: "date", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, hint: "Optional date used for sorting"}
+        hint: "Choose a folder. Leave empty to show on homepage."
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower numbers appear first. Leave blank to sort by date."}
+      - {label: "Published Date", name: "date", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, hint: "Optional date for sorting"}
       - {label: "Type", name: "type", widget: "hidden", default: "txt"}
       - {label: "Content", name: "body", widget: "text", required: true, hint: "Page text content"}
 
@@ -75,32 +82,30 @@ collections:
       - {label: "Hide from navigation", name: "hidden", widget: "boolean", required: false, default: false, hint: "Hidden folders remain usable for works/pages but won't show up in the UI."}
       - {label: "Type", name: "type", widget: "hidden", default: "folder"}
 
-  # Manage work items
-  - name: "works"
-    label: "Works"
-    label_singular: "Work"
+  # Manage image works
+  - name: "images"
+    label: "Images"
+    label_singular: "Image"
     folder: "src/content/works"
     create: true
-    slug: "{{year}}-{{month}}-{{id}}"
+    slug: "{{folderId | default('home')}}-{{id}}"
     extension: "json"
     format: "json"
-    # List display template
-    summary: "{{filename}} | {{folderId | default('home')}} | {{date}}"
-    # Sort: newest first
-    sortable_fields: ['order', 'date', 'title', 'folderId']
+    # Clearer list display
+    summary: "{{filename}} • {{folderId | default('[Home]')}}"
+    # Enhanced sorting and filtering
+    sortable_fields: ['folderId', 'filename', 'order', 'date']
+    view_filters:
+      - label: "Homepage Only"
+        field: folderId
+        pattern: ''
+      - label: "In Folders"
+        field: folderId
+        pattern: '.+'
     fields:
       # === Basic information ===
-      - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., work-001)"}
-      - label: "Item Type"
-        name: "itemType"
-        widget: "select"
-        required: true
-        default: "work"
-        options:
-          - {label: "Image Work", value: "work"}
-          - {label: "Text Page (.txt)", value: "page"}
-        hint: "Select the type to create"
-      - {label: "Filename", name: "filename", widget: "string", required: true, hint: "Displayed filename (image work or .txt page)"}
+      - {label: "ID", name: "id", widget: "string", required: true, hint: "Simple identifier (e.g., 1, 2, portrait, landscape). Folder name will be added automatically."}
+      - {label: "Filename", name: "filename", widget: "string", required: true, hint: "Display name (e.g., 1.png, artwork.png)"}
       - label: "Folder (optional)"
         name: "folderId"
         widget: "relation"
@@ -109,23 +114,23 @@ collections:
         search_fields: ['name', 'id', 'parentId']
         display_fields: ['id']
         required: false
-        hint: "Choose any folder (at any depth). Leave empty to pin this work directly on the homepage."
+        hint: "Choose any folder. Leave empty to show on homepage."
       - {label: "Date", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
-      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Override auto-sorting. Lower numbers appear first."}
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower numbers appear first. Leave blank to sort by date."}
 
-      # === Image work fields (only when itemType = "work") ===
-      - {label: "Thumbnail", name: "thumb", widget: "image", required: false, hint: "[Image work only] Preview image (recommended: 400x400)"}
-      - {label: "Full Image", name: "full", widget: "image", required: false, hint: "[Image work only] High-resolution image"}
-      - {label: "Dimensions", name: "dimensions", widget: "string", required: false, hint: "[Image work only] e.g., 1920x1080", pattern: ['\d+x\d+', "Format must be: widthxheight (e.g., 1920x1080)"]}
-      - {label: "Client", name: "client", widget: "string", required: false, hint: "[Image work only] Client name"}
+      # === Image fields ===
+      - {label: "Thumbnail", name: "thumb", widget: "image", required: true, hint: "Preview image (recommended: 400x400)"}
+      - {label: "Full Image", name: "full", widget: "image", required: true, hint: "High-resolution image"}
+      - {label: "Dimensions", name: "dimensions", widget: "string", required: false, hint: "e.g., 1920x1080", pattern: ['\d+x\d+', "Format: widthxheight (e.g., 1920x1080)"]}
 
-      # === Text page fields (only when itemType = "page") ===
-      - {label: "Content", name: "content", widget: "text", required: false, hint: "[Text page only] Text content for .txt file"}
-
-      # === Optional details (common) ===
-      - {label: "Title", name: "title", widget: "string", required: false}
+      # === Optional details ===
+      - {label: "Title", name: "title", widget: "string", required: false, hint: "Optional title for the artwork"}
       - {label: "Description", name: "description", widget: "text", required: false}
-      - {label: "Tags", name: "tags", widget: "list", required: false, hint: "Add multiple tags, press Enter to add"}
+      - {label: "Client", name: "client", widget: "string", required: false}
+      - {label: "Tags", name: "tags", widget: "list", required: false, hint: "Add tags, press Enter after each"}
+
+      # === Hidden fields for compatibility ===
+      - {label: "Item Type", name: "itemType", widget: "hidden", default: "work"}
 
   # Manage social media links
   - name: "socials"
