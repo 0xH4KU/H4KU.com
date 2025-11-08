@@ -58,7 +58,10 @@ works.forEach(work => {
   if (!worksByFolder.has(folderId)) {
     worksByFolder.set(folderId, []);
   }
-  worksByFolder.get(folderId)!.push(workItem);
+  const folderWorks = worksByFolder.get(folderId);
+  if (folderWorks) {
+    folderWorks.push(workItem);
+  }
 });
 
 // Recursively attach works to folders

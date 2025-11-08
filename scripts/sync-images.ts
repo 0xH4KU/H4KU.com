@@ -1,5 +1,26 @@
 #!/usr/bin/env tsx
 
+/**
+ * ⚠️ DEPRECATED: This script is deprecated
+ *
+ * This project now uses Decap CMS for content management.
+ * All content should be managed through the CMS at /admin/
+ *
+ * This script is kept for reference and emergency backup purposes only.
+ * Do not use it unless you understand it will overwrite CMS-managed content!
+ */
+
+console.warn('⚠️  WARNING: This script is DEPRECATED!');
+console.warn('This project now uses Decap CMS for content management.');
+console.warn('Visit https://lum-bio-mh2.pages.dev/admin/ to manage content.');
+console.warn('');
+console.warn('Running this script will OVERWRITE all CMS-managed content!');
+console.warn('Press Ctrl+C within 5 seconds to cancel...');
+console.warn('');
+
+// Wait 5 seconds before continuing
+await new Promise(resolve => setTimeout(resolve, 5000));
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
