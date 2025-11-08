@@ -1,0 +1,12 @@
+{
+  "id": "sketches",
+  "name": "sketches",
+  "type": "folder",
+  "children": [
+    {
+      "id": "sketches-2025",
+      "name": "2025",
+      "type": "folder"
+    }
+  ]
+}

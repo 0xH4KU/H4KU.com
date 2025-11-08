@@ -1,0 +1,87 @@
+backend:
+  name: gitlab
+  repo: lummuu/lum.bio
+  branch: main
+  auth_type: pkce  # 使用 PKCE 認證，無需 Client Secret
+  app_id: 6ceeef10ac66ea69ec434988759eaaffe0c6ab020547264c0600b5e8a86e183d  # 需要在 GitLab 創建 OAuth 應用後替換
+
+# 本地開發模式（可選）
+# local_backend: true
+
+media_folder: "public/images/uploads"  # 上傳圖片的位置
+public_folder: "/images/uploads"       # 公開訪問路徑
+
+# 配置管理內容
+collections:
+  # 管理 Pages (About, Contact 等 txt 文件)
+  - name: "pages"
+    label: "Pages"
+    label_singular: "Page"
+    folder: "src/content/pages"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    fields:
+      - {label: "ID", name: "id", widget: "string", required: true}
+      - {label: "Display Name", name: "name", widget: "string", required: true, hint: "例如: About.txt"}
+      - {label: "Type", name: "type", widget: "hidden", default: "txt"}
+      - {label: "Content", name: "body", widget: "text", required: true}
+
+  # 管理作品文件夾結構
+  - name: "work_folders"
+    label: "Work Folders"
+    label_singular: "Folder"
+    folder: "src/content/folders"
+    create: true
+    slug: "{{id}}"
+    extension: "json"
+    format: "json"
+    fields:
+      - {label: "Folder ID", name: "id", widget: "string", required: true}
+      - {label: "Folder Name", name: "name", widget: "string", required: true}
+      - {label: "Type", name: "type", widget: "hidden", default: "folder"}
+      - label: "Child Folders"
+        name: "children"
+        widget: "list"
+        required: false
+        fields:
+          - {label: "ID", name: "id", widget: "string"}
+          - {label: "Name", name: "name", widget: "string"}
+          - {label: "Type", name: "type", widget: "hidden", default: "folder"}
+
+  # 管理作品項目
+  - name: "works"
+    label: "Works"
+    label_singular: "Work"
+    folder: "src/content/works"
+    create: true
+    slug: "{{year}}-{{month}}-{{slug}}"
+    extension: "json"
+    format: "json"
+    fields:
+      - {label: "ID", name: "id", widget: "string", required: true}
+      - {label: "Folder ID", name: "folderId", widget: "string", required: true, hint: "這個作品屬於哪個文件夾，例如: featured-2025"}
+      - {label: "Filename", name: "filename", widget: "string", required: true}
+      - {label: "Title", name: "title", widget: "string", required: false}
+      - {label: "Description", name: "description", widget: "text", required: false}
+      - {label: "Date", name: "date", widget: "datetime", required: true}
+      - {label: "Thumbnail", name: "thumb", widget: "image", required: true}
+      - {label: "Full Image", name: "full", widget: "image", required: true}
+      - {label: "Dimensions", name: "dimensions", widget: "string", required: false, hint: "例如: 1920x1080"}
+      - {label: "Tags", name: "tags", widget: "list", required: false}
+      - {label: "Client", name: "client", widget: "string", required: false}
+
+  # 管理社交媒體鏈接
+  - name: "socials"
+    label: "Social Links"
+    label_singular: "Social Link"
+    folder: "src/content/socials"
+    create: true
+    slug: "{{slug}}"
+    extension: "json"
+    format: "json"
+    fields:
+      - {label: "Name", name: "name", widget: "string", required: true}
+      - {label: "Code", name: "code", widget: "string", required: true, hint: "2-3字母縮寫，例如: IG, TW"}
+      - {label: "URL", name: "url", widget: "string", required: true}
