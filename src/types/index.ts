@@ -2,10 +2,11 @@
 interface BaseWorkItem {
   id: string;
   filename: string;
-  date: string;
+  date?: string;
   title?: string;
   description?: string;
   tags?: string[];
+  order?: number;
 }
 
 // Image work item
@@ -30,6 +31,10 @@ export interface Folder {
   id: string;
   name: string;
   type: 'folder';
+  parentId?: string | null;
+  description?: string;
+  order?: number;
+  hidden?: boolean;
   items?: WorkItem[];
   children?: Folder[];
 }
@@ -39,6 +44,10 @@ export interface Page {
   name: string;
   type: 'txt';
   content: string;
+  filename?: string;
+  folderId?: string | null;
+  date?: string;
+  order?: number;
 }
 
 export interface Social {
@@ -50,6 +59,7 @@ export interface Social {
 export interface MockData {
   folders: Folder[];
   pages: Page[];
+  homeItems: WorkItem[];
   socials: Social[];
 }
 

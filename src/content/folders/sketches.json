@@ -1,12 +1,8 @@
 {
   "id": "sketches",
-  "name": "sketches",
+  "name": "Sketches",
   "type": "folder",
-  "children": [
-    {
-      "id": "sketches-2025",
-      "name": "2025",
-      "type": "folder"
-    }
-  ]
+  "parentId": null,
+  "order": 2,
+  "description": "WIP and loose studies"
 }

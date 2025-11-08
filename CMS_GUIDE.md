@@ -21,10 +21,13 @@ https://lum-bio-mh2.pages.dev/admin/
 2. 點擊 **New Page**
 3. 填寫：
    - **ID**: `privacy` （小寫、無空格）
-   - **顯示名稱**: `Privacy.txt`
+   - **顯示名稱**: `Privacy.txt`（首頁顯示的檔名）
+   - **Folder (optional)**: 想要放進某個資料夾時，直接從下拉列表選擇即可。留白就會顯示在首頁。
+   - **Folder Filename Override**: 當頁面放在資料夾裡時可以自訂檔名（預設沿用顯示名稱）。
+   - **Sort Order / Published Date**: 可選，拿來控制排序（數字越小越靠前）。
    - **內容**: 輸入頁面內容
 4. 點擊 **Publish**
-5. 等待 1-2 分鐘部署
+5. 等待 1-2 分鐘部署。若有選擇資料夾，該頁面會像 .txt 檔一樣出現在該資料夾裡，可直接點擊閱讀。
 
 **編輯現有頁面：**
 1. 左側菜單 → **Pages**
@@ -43,11 +46,11 @@ https://lum-bio-mh2.pages.dev/admin/
 2. 點擊 **New Work**
 3. 填寫基本信息：
    - **ID**: `work-001` （唯一標識）
-   - **文件名**: 顯示的名稱
-   - **所屬文件夾**: 從下拉選單選擇
-     - 🌟 Featured 2025
-     - ✏️ Sketches 2025
-   - **日期**: 選擇作品日期
+   - **Item Type**: 選擇「Image Work」或「Text Page（.txt）」。
+   - **Filename**: 顯示的名稱（會出現在資料夾或首頁）。
+   - **Folder (optional)**: 從下拉列表搜尋任何資料夾（支援巢狀層級）。留白就會直接顯示在 lum.bio 首頁。
+   - **Date**: 選擇作品日期。
+   - **Sort Order**: 可選，調整顯示順序，數字越小越靠前；不填則依日期排序。
 4. 上傳圖片：
    - **縮略圖**: 小圖預覽（建議 400x400）
    - **完整圖片**: 高清大圖
@@ -57,7 +60,10 @@ https://lum-bio-mh2.pages.dev/admin/
    - **描述**: 作品描述
    - **標籤**: 多個標籤，按 Enter 添加
    - **客戶**: 委託客戶
+   - **Content**: 若 Item Type 選擇 Text Page，可在此輸入文字內容
 6. 點擊 **Publish**
+
+💡 **小提示**：想把圖片或 .txt 直接放在 lum.bio 首頁？建立作品時只要把 **Folder** 留空即可；依然可以設定 Sort Order 來調整排列順序。
 
 **批量上傳圖片：**
 1. 點擊圖片字段
@@ -65,8 +71,8 @@ https://lum-bio-mh2.pages.dev/admin/
 3. 上傳到 `/images/uploads/` 目錄
 
 **篩選和排序：**
-- 使用頂部的篩選器快速找到 Featured 或 Sketches 作品
-- 可以按日期、標題、文件夾排序
+- 使用列表右上角的搜尋框快速鎖定特定檔名或資料夾
+- 可按排序欄位（Order、Date、Folder 等）調整顯示。若有設定 Sort Order，系統會優先依數字排序，再依日期由新到舊排列。
 
 ---
 
@@ -80,13 +86,11 @@ https://lum-bio-mh2.pages.dev/admin/
 3. 填寫：
    - **Folder ID**: `commissions` （小寫）
    - **Folder Name**: `Commissions`
-4. 添加子文件夾（可選）：
-   - 點擊 **Add 📂 子文件夾**
-   - 填寫 ID 和 Name
-   - 例如: ID=`commissions-2025`, Name=`2025`
-5. 點擊 **Publish**
-
-⚠️ **重要**：添加新文件夾後，記得在 `/admin/config.yml` 的 Works 配置中添加對應選項！
+4. 巢狀設定（可選）：
+   - **Parent Folder**: 直接從下拉列表選擇要歸屬的父層（支援任意深度）。
+   - **Sort Order**: 數字越小越靠前，可控制同層的排序。
+   - **Hidden**: 若只想拿來放作品、不想顯示在 UI，可勾選。
+5. 點擊 **Publish**。只要建立了資料夾，它就會自動出現在 Works / Pages 的下拉選單裡，不需再手動改設定。
 
 ---
 
@@ -148,19 +152,6 @@ https://lum-bio-mh2.pages.dev/admin/
 - 所有修改都會創建 Git commit
 - 可以在 GitLab 查看完整歷史
 - 如需回滾，可以用 Git revert
-
-### 自定義文件夾選項
-
-編輯 `public/admin/config.yml` 的 Works → fields → 所屬文件夾 → options：
-
-```yaml
-options:
-  - {label: "🌟 Featured 2025", value: "featured-2025"}
-  - {label: "✏️ Sketches 2025", value: "sketches-2025"}
-  - {label: "💼 Commissions 2025", value: "commissions-2025"}  # 新增
-```
-
----
 
 ## ⚠️ 注意事項
 

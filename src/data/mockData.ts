@@ -6,6 +6,33 @@ import { parseFrontmatter } from '@/utils/frontmatter';
  * This allows Decap CMS to manage content through file editing
  */
 
+interface FolderFile {
+  id: string;
+  name: string;
+  type: 'folder';
+  parentId?: string | null;
+  description?: string;
+  order?: number;
+  hidden?: boolean;
+}
+
+interface WorkFile {
+  folderId?: string | null;
+  itemType?: 'work' | 'page';
+  id: string;
+  filename: string;
+  date?: string;
+  title?: string;
+  description?: string;
+  tags?: string[];
+  order?: number;
+  thumb?: string;
+  full?: string;
+  dimensions?: string;
+  client?: string;
+  content?: string;
+}
+
 // Load pages (markdown files with frontmatter)
 const pagesModules = import.meta.glob<string>('/src/content/pages/*.md', {
   eager: true,
@@ -14,134 +41,245 @@ const pagesModules = import.meta.glob<string>('/src/content/pages/*.md', {
 });
 
 // Load folders (JSON files)
-const foldersModules = import.meta.glob<Folder>('/src/content/folders/*.json', {
-  eager: true,
-  import: 'default',
-});
+const foldersModules = import.meta.glob<FolderFile>(
+  '/src/content/folders/*.json',
+  {
+    eager: true,
+    import: 'default',
+  }
+);
 
 // Load socials (JSON files)
-const socialsModules = import.meta.glob<Social>('/src/content/socials/*.json', {
-  eager: true,
-  import: 'default',
-});
+const socialsModules = import.meta.glob<Social>(
+  '/src/content/socials/*.json',
+  {
+    eager: true,
+    import: 'default',
+  }
+);
 
 // Load works (JSON files)
-interface WorkFile {
-  folderId: string;
-  itemType?: 'work' | 'page';
-  // Common fields
-  id: string;
-  filename: string;
-  date: string;
-  title?: string;
-  description?: string;
-  tags?: string[];
-  // Image work fields
-  thumb?: string;
-  full?: string;
-  dimensions?: string;
-  client?: string;
-  // Text page fields
-  content?: string;
-}
-
 const worksModules = import.meta.glob<WorkFile>('/src/content/works/*.json', {
   eager: true,
   import: 'default',
 });
 
-// Parse pages from markdown files
-const pages: Page[] = Object.entries(pagesModules).map(([path, content]) => {
-  const { data, content: body } = parseFrontmatter(content);
-  return {
-    id: data.id || path.split('/').pop()?.replace('.md', '') || '',
-    name: data.name || 'Untitled.txt',
-    type: 'txt',
-    content: body.trim(),
-  };
+const ORDER_FALLBACK = Number.MAX_SAFE_INTEGER;
+
+const normalizeId = (value: string | null | undefined) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+const normalizeOrder = (value: unknown): number | undefined => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+  return undefined;
+};
+
+const compareFolders = (a: Folder, b: Folder) => {
+  const orderDiff =
+    (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
+  if (orderDiff !== 0) {
+    return orderDiff;
+  }
+  return a.name.localeCompare(b.name);
+};
+
+const comparePages = (a: Page, b: Page) => {
+  const orderDiff =
+    (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
+  if (orderDiff !== 0) {
+    return orderDiff;
+  }
+  return a.name.localeCompare(b.name);
+};
+
+const sortWorkItems = (items: WorkItem[]): WorkItem[] =>
+  [...items].sort((a, b) => {
+    const orderDiff =
+      (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
+    if (orderDiff !== 0) {
+      return orderDiff;
+    }
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateB - dateA;
+  });
+
+// Build folder map and parent-child relationships
+const folderEntries = Object.values(foldersModules);
+const folderMap = new Map<string, Folder>();
+
+folderEntries.forEach(entry => {
+  folderMap.set(entry.id, {
+    id: entry.id,
+    name: entry.name,
+    type: 'folder',
+    parentId: entry.parentId ?? null,
+    description: entry.description,
+    order: entry.order,
+    hidden: entry.hidden,
+    children: [],
+    items: [],
+  });
 });
 
-// Load folders from JSON files
-const baseFolders: Folder[] = Object.values(foldersModules);
+folderMap.forEach(folder => {
+  const parentId = normalizeId(folder.parentId as string | null | undefined);
+  if (!parentId) {
+    folder.parentId = null;
+    return;
+  }
+  const parentFolder = folderMap.get(parentId);
+  if (parentFolder) {
+    parentFolder.children = parentFolder.children ?? [];
+    parentFolder.children.push(folder);
+    folder.parentId = parentId;
+  } else {
+    folder.parentId = null;
+  }
+});
 
-// Load works and group by folderId
+// Parse pages from markdown files
+const parsedPages: Page[] = Object.entries(pagesModules).map(
+  ([path, content]) => {
+    const { data, content: body } = parseFrontmatter(content);
+    const fallbackId = path.split('/').pop()?.replace('.md', '') || '';
+    const folderId = normalizeId(data.folderId);
+    const filename = data.filename || data.name || 'Untitled.txt';
+
+    return {
+      id: data.id || fallbackId,
+      name: data.name || filename,
+      filename,
+      type: 'txt',
+      content: body.trim(),
+      folderId,
+      date: data.date,
+      order: normalizeOrder(data.order),
+    };
+  }
+);
+
+const standalonePages = parsedPages
+  .filter(page => !page.folderId)
+  .sort(comparePages);
+const folderPages = parsedPages.filter(page => page.folderId);
+
+// Load works and attach to folders
 const works: WorkFile[] = Object.values(worksModules);
-const worksByFolder = new Map<string, WorkItem[]>();
+const homeItems: WorkItem[] = [];
+
+const pushItemToFolder = (folderId: string | null, item: WorkItem) => {
+  if (folderId) {
+    const targetFolder = folderMap.get(folderId);
+    if (targetFolder) {
+      targetFolder.items = targetFolder.items ?? [];
+      targetFolder.items.push(item);
+      return;
+    }
+  }
+  homeItems.push(item);
+};
 
 works.forEach(work => {
-  const { folderId, itemType, ...rest } = work;
-
-  // Determine item type (default to 'work' for backward compatibility)
-  const type = itemType || (work.thumb && work.full ? 'work' : 'page');
-
-  let workItem: WorkItem;
+  const folderId = normalizeId(work.folderId);
+  const type = work.itemType || (work.thumb && work.full ? 'work' : 'page');
 
   if (type === 'page') {
-    // Text work item
-    workItem = {
+    const workItem: WorkItem = {
       itemType: 'page',
-      id: rest.id || '',
-      filename: rest.filename || '',
-      date: rest.date || '',
-      content: rest.content || '',
-      title: rest.title,
-      description: rest.description,
-      tags: rest.tags,
+      id: work.id,
+      filename: work.filename,
+      date: work.date,
+      content: work.content ?? '',
+      title: work.title,
+      description: work.description,
+      tags: work.tags,
+      order: normalizeOrder(work.order),
     };
+    pushItemToFolder(folderId, workItem);
   } else {
-    // Image work item
-    workItem = {
+    const workItem: WorkItem = {
       itemType: 'work',
-      id: rest.id || '',
-      filename: rest.filename || '',
-      date: rest.date || '',
-      thumb: rest.thumb || '',
-      full: rest.full || '',
-      dimensions: rest.dimensions,
-      client: rest.client,
-      title: rest.title,
-      description: rest.description,
-      tags: rest.tags,
+      id: work.id,
+      filename: work.filename,
+      date: work.date,
+      thumb: work.thumb ?? '',
+      full: work.full ?? '',
+      dimensions: work.dimensions,
+      client: work.client,
+      title: work.title,
+      description: work.description,
+      tags: work.tags,
+      order: normalizeOrder(work.order),
     };
-  }
-
-  if (!worksByFolder.has(folderId)) {
-    worksByFolder.set(folderId, []);
-  }
-  const folderWorks = worksByFolder.get(folderId);
-  if (folderWorks) {
-    folderWorks.push(workItem);
+    pushItemToFolder(folderId, workItem);
   }
 });
 
-// Recursively attach works to folders
-function attachWorksToFolder(folder: Folder): Folder {
-  const updatedFolder = { ...folder };
+// Attach folder-assigned pages as text work items
+folderPages.forEach(page => {
+  const pageItem: WorkItem = {
+    itemType: 'page',
+    id: page.id,
+    filename: page.filename ?? page.name,
+    date: page.date,
+    content: page.content,
+    title: page.name,
+    order: page.order,
+  };
+  pushItemToFolder(page.folderId ?? null, pageItem);
+});
 
-  // Attach works to this folder if any
-  const folderWorks = worksByFolder.get(folder.id);
-  if (folderWorks && folderWorks.length > 0) {
-    updatedFolder.items = folderWorks.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+const finalizeFolder = (folder: Folder): Folder => {
+  const items =
+    folder.items && folder.items.length > 0
+      ? sortWorkItems(folder.items)
+      : undefined;
+  const children =
+    folder.children && folder.children.length > 0
+      ? folder.children
+          .filter(child => !child.hidden)
+          .sort(compareFolders)
+          .map(finalizeFolder)
+      : undefined;
+
+  return {
+    ...folder,
+    items,
+    children,
+  };
+};
+
+const rootFolders = Array.from(folderMap.values()).filter(folder => {
+  if (!folder.parentId) {
+    return true;
   }
+  return !folderMap.has(folder.parentId);
+});
 
-  // Recursively process children
-  if (folder.children) {
-    updatedFolder.children = folder.children.map(attachWorksToFolder);
-  }
+const folders: Folder[] = rootFolders
+  .filter(folder => !folder.hidden)
+  .sort(compareFolders)
+  .map(finalizeFolder);
 
-  return updatedFolder;
-}
-
-// Attach works to folders
-const folders: Folder[] = baseFolders.map(attachWorksToFolder);
-
-// Load socials from JSON files
 const socials: Social[] = Object.values(socialsModules);
 
 export const mockData: MockData = {
   folders,
-  pages,
+  pages: standalonePages,
+  homeItems: sortWorkItems(homeItems),
   socials,
 };

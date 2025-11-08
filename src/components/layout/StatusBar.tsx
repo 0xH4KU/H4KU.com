@@ -9,7 +9,11 @@ const StatusBar: React.FC = () => {
 
   const itemCount = useMemo(() => {
     if (!currentView) {
-      return mockData.folders.length + mockData.pages.length;
+      return (
+        mockData.folders.length +
+        mockData.pages.length +
+        mockData.homeItems.length
+      );
     }
 
     if (currentView.type === 'folder') {
