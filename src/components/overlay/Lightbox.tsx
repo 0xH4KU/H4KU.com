@@ -107,9 +107,7 @@ const Lightbox: React.FC = () => {
       <div className={styles['lightbox-info']}>
         <div className={styles['lightbox-metadata']}>
           {imageItem.title && (
-            <div className={styles['metadata-title']}>
-              {imageItem.title}
-            </div>
+            <div className={styles['metadata-title']}>{imageItem.title}</div>
           )}
           <div className={styles['metadata-basic']}>
             <span>{imageItem.filename}</span>

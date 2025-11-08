@@ -68,7 +68,10 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ segments, onSelect }) => {
           return (
             <React.Fragment key="ellipsis">
               <span className={styles['breadcrumb-sep']}>/</span>
-              <span className={styles['breadcrumb-ellipsis']} title="Path truncated">
+              <span
+                className={styles['breadcrumb-ellipsis']}
+                title="Path truncated"
+              >
                 ...
               </span>
             </React.Fragment>
