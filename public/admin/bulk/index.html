@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Content Manager - lum.bio</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Auth Section */
+    .auth-section {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .auth-section h2 {
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: #5850EC;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338CA;
+    }
+
+    .btn-danger {
+      background: #DC2626;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #B91C1C;
+    }
+
+    .btn-secondary {
+      background: #6B7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4B5563;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Main Content */
+    .main-content {
+      display: none;
+    }
+
+    .main-content.active {
+      display: block;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .toolbar-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .filter-select {
+      padding: 10px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+    }
+
+    /* Content List */
+    .content-list {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .list-header {
+      display: grid;
+      grid-template-columns: 40px 40px 1fr 200px 100px;
+      padding: 12px 20px;
+      background: #F9FAFB;
+      border-bottom: 1px solid #E5E7EB;
+      font-weight: 600;
+      font-size: 13px;
+      color: #6B7280;
+    }
+
+    .list-item {
+      display: grid;
+      grid-template-columns: 40px 40px 1fr 200px 100px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #E5E7EB;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .list-item:hover {
+      background: #F9FAFB;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .item-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .item-icon {
+      font-size: 20px;
+    }
+
+    .item-name {
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .item-folder {
+      color: #6B7280;
+      font-size: 13px;
+    }
+
+    .item-type {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .type-folder {
+      background: #DBEAFE;
+      color: #1E40AF;
+    }
+
+    .type-page {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    .type-image {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+
+    /* Action Bar */
+    .action-bar {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .selection-info {
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Loading & Empty States */
+    .loading, .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6B7280;
+    }
+
+    .loading {
+      font-size: 16px;
+    }
+
+    .empty-state {
+      font-size: 14px;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .file-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .file-list-item {
+      padding: 6px 0;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 13px;
+    }
+
+    .file-list-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Alert */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .alert-warning {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FCD34D;
+    }
+
+    .alert-error {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FCA5A5;
+    }
+
+    .alert-success {
+      background: #D1FAE5;
+      color: #065F46;
+      border: 1px solid #6EE7B7;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .list-header,
+      .list-item {
+        grid-template-columns: 30px 30px 1fr 80px;
+      }
+
+      .item-folder {
+        display: none;
+      }
+
+      .toolbar-row {
+        flex-direction: column;
+      }
+
+      .search-input,
+      .filter-select {
+        width: 100%;
+      }
+
+      .action-bar {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .action-buttons {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>📦 Bulk Content Manager</h1>
+      <p>批量管理你的內容：圖片、頁面、文件夾</p>
+    </div>
+
+    <!-- Auth Section -->
+    <div id="authSection" class="auth-section">
+      <h2>請先登入 GitLab</h2>
+      <p style="margin-bottom: 20px; color: #666;">需要 GitLab 權限才能管理內容</p>
+      <button id="loginBtn" class="btn btn-primary">🔐 Login with GitLab</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content">
+      <div id="statusAlert" class="alert" style="display: none;"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="🔍 搜尋檔名或文件夾..."
+          >
+          <select id="typeFilter" class="filter-select">
+            <option value="all">所有類型</option>
+            <option value="folder">📁 文件夾</option>
+            <option value="page">📄 頁面</option>
+            <option value="image">🖼️ 圖片</option>
+          </select>
+          <select id="folderFilter" class="filter-select">
+            <option value="all">所有文件夾</option>
+            <option value="home">🏠 首頁</option>
+          </select>
+        </div>
+        <div class="toolbar-row">
+          <button id="quickSelectTest" class="btn btn-secondary">⚡ 選擇所有測試文件</button>
+          <button id="logoutBtn" class="btn btn-secondary">登出</button>
+        </div>
+      </div>
+
+      <!-- Content List -->
+      <div class="content-list">
+        <div class="list-header">
+          <input type="checkbox" id="selectAll" class="item-checkbox">
+          <span></span>
+          <span>名稱</span>
+          <span>文件夾</span>
+          <span>類型</span>
+        </div>
+        <div id="contentItems">
+          <div class="loading">載入中...</div>
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <div class="selection-info">
+          已選擇 <span id="selectedCount">0</span> 項
+        </div>
+        <div class="action-buttons">
+          <button id="clearSelectionBtn" class="btn btn-secondary">❌ 取消選擇</button>
+          <button id="deleteBtn" class="btn btn-danger" disabled>🗑️ 刪除選中項目</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">⚠️ 確認刪除</div>
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            此操作無法撤銷！將創建一個 commit 刪除以下文件：
+          </div>
+          <div id="dependencyWarning" class="alert alert-error" style="display: none;"></div>
+          <div id="deleteFileList" class="file-list"></div>
+          <p style="margin-top: 16px; font-size: 14px; color: #6B7280;">
+            確定要刪除這 <strong id="deleteCount">0</strong> 個項目嗎？
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelDeleteBtn" class="btn btn-secondary">取消</button>
+          <button id="confirmDeleteBtn" class="btn btn-danger">確認刪除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
