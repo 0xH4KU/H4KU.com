@@ -40,7 +40,6 @@ build:
   stage: build
   script:
     - npm ci
-    - npm run sync-images
     - npm run build
   # Environment variables from GitLab CI/CD settings
   variables:
