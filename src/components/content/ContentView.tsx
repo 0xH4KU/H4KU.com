@@ -237,6 +237,12 @@ const ContentView: React.FC = () => {
             >
               {items.map(item => {
                 const isTextPage = item.itemType === 'page';
+                const itemClassName = [
+                  styles['work-item'],
+                  isTextPage ? styles['text-item'] : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ');
                 const handleClick = isTextPage
                   ? () => {
                       const page: Page = {
@@ -252,7 +258,7 @@ const ContentView: React.FC = () => {
                 return (
                   <motion.div
                     key={item.id}
-                    className={styles['work-item']}
+                    className={itemClassName}
                     variants={itemVariants}
                     onClick={handleClick}
                     whileHover={
@@ -267,13 +273,16 @@ const ContentView: React.FC = () => {
                     whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                   >
                     {isTextPage ? (
-                      <img
-                        className={styles['file-icon']}
-                        src={paperIcon}
-                        alt="Text file icon"
-                      />
+                      <div className={styles['text-icon-wrapper']}>
+                        <img
+                          className={styles['text-icon']}
+                          src={paperIcon}
+                          alt="Text file icon"
+                        />
+                      </div>
                     ) : (
                       <LazyImage
+                        className={styles['work-thumb']}
                         src={'thumb' in item ? item.thumb : ''}
                         alt={item.filename}
                       />
@@ -366,6 +375,12 @@ const ContentView: React.FC = () => {
           >
             {mockData.homeItems.map(item => {
               const isTextPage = item.itemType === 'page';
+              const itemClassName = [
+                styles['work-item'],
+                isTextPage ? styles['text-item'] : '',
+              ]
+                .filter(Boolean)
+                .join(' ');
               const handleClick = isTextPage
                 ? () => {
                     const page: Page = {
@@ -381,7 +396,7 @@ const ContentView: React.FC = () => {
               return (
                 <motion.div
                   key={item.id}
-                  className={styles['work-item']}
+                  className={itemClassName}
                   variants={itemVariants}
                   onClick={handleClick}
                   whileHover={
@@ -396,13 +411,16 @@ const ContentView: React.FC = () => {
                   whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                 >
                   {isTextPage ? (
-                    <img
-                      className={styles['file-icon']}
-                      src={paperIcon}
-                      alt="Text file icon"
-                    />
+                    <div className={styles['text-icon-wrapper']}>
+                      <img
+                        className={styles['text-icon']}
+                        src={paperIcon}
+                        alt="Text file icon"
+                      />
+                    </div>
                   ) : (
                     <LazyImage
+                      className={styles['work-thumb']}
                       src={'thumb' in item ? item.thumb : ''}
                       alt={item.filename}
                     />
