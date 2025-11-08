@@ -2,8 +2,10 @@
  * Simple frontmatter parser for markdown files
  * Parses YAML frontmatter between --- delimiters
  */
+type Frontmatter = Record<string, string>;
+
 export function parseFrontmatter(content: string): {
-  data: Record<string, any>;
+  data: Frontmatter;
   content: string;
 } {
   const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
@@ -14,7 +16,7 @@ export function parseFrontmatter(content: string): {
   }
 
   const [, frontmatter, body] = match;
-  const data: Record<string, any> = {};
+  const data: Frontmatter = {};
 
   // Parse simple YAML frontmatter (key: value pairs)
   frontmatter.split('\n').forEach((line) => {
