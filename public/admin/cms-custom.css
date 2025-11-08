@@ -25,16 +25,39 @@
 
 /* CSS Variables matching main site */
 :root {
+  /* Brand colors */
   --color-primary: #689696;
   --color-secondary: #e87722;
+
+  /* Transitions */
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+}
+
+/* Light Theme Variables */
+[data-theme='light'] {
   --color-background: #f5f5f5;
   --color-surface: #e8e8e8;
   --color-surface-hover: #d8d8d8;
   --color-border: #d0d0d0;
   --color-text: #1a1a1a;
   --color-text-muted: #666;
+  --color-text-dim: #999;
   --grid-line: rgba(0, 0, 0, 0.04);
   --grid-bold: rgba(0, 0, 0, 0.08);
+}
+
+/* Dark Theme Variables */
+[data-theme='dark'] {
+  --color-background: #1a1a1a;
+  --color-surface: #0f0f0f;
+  --color-surface-hover: #1f1f1f;
+  --color-border: #333;
+  --color-text: #e8e8e8;
+  --color-text-muted: #999;
+  --color-text-dim: #666;
+  --grid-line: rgba(255, 255, 255, 0.04);
+  --grid-bold: rgba(255, 255, 255, 0.08);
 }
 
 /* Apply ProFont to everything */
@@ -47,6 +70,9 @@ body {
   background: var(--color-background) !important;
   color: var(--color-text) !important;
   position: relative;
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal) !important;
 }
 
 body::before {
@@ -430,4 +456,144 @@ pre {
 *:focus-visible {
   outline: 2px solid var(--color-primary) !important;
   outline-offset: 2px !important;
+}
+
+/* ============================================
+   Theme Toggle Button
+   ============================================ */
+#theme-toggle-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10000;
+}
+
+#theme-toggle {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast) !important;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#theme-toggle:hover {
+  background: var(--color-surface-hover) !important;
+  border-color: var(--color-primary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#theme-toggle:active {
+  transform: translateY(0);
+}
+
+/* Theme-specific button content */
+[data-theme='light'] #theme-icon-dark {
+  display: inline;
+}
+
+[data-theme='light'] #theme-icon-light {
+  display: none;
+}
+
+[data-theme='dark'] #theme-icon-dark {
+  display: none;
+}
+
+[data-theme='dark'] #theme-icon-light {
+  display: inline;
+}
+
+/* Smooth transitions for all themed elements */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke !important;
+  transition-duration: var(--transition-fast) !important;
+  transition-timing-function: ease !important;
+}
+
+/* Override for elements that shouldn't animate */
+[class*="Loader"],
+[class*="Spinner"],
+[class*="Progress"] {
+  transition: none !important;
+}
+
+/* ============================================
+   Dark Theme Enhancements
+   ============================================ */
+
+/* Improve contrast for dark theme */
+[data-theme='dark'] button:not([class*="secondary"]),
+[data-theme='dark'] [class*="Button"]:not([class*="secondary"]) {
+  background: var(--color-primary) !important;
+  box-shadow: 0 2px 8px rgba(104, 150, 150, 0.3);
+}
+
+[data-theme='dark'] button:not([class*="secondary"]):hover,
+[data-theme='dark'] [class*="Button"]:not([class*="secondary"]):hover {
+  background: #7aa7a7 !important;
+  box-shadow: 0 4px 12px rgba(104, 150, 150, 0.4);
+}
+
+/* Enhanced shadows for dark theme */
+[data-theme='dark'] [class*="Modal"],
+[data-theme='dark'] [class*="Dialog"] {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme='dark'] [class*="Dropdown"],
+[data-theme='dark'] [class*="Menu"] {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Better visibility for input fields in dark theme */
+[data-theme='dark'] input,
+[data-theme='dark'] textarea,
+[data-theme='dark'] select {
+  background: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+}
+
+[data-theme='dark'] input:hover,
+[data-theme='dark'] textarea:hover,
+[data-theme='dark'] select:hover {
+  border-color: var(--color-text-muted) !important;
+}
+
+/* Improve card visibility in dark theme */
+[data-theme='dark'] [class*="Card"],
+[data-theme='dark'] [class*="EntryCard"] {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] [class*="Card"]:hover,
+[data-theme='dark'] [class*="EntryCard"]:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border-color: var(--color-text-dim) !important;
+}
+
+/* ============================================
+   Accessibility & Polish
+   ============================================ */
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

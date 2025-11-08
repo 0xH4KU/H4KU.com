@@ -5,22 +5,22 @@ backend:
   auth_type: pkce
   app_id: 6ceeef10ac66ea69ec434988759eaaffe0c6ab020547264c0600b5e8a86e183d
 
-# 本地開發模式（可選）
+# Local development mode (optional)
 # local_backend: true
 
-# 媒體庫配置
+# Media library configuration
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
 
-# 顯示設置
+# Display settings
 show_preview_links: true
 logo_url: https://lum-bio-mh2.pages.dev/favicon.ico
 
-# 配置管理內容
+# Content collections configuration
 collections:
-  # 管理 Pages (About, Contact 等 txt 文件)
+  # Manage text pages (About, Contact, etc.)
   - name: "pages"
-    label: "📄 Pages / 頁面"
+    label: "Pages"
     label_singular: "Page"
     folder: "src/content/pages"
     create: true
@@ -30,14 +30,14 @@ collections:
     summary: "{{name}} ({{id}})"
     sortable_fields: ['name', 'id']
     fields:
-      - {label: "🆔 ID", name: "id", widget: "string", required: true, hint: "唯一標識符，例如: about, contact", pattern: ['^[a-z0-9-]+$', "只能使用小寫字母、數字和連字符"]}
-      - {label: "📝 顯示名稱", name: "name", widget: "string", required: true, hint: "顯示在側邊欄的文件名，例如: About.txt"}
+      - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., about, contact)", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
+      - {label: "Display Name", name: "name", widget: "string", required: true, hint: "Filename shown in sidebar (e.g., About.txt)"}
       - {label: "Type", name: "type", widget: "hidden", default: "txt"}
-      - {label: "✏️ 內容", name: "body", widget: "text", required: true, hint: "頁面的文本內容"}
+      - {label: "Content", name: "body", widget: "text", required: true, hint: "Page text content"}
 
-  # 管理作品文件夾結構
+  # Manage work folder structure
   - name: "work_folders"
-    label: "🗂️ Folders / 文件夾"
+    label: "Folders"
     label_singular: "Folder"
     folder: "src/content/folders"
     create: true
@@ -47,79 +47,79 @@ collections:
     summary: "{{name}} ({{id}})"
     sortable_fields: ['name', 'id']
     fields:
-      - {label: "🆔 Folder ID", name: "id", widget: "string", required: true, hint: "例如: featured, sketches", pattern: ['^[a-z0-9-]+$', "只能使用小寫字母、數字和連字符"]}
-      - {label: "📁 Folder Name", name: "name", widget: "string", required: true, hint: "顯示在側邊欄的名稱"}
+      - {label: "Folder ID", name: "id", widget: "string", required: true, hint: "e.g., featured, sketches", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
+      - {label: "Folder Name", name: "name", widget: "string", required: true, hint: "Name displayed in sidebar"}
       - {label: "Type", name: "type", widget: "hidden", default: "folder"}
-      - label: "📂 子文件夾"
+      - label: "Subfolders"
         name: "children"
         widget: "list"
         required: false
         summary: "{{fields.name}}"
         fields:
-          - {label: "🆔 ID", name: "id", widget: "string", hint: "例如: featured-2025"}
-          - {label: "📁 Name", name: "name", widget: "string", hint: "例如: 2025"}
+          - {label: "ID", name: "id", widget: "string", hint: "e.g., featured-2025"}
+          - {label: "Name", name: "name", widget: "string", hint: "e.g., 2025"}
           - {label: "Type", name: "type", widget: "hidden", default: "folder"}
 
-  # 管理作品項目
+  # Manage work items
   - name: "works"
-    label: "📁 Works / 作品"
+    label: "Works"
     label_singular: "Work"
     folder: "src/content/works"
     create: true
     slug: "{{year}}-{{month}}-{{id}}"
     extension: "json"
     format: "json"
-    # 列表顯示模板
+    # List display template
     summary: "{{title}} | {{folderId}} | {{date}}"
-    # 排序：最新的在前
+    # Sort: newest first
     sortable_fields: ['date', 'title', 'folderId']
     view_filters:
-      - label: 🌟 Featured
+      - label: Featured
         field: folderId
         pattern: 'featured-.*'
-      - label: ✏️ Sketches
+      - label: Sketches
         field: folderId
         pattern: 'sketches-.*'
     fields:
-      # === 基本信息 ===
-      - {label: "🆔 ID", name: "id", widget: "string", required: true, hint: "唯一標識符，例如: work-001"}
-      - label: "📦 項目類型"
+      # === Basic information ===
+      - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., work-001)"}
+      - label: "Item Type"
         name: "itemType"
         widget: "select"
         required: true
         default: "work"
         options:
-          - {label: "📷 圖片作品", value: "work"}
-          - {label: "📝 文字頁面 (.txt)", value: "page"}
-        hint: "選擇要創建的類型"
-      - {label: "📄 文件名", name: "filename", widget: "string", required: true, hint: "顯示的文件名（圖片作品或 .txt 頁面）"}
-      - label: "📁 所屬文件夾"
+          - {label: "Image Work", value: "work"}
+          - {label: "Text Page (.txt)", value: "page"}
+        hint: "Select the type to create"
+      - {label: "Filename", name: "filename", widget: "string", required: true, hint: "Displayed filename (image work or .txt page)"}
+      - label: "Folder"
         name: "folderId"
         widget: "select"
         required: true
         options:
-          - {label: "🌟 Featured 2025", value: "featured-2025"}
-          - {label: "✏️ Sketches 2025", value: "sketches-2025"}
-        hint: "選擇作品所屬的文件夾"
-      - {label: "📅 日期", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
+          - {label: "Featured 2025", value: "featured-2025"}
+          - {label: "Sketches 2025", value: "sketches-2025"}
+        hint: "Select the folder for this work"
+      - {label: "Date", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
 
-      # === 圖片作品字段（僅當 itemType = "work" 時需要）===
-      - {label: "🖼️ 縮略圖", name: "thumb", widget: "image", required: false, hint: "【圖片作品專用】小圖預覽（建議尺寸: 400x400）"}
-      - {label: "🖼️ 完整圖片", name: "full", widget: "image", required: false, hint: "【圖片作品專用】高清大圖"}
-      - {label: "📐 尺寸", name: "dimensions", widget: "string", required: false, hint: "【圖片作品專用】例如: 1920x1080", pattern: ['\d+x\d+', "格式必須是: 寬x高，例如 1920x1080"]}
-      - {label: "👤 客戶", name: "client", widget: "string", required: false, hint: "【圖片作品專用】委託客戶"}
+      # === Image work fields (only when itemType = "work") ===
+      - {label: "Thumbnail", name: "thumb", widget: "image", required: false, hint: "[Image work only] Preview image (recommended: 400x400)"}
+      - {label: "Full Image", name: "full", widget: "image", required: false, hint: "[Image work only] High-resolution image"}
+      - {label: "Dimensions", name: "dimensions", widget: "string", required: false, hint: "[Image work only] e.g., 1920x1080", pattern: ['\d+x\d+', "Format must be: widthxheight (e.g., 1920x1080)"]}
+      - {label: "Client", name: "client", widget: "string", required: false, hint: "[Image work only] Client name"}
 
-      # === 文字頁面字段（僅當 itemType = "page" 時需要）===
-      - {label: "📝 內容", name: "content", widget: "text", required: false, hint: "【文字頁面專用】.txt 文件的文本內容"}
+      # === Text page fields (only when itemType = "page") ===
+      - {label: "Content", name: "content", widget: "text", required: false, hint: "[Text page only] Text content for .txt file"}
 
-      # === 通用詳細信息（可選）===
-      - {label: "✨ 標題", name: "title", widget: "string", required: false}
-      - {label: "📝 描述", name: "description", widget: "text", required: false}
-      - {label: "🏷️ 標籤", name: "tags", widget: "list", required: false, hint: "添加多個標籤，按 Enter 添加"}
+      # === Optional details (common) ===
+      - {label: "Title", name: "title", widget: "string", required: false}
+      - {label: "Description", name: "description", widget: "text", required: false}
+      - {label: "Tags", name: "tags", widget: "list", required: false, hint: "Add multiple tags, press Enter to add"}
 
-  # 管理社交媒體鏈接
+  # Manage social media links
   - name: "socials"
-    label: "🔗 Social Links / 社交鏈接"
+    label: "Social Links"
     label_singular: "Social Link"
     folder: "src/content/socials"
     create: true
@@ -129,6 +129,6 @@ collections:
     summary: "{{code}} - {{name}}"
     sortable_fields: ['name', 'code']
     fields:
-      - {label: "📱 名稱", name: "name", widget: "string", required: true, hint: "例如: Instagram, Twitter"}
-      - {label: "🏷️ 代碼", name: "code", widget: "string", required: true, hint: "2-3字母縮寫，例如: IG, TW", pattern: ['^[A-Z]{2,3}$', "必須是2-3個大寫字母"]}
-      - {label: "🔗 URL", name: "url", widget: "string", required: true, hint: "完整的URL，例如: https://instagram.com/username"}
+      - {label: "Name", name: "name", widget: "string", required: true, hint: "e.g., Instagram, Twitter"}
+      - {label: "Code", name: "code", widget: "string", required: true, hint: "2-3 letter abbreviation (e.g., IG, TW)", pattern: ['^[A-Z]{2,3}$', "Must be 2-3 uppercase letters"]}
+      - {label: "URL", name: "url", widget: "string", required: true, hint: "Full URL (e.g., https://instagram.com/username)"}
