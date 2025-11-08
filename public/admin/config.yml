@@ -8,6 +8,9 @@ backend:
 # Local development mode (optional)
 # local_backend: true
 
+# Editorial Workflow - Enable batch operations with unified commits
+publish_mode: editorial_workflow
+
 # Media library configuration
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"

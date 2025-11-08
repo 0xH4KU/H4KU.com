@@ -10,6 +10,18 @@ https://lum-bio-mh2.pages.dev/admin/
 
 首次訪問時，點擊 **Login with GitLab** 並授權即可。
 
+### 📋 工作流模式（批量操作）
+
+CMS 已啟用 **Editorial Workflow** 模式，讓你可以累積多個變更，最後統一發布成一個 commit。
+
+**界面說明：**
+- **Content**: 查看和編輯所有內容（和以前一樣）
+- **Workflow**: 管理草稿和待發布的變更（新功能！）
+
+**推薦使用方式：**
+- **單個修改**：直接在 Content 裡編輯 → 點 Publish（立即生成 commit）
+- **批量操作**：在 Content 裡進行多次編輯/刪除 → 到 Workflow 統一發布
+
 ## 📚 功能說明
 
 ### 🖼️ Images / 圖片作品
@@ -124,6 +136,71 @@ https://lum-bio-mh2.pages.dev/admin/
 
 ---
 
+## 🔄 批量操作教學
+
+### 情境：清理測試文件（統一 commit）
+
+假設你想刪除多個測試文件，並且只生成一個 commit：
+
+**步驟：**
+
+1. **進入 Content 標籤**
+   - 選擇要操作的類型（Images / Pages / Folders）
+
+2. **進行第一次刪除**
+   - 點擊要刪除的項目
+   - 點擊 **Delete entry**
+   - ⚠️ **重要**：在彈出的對話框中選擇 **Delete unpublished entry** 或直接確認
+   - 這個刪除會進入「草稿」狀態，**不會**立即產生 commit
+
+3. **繼續刪除其他項目**
+   - 重複步驟 2，刪除所有想刪除的內容
+   - 每次刪除都會進入草稿狀態
+
+4. **切換到 Workflow 標籤**
+   - 點擊頂部的 **Workflow** 標籤
+   - 你會看到三個列表：
+     - **Drafts**（草稿）：新建的內容
+     - **In Review**（審核中）：可選的中間狀態
+     - **Ready**（就緒）：準備發布的變更
+
+5. **查看待刪除的項目**
+   - 在 **Drafts** 列表中，你會看到所有待刪除的項目
+   - 可以點擊預覽或修改
+
+6. **統一發布（生成一個 commit）**
+   - 將所有項目移到 **Ready** 狀態（或直接從 Drafts 發布）
+   - 點擊 **Publish** 按鈕
+   - 系統會生成**一個** commit，包含所有變更
+   - Commit 訊息會自動生成，包含所有變更的摘要
+
+**結果：**
+```
+✅ 一個 commit: "Delete test files (10 files removed)"
+
+而不是：
+❌ 10 個 commits:
+    "Delete test-1.png"
+    "Delete test-2.png"
+    ...
+```
+
+### 情境：批量添加新內容
+
+1. 在 Content 中創建第一個新項目 → Save（進入 Draft）
+2. 繼續創建其他項目 → 都 Save
+3. 到 Workflow → 檢查所有新項目
+4. 統一 Publish → 一個 commit 包含所有新內容
+
+### 情境：混合操作（新增 + 編輯 + 刪除）
+
+1. 刪除一些舊文件
+2. 編輯一些現有內容
+3. 新增一些新內容
+4. 到 Workflow 統一發布 → 一個 commit："Update portfolio - add new works, remove old tests, update descriptions"
+
+---
+
 ## 💡 使用技巧
 
 ### 圖片管理
@@ -169,6 +246,31 @@ https://lum-bio-mh2.pages.dev/admin/
 - 如需回滾，可以用 Git revert
 
 ## ⚠️ 注意事項
+
+### Editorial Workflow 模式說明
+
+**兩種發布方式：**
+
+1. **立即發布（單個變更）**
+   - 在編輯頁面直接點 **Publish now**
+   - 立即生成一個 commit 並部署
+   - 適合：單個緊急修改
+
+2. **延遲發布（批量變更）**
+   - 在編輯頁面點 **Save**（不要點 Publish）
+   - 變更進入 Workflow
+   - 累積多個變更後，到 Workflow 統一 Publish
+   - 適合：大量清理、批量上傳
+
+**已發布的內容如何編輯？**
+- 編輯已發布的內容時，會創建一個「待審核」版本
+- 修改會進入 Workflow，不會立即生效
+- 在 Workflow 中 Publish 後才會更新
+
+**如何取消草稿？**
+- 在 Workflow 中點擊項目
+- 點擊 **Delete unpublished changes**
+- 不會影響已發布的內容
 
 ### 不要運行 sync-images
 
