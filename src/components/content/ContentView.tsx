@@ -170,8 +170,7 @@ const ContentView: React.FC = () => {
       const { items = [], children = [] } = currentView.data;
       const textItems = items.filter(item => item.itemType === 'page');
       const workItems = items.filter(item => item.itemType !== 'page');
-      const hasFileGridContent =
-        children.length > 0 || textItems.length > 0;
+      const hasFileGridContent = children.length > 0 || textItems.length > 0;
 
       if (!items.length && !children.length) {
         return (
