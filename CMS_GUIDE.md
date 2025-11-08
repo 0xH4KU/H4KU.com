@@ -4,14 +4,8 @@
 
 ### 訪問管理界面
 
-**Decap CMS（日常編輯）**
 ```
 https://lum-bio-mh2.pages.dev/admin/
-```
-
-**批量管理工具（批量刪除）**
-```
-https://lum-bio-mh2.pages.dev/admin/bulk/
 ```
 
 首次訪問時，點擊 **Login with GitLab** 並授權即可。
@@ -142,130 +136,58 @@ CMS 已啟用 **Editorial Workflow** 模式，讓你可以累積多個變更，�
 
 ---
 
-## 🔄 批量操作教學
+## 🔄 批量操作說明
 
-### 方式 1：使用批量管理工具（推薦）
+### Editorial Workflow 的限制
 
-**適合場景：** 一次性刪除大量文件、清理測試內容
+**重要：** Editorial Workflow 使用 Git Pull Request 機制，每個內容項是獨立的分支和 PR。
 
-**訪問地址：** `https://lum-bio-mh2.pages.dev/admin/bulk/`
+**這意味著：**
+- ✅ 可以累積多個**新增或編輯**操作
+- ❌ **無法批量刪除**（每次刪除都是獨立的 PR，必須逐個發布）
+- ✅ 適合需要審批流程的團隊
+- ❌ 不適合批量清理操作
 
-**使用步驟：**
+### 使用建議
 
-1. **登入 GitLab**
-   - 首次使用：需要創建 Personal Access Token
-     - 訪問 [GitLab Personal Access Tokens](https://gitlab.com/-/profile/personal_access_tokens)
-     - 創建新 token（選擇 **api** scope）
-     - 複製 token
-   - 將 token 粘貼到輸入框，點擊登入
-   - Token 會保存在瀏覽器，下次無需重新輸入
+**日常操作：**
+- 創建新內容 → **Save** → 到 Workflow → **Publish**（一個 commit）
+- 編輯內容 → 修改完成後 **Publish now**（立即生效）
+- 刪除內容 → 直接刪除（會立即生成 commit）
 
-2. **查找要刪除的內容**
-   - 使用 **搜尋框** 搜索關鍵詞（如 "test"）
-   - 使用 **類型篩選器** 選擇文件夾/頁面/圖片
-   - 使用 **文件夾篩選器** 按文件夾分組查看
-   - 或點擊 **"選擇所有測試文件"** 快速選中
+**批量刪除：**
+如果需要一次性刪除多個測試文件，使用命令行更簡單：
 
-3. **批量選擇**
-   - 勾選要刪除的項目（可以勾選多個）
-   - 或使用頂部的 "全選" 勾選當前篩選結果
+```bash
+# 刪除所有包含 test 的文件
+git rm src/content/**/*test*
+git commit -m "Clean up test files"
+git push
+```
 
-4. **執行刪除**
-   - 點擊 "刪除選中項目"
-   - 預覽要刪除的內容
-   - 確認刪除
-   - ✅ 完成！只產生 **一個 commit**
+或者手動選擇要刪除的文件：
+```bash
+# 刪除特定文件
+git rm src/content/folders/featured-2025-test.json
+git rm src/content/works/featured-2025-test-*.json
+git commit -m "Remove test content"
+git push
+```
 
 **優點：**
-- ✅ 真正的批量選擇（復選框）
-- ✅ 強大的搜索和篩選
-- ✅ 一次刪除 N 個文件 → 一個 commit
-- ✅ 多端通用（手機也能用）
-- ✅ 預覽確認，更安全
-
----
-
-### 方式 2：使用 Editorial Workflow
-
-**適合場景：** 批量新增或編輯內容（不適合批量刪除）
-
-**限制：** Editorial Workflow 對已發布內容的刪除會立即產生 commit，無法累積。
-
-### 情境：清理測試文件（使用批量工具）
-
-假設你想刪除所有測試文件：
-
-**步驟：**
-
-1. 訪問 `https://lum-bio-mh2.pages.dev/admin/bulk/`
-2. 登入 GitLab
-3. 點擊 "選擇所有測試文件" → 自動選中所有包含 "test" 的項目
-4. 檢查選中的內容
-5. 點擊 "刪除選中項目" → 確認
-6. ✅ 完成！一個 commit 刪除所有測試文件
-
----
-
-### 情境：清理測試文件（使用 Workflow - 不推薦）
-
-假設你想刪除多個測試文件，並且只生成一個 commit：
-
-**步驟：**
-
-1. **進入 Content 標籤**
-   - 選擇要操作的類型（Images / Pages / Folders）
-
-2. **進行第一次刪除**
-   - 點擊要刪除的項目
-   - 點擊 **Delete entry**
-   - ⚠️ **重要**：在彈出的對話框中選擇 **Delete unpublished entry** 或直接確認
-   - 這個刪除會進入「草稿」狀態，**不會**立即產生 commit
-
-3. **繼續刪除其他項目**
-   - 重複步驟 2，刪除所有想刪除的內容
-   - 每次刪除都會進入草稿狀態
-
-4. **切換到 Workflow 標籤**
-   - 點擊頂部的 **Workflow** 標籤
-   - 你會看到三個列表：
-     - **Drafts**（草稿）：新建的內容
-     - **In Review**（審核中）：可選的中間狀態
-     - **Ready**（就緒）：準備發布的變更
-
-5. **查看待刪除的項目**
-   - 在 **Drafts** 列表中，你會看到所有待刪除的項目
-   - 可以點擊預覽或修改
-
-6. **統一發布（生成一個 commit）**
-   - 將所有項目移到 **Ready** 狀態（或直接從 Drafts 發布）
-   - 點擊 **Publish** 按鈕
-   - 系統會生成**一個** commit，包含所有變更
-   - Commit 訊息會自動生成，包含所有變更的摘要
-
-**結果：**
-```
-✅ 一個 commit: "Delete test files (10 files removed)"
-
-而不是：
-❌ 10 個 commits:
-    "Delete test-1.png"
-    "Delete test-2.png"
-    ...
-```
+- ✅ 真正的批量操作
+- ✅ 只產生一個 commit
+- ✅ 完全掌控
 
 ### 情境：批量添加新內容
 
-1. 在 Content 中創建第一個新項目 → Save（進入 Draft）
-2. 繼續創建其他項目 → 都 Save
-3. 到 Workflow → 檢查所有新項目
-4. 統一 Publish → 一個 commit 包含所有新內容
+1. 在 Content 中創建第一個新項目 → **Save**（進入 Draft）
+2. 繼續創建其他項目 → 都 **Save**
+3. 到 **Workflow** 標籤 → 檢查所有新項目
+4. 逐個或批量移動到 **Ready**
+5. 統一 **Publish** → 生成一個 commit 包含所有新內容
 
-### 情境：混合操作（新增 + 編輯 + 刪除）
-
-1. 刪除一些舊文件
-2. 編輯一些現有內容
-3. 新增一些新內容
-4. 到 Workflow 統一發布 → 一個 commit："Update portfolio - add new works, remove old tests, update descriptions"
+**注意：** 雖然可以累積多個新增，但 Publish 時每個項目仍是獨立的 PR 合併，最終可能產生多個 commit（取決於 GitLab 設定）。
 
 ---
 
