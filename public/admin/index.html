@@ -6,75 +6,8 @@
   <meta name="robots" content="noindex" />
   <title>Content Manager - lum.bio</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/admin/cms-custom.css">
 </head>
-<body data-theme="light">
-  <!-- Theme Toggle Button -->
-  <div id="theme-toggle-container">
-    <button id="theme-toggle" type="button" aria-label="Toggle theme">
-      <span id="theme-icon-dark">☀</span>
-      <span id="theme-icon-light">☾</span>
-    </button>
-  </div>
-
-  <!-- Decap CMS -->
+<body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-
-  <!-- Theme Toggle Script -->
-  <script>
-    (function() {
-      // Initialize theme from localStorage or system preference
-      const getInitialTheme = () => {
-        const savedTheme = localStorage.getItem('cms-theme');
-        if (savedTheme) {
-          return savedTheme;
-        }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      };
-
-      const setTheme = (theme) => {
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('cms-theme', theme);
-      };
-
-      const toggleTheme = () => {
-        const currentTheme = document.body.getAttribute('data-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-      };
-
-      // Set initial theme
-      setTheme(getInitialTheme());
-
-      // Wait for DOM to be ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-      } else {
-        init();
-      }
-
-      function init() {
-        const toggleButton = document.getElementById('theme-toggle');
-        if (toggleButton) {
-          toggleButton.addEventListener('click', toggleTheme);
-        }
-
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-          if (!localStorage.getItem('cms-theme')) {
-            setTheme(e.matches ? 'dark' : 'light');
-          }
-        });
-      }
-
-      // Keyboard shortcut: Ctrl/Cmd + Shift + D to toggle theme
-      document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
-          e.preventDefault();
-          toggleTheme();
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
