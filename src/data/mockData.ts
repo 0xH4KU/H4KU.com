@@ -1,68 +1,48 @@
-import { MockData } from '@/types';
+import { MockData, Folder, Page, Social } from '@/types';
+import { parseFrontmatter } from '@/utils/frontmatter';
+
+/**
+ * Load content from files using Vite's import.meta.glob
+ * This allows Decap CMS to manage content through file editing
+ */
+
+// Load pages (markdown files with frontmatter)
+const pagesModules = import.meta.glob<string>(
+  '/src/content/pages/*.md',
+  { eager: true, query: '?raw', import: 'default' }
+);
+
+// Load folders (JSON files)
+const foldersModules = import.meta.glob<Folder>(
+  '/src/content/folders/*.json',
+  { eager: true, import: 'default' }
+);
+
+// Load socials (JSON files)
+const socialsModules = import.meta.glob<Social>(
+  '/src/content/socials/*.json',
+  { eager: true, import: 'default' }
+);
+
+// Parse pages from markdown files
+const pages: Page[] = Object.entries(pagesModules).map(([path, content]) => {
+  const { data, content: body } = parseFrontmatter(content);
+  return {
+    id: data.id || path.split('/').pop()?.replace('.md', '') || '',
+    name: data.name || 'Untitled.txt',
+    type: 'txt',
+    content: body.trim(),
+  };
+});
+
+// Load folders from JSON files
+const folders: Folder[] = Object.values(foldersModules);
+
+// Load socials from JSON files
+const socials: Social[] = Object.values(socialsModules);
 
 export const mockData: MockData = {
-  folders: [
-    {
-      id: 'featured',
-      name: 'featured',
-      type: 'folder',
-      children: [
-        {
-          id: 'featured-2025',
-          name: '2025',
-          type: 'folder',
-        },
-      ],
-    },
-    {
-      id: 'sketches',
-      name: 'sketches',
-      type: 'folder',
-      children: [
-        {
-          id: 'sketches-2025',
-          name: '2025',
-          type: 'folder',
-        },
-      ],
-    },
-  ],
-  pages: [
-    {
-      id: 'about',
-      name: 'About.txt',
-      type: 'txt',
-      content: `ABOUT
-════════════════════════
-
-Lum (@lummuu_)
-Freelance illustrator
-
-Anime-style illustrations
-Character design
-Digital art
-
-Available for commissions`,
-    },
-    {
-      id: 'contact',
-      name: 'Contact.txt',
-      type: 'txt',
-      content: `CONTACT
-════════════════════════
-
-Email: hi@lum.bio
-
-For commissions and inquiries,
-please reach out via email or
-use the contact form.
-
-Response time: 1-2 business days`,
-    },
-  ],
-  socials: [
-    { name: 'Instagram', code: 'IG', url: 'https://instagram.com/lummuu_' },
-    { name: 'Twitter', code: 'TW', url: 'https://twitter.com/lummuu_' },
-    { name: 'Email', code: 'EM', url: 'mailto:hi@lum.bio' },
-  ],
+  folders,
+  pages,
+  socials,
 };

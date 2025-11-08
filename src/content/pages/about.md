@@ -1,0 +1,16 @@
+---
+id: about
+name: About.txt
+type: txt
+---
+ABOUT
+════════════════════════
+
+Lum (@lummuu_)
+Freelance illustrator
+
+Anime-style illustrations
+Character design
+Digital art
+
+Available for commissions

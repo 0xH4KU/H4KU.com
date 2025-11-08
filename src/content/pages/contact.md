@@ -1,0 +1,15 @@
+---
+id: contact
+name: Contact.txt
+type: txt
+---
+CONTACT
+════════════════════════
+
+Email: hi@lum.bio
+
+For commissions and inquiries,
+please reach out via email or
+use the contact form.
+
+Response time: 1-2 business days
