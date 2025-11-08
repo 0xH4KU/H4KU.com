@@ -50,13 +50,10 @@ const foldersModules = import.meta.glob<FolderFile>(
 );
 
 // Load socials (JSON files)
-const socialsModules = import.meta.glob<Social>(
-  '/src/content/socials/*.json',
-  {
-    eager: true,
-    import: 'default',
-  }
-);
+const socialsModules = import.meta.glob<Social>('/src/content/socials/*.json', {
+  eager: true,
+  import: 'default',
+});
 
 // Load works (JSON files)
 const worksModules = import.meta.glob<WorkFile>('/src/content/works/*.json', {
@@ -88,8 +85,7 @@ const normalizeOrder = (value: unknown): number | undefined => {
 };
 
 const compareFolders = (a: Folder, b: Folder) => {
-  const orderDiff =
-    (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
+  const orderDiff = (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
   if (orderDiff !== 0) {
     return orderDiff;
   }
@@ -97,8 +93,7 @@ const compareFolders = (a: Folder, b: Folder) => {
 };
 
 const comparePages = (a: Page, b: Page) => {
-  const orderDiff =
-    (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
+  const orderDiff = (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
   if (orderDiff !== 0) {
     return orderDiff;
   }
@@ -107,8 +102,7 @@ const comparePages = (a: Page, b: Page) => {
 
 const sortWorkItems = (items: WorkItem[]): WorkItem[] =>
   [...items].sort((a, b) => {
-    const orderDiff =
-      (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
+    const orderDiff = (a.order ?? ORDER_FALLBACK) - (b.order ?? ORDER_FALLBACK);
     if (orderDiff !== 0) {
       return orderDiff;
     }
