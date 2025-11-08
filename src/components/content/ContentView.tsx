@@ -168,6 +168,10 @@ const ContentView: React.FC = () => {
 
     if (currentView?.type === 'folder') {
       const { items = [], children = [] } = currentView.data;
+      const textItems = items.filter(item => item.itemType === 'page');
+      const workItems = items.filter(item => item.itemType !== 'page');
+      const hasFileGridContent =
+        children.length > 0 || textItems.length > 0;
 
       if (!items.length && !children.length) {
         return (
@@ -192,7 +196,7 @@ const ContentView: React.FC = () => {
           exit="exit"
           key={`folder-${currentView.data.id}`}
         >
-          {children.length > 0 && (
+          {hasFileGridContent && (
             <motion.div
               className={styles['file-grid']}
               variants={containerVariants}
@@ -225,9 +229,42 @@ const ContentView: React.FC = () => {
                   <div className={styles['file-name']}>{child.name}</div>
                 </motion.div>
               ))}
+              {textItems.map(item => (
+                <motion.div
+                  key={item.id}
+                  className={styles['file-item']}
+                  variants={itemVariants}
+                  onClick={() => {
+                    const page: Page = {
+                      id: item.id,
+                      name: item.filename,
+                      type: 'txt',
+                      content: 'content' in item ? item.content : '',
+                    };
+                    navigateTo(page);
+                  }}
+                  whileHover={
+                    prefersReducedMotion
+                      ? {}
+                      : {
+                          scale: 1.02,
+                          y: -2,
+                          transition: { duration: 0.15 },
+                        }
+                  }
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                >
+                  <img
+                    className={styles['file-icon']}
+                    src={paperIcon}
+                    alt="Text file icon"
+                  />
+                  <div className={styles['file-name']}>{item.filename}</div>
+                </motion.div>
+              ))}
             </motion.div>
           )}
-          {items.length > 0 && (
+          {workItems.length > 0 && (
             <motion.div
               className={styles['works-grid']}
               variants={containerVariants}
@@ -235,30 +272,12 @@ const ContentView: React.FC = () => {
               animate="visible"
               exit="exit"
             >
-              {items.map(item => {
-                const isTextPage = item.itemType === 'page';
-                const itemClassName = [
-                  styles['work-item'],
-                  isTextPage ? styles['text-item'] : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ');
-                const handleClick = isTextPage
-                  ? () => {
-                      const page: Page = {
-                        id: item.id,
-                        name: item.filename,
-                        type: 'txt',
-                        content: 'content' in item ? item.content : '',
-                      };
-                      navigateTo(page);
-                    }
-                  : () => handleOpenLightbox(item, items);
-
+              {workItems.map(item => {
+                const handleClick = () => handleOpenLightbox(item, workItems);
                 return (
                   <motion.div
                     key={item.id}
-                    className={itemClassName}
+                    className={styles['work-item']}
                     variants={itemVariants}
                     onClick={handleClick}
                     whileHover={
@@ -272,21 +291,10 @@ const ContentView: React.FC = () => {
                     }
                     whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                   >
-                    {isTextPage ? (
-                      <div className={styles['text-icon-wrapper']}>
-                        <img
-                          className={styles['text-icon']}
-                          src={paperIcon}
-                          alt="Text file icon"
-                        />
-                      </div>
-                    ) : (
-                      <LazyImage
-                        className={styles['work-thumb']}
-                        src={'thumb' in item ? item.thumb : ''}
-                        alt={item.filename}
-                      />
-                    )}
+                    <LazyImage
+                      src={'thumb' in item ? item.thumb : ''}
+                      alt={item.filename}
+                    />
                     <div className={styles['work-info']}>{item.filename}</div>
                   </motion.div>
                 );
@@ -375,12 +383,6 @@ const ContentView: React.FC = () => {
           >
             {mockData.homeItems.map(item => {
               const isTextPage = item.itemType === 'page';
-              const itemClassName = [
-                styles['work-item'],
-                isTextPage ? styles['text-item'] : '',
-              ]
-                .filter(Boolean)
-                .join(' ');
               const handleClick = isTextPage
                 ? () => {
                     const page: Page = {
@@ -396,7 +398,7 @@ const ContentView: React.FC = () => {
               return (
                 <motion.div
                   key={item.id}
-                  className={itemClassName}
+                  className={styles['work-item']}
                   variants={itemVariants}
                   onClick={handleClick}
                   whileHover={
@@ -411,16 +413,13 @@ const ContentView: React.FC = () => {
                   whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                 >
                   {isTextPage ? (
-                    <div className={styles['text-icon-wrapper']}>
-                      <img
-                        className={styles['text-icon']}
-                        src={paperIcon}
-                        alt="Text file icon"
-                      />
-                    </div>
+                    <img
+                      className={styles['file-icon']}
+                      src={paperIcon}
+                      alt="Text file icon"
+                    />
                   ) : (
                     <LazyImage
-                      className={styles['work-thumb']}
                       src={'thumb' in item ? item.thumb : ''}
                       alt={item.filename}
                     />
