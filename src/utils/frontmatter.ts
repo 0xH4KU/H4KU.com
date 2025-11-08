@@ -19,7 +19,7 @@ export function parseFrontmatter(content: string): {
   const data: Frontmatter = {};
 
   // Parse simple YAML frontmatter (key: value pairs)
-  frontmatter.split('\n').forEach((line) => {
+  frontmatter.split('\n').forEach(line => {
     const colonIndex = line.indexOf(':');
     if (colonIndex > 0) {
       const key = line.slice(0, colonIndex).trim();

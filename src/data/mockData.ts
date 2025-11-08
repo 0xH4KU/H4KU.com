@@ -7,22 +7,23 @@ import { parseFrontmatter } from '@/utils/frontmatter';
  */
 
 // Load pages (markdown files with frontmatter)
-const pagesModules = import.meta.glob<string>(
-  '/src/content/pages/*.md',
-  { eager: true, query: '?raw', import: 'default' }
-);
+const pagesModules = import.meta.glob<string>('/src/content/pages/*.md', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+});
 
 // Load folders (JSON files)
-const foldersModules = import.meta.glob<Folder>(
-  '/src/content/folders/*.json',
-  { eager: true, import: 'default' }
-);
+const foldersModules = import.meta.glob<Folder>('/src/content/folders/*.json', {
+  eager: true,
+  import: 'default',
+});
 
 // Load socials (JSON files)
-const socialsModules = import.meta.glob<Social>(
-  '/src/content/socials/*.json',
-  { eager: true, import: 'default' }
-);
+const socialsModules = import.meta.glob<Social>('/src/content/socials/*.json', {
+  eager: true,
+  import: 'default',
+});
 
 // Parse pages from markdown files
 const pages: Page[] = Object.entries(pagesModules).map(([path, content]) => {
