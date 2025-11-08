@@ -33,12 +33,24 @@ collections:
     summary: "{{name}} • {{folderId | default('[Home]')}}"
     sortable_fields: ['folderId', 'name', 'order', 'date']
     view_filters:
-      - label: "Homepage Only"
+      - label: "📍 Homepage Only"
         field: folderId
-        pattern: ''
-      - label: "In Folders"
+        pattern: false
+      - label: "📁 All in Folders"
         field: folderId
         pattern: '.+'
+      - label: "⭐ Featured (All)"
+        field: folderId
+        pattern: '^featured'
+      - label: "✏️ Sketches (All)"
+        field: folderId
+        pattern: '^sketches'
+      - label: "🗓️ Featured › 2025"
+        field: folderId
+        pattern: '^featured-2025$'
+      - label: "🗓️ Sketches › 2025"
+        field: folderId
+        pattern: '^sketches-2025$'
     fields:
       - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., about, contact)", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
       - {label: "Display Name", name: "name", widget: "string", required: true, hint: "Name shown on the homepage (e.g., About.txt)"}
@@ -99,12 +111,24 @@ collections:
     # Enhanced sorting and filtering
     sortable_fields: ['folderId', 'filename', 'order', 'date']
     view_filters:
-      - label: "Homepage Only"
+      - label: "📍 Homepage Only"
         field: folderId
-        pattern: ''
-      - label: "In Folders"
+        pattern: false
+      - label: "📁 All in Folders"
         field: folderId
         pattern: '.+'
+      - label: "⭐ Featured (All)"
+        field: folderId
+        pattern: '^featured'
+      - label: "✏️ Sketches (All)"
+        field: folderId
+        pattern: '^sketches'
+      - label: "🗓️ Featured › 2025"
+        field: folderId
+        pattern: '^featured-2025$'
+      - label: "🗓️ Sketches › 2025"
+        field: folderId
+        pattern: '^sketches-2025$'
     fields:
       # === Basic information ===
       - {label: "ID", name: "id", widget: "string", required: true, hint: "Simple identifier (e.g., 1, 2, portrait, landscape). Folder name will be added automatically."}

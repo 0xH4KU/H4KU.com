@@ -32,40 +32,61 @@ CMS 已啟用 **Editorial Workflow** 模式，讓你可以累積多個變更，�
 1. 左側菜單 → **Images**
 2. 點擊 **New Image**
 3. 填寫基本信息：
-   - **ID**: 輸入簡單的編號即可，例如 `1`, `2`, `portrait`（系統會自動加上文件夾名稱避免衝突）
-   - **Filename**: 顯示的檔名（例如：`1.png`, `artwork.png`）
+   - **ID**: 簡單編號（例如：`1`, `2`, `portrait`, `sketch-01`）
+     - 只能用**小寫英文、數字、連字符**
+     - 不可用中文或空格
+     - 系統會自動加上文件夾前綴
+   - **Filename**: 顯示的檔名（例如：`1.png`, `artwork.jpg`, `sketch-01.webp`）
+     - 必須包含副檔名 (.png / .jpg / .webp)
+     - 不可用中文或空格
    - **Folder (optional)**: 從下拉列表搜尋任何資料夾（支援巢狀層級）。留白就會直接顯示在 lum.bio 首頁。
    - **Date**: 選擇作品日期
    - **Sort Order**: 可選，調整顯示順序，數字越小越靠前；不填則依日期排序
 4. 上傳圖片：
-   - **縮略圖**: 小圖預覽（建議 400x400）
-   - **完整圖片**: 高清大圖
-   - **尺寸**: 可選，例如 `1920x1080`
+   - **Image**: 上傳高清圖片（建議 1920x1080 或更高）
+   - **Dimensions**: 圖片尺寸 - **會自動填寫**，無需手動輸入！
+   - 💡 系統會自動生成縮略圖，只需上傳一張圖即可
 5. 添加詳細信息（可選）：
-   - **標題**: 作品標題
-   - **描述**: 作品描述
-   - **客戶**: 委託客戶
-   - **標籤**: 多個標籤，按 Enter 添加
+   - **Title**: 作品標題
+   - **Description**: 作品描述
+   - **Client**: 委託客戶
+   - **Tags**: 從預設標籤中選擇（可多選）：
+     - 🎨 Fan Art（同人創作）
+     - ✨ Original Character (OC)（原創角色）
+     - 💼 Commission（委託作品）
+     - ✏️ Sketch（草圖/速寫）
+     - 🖼️ Illustration（完整插畫）
+     - 👤 Portrait（人物/頭像）
+     - 🧍 Full Body（全身圖）
+     - 🎭 Chibi（Q版）
 6. 點擊 **Publish**
 
-**批量上傳圖片：**
-1. 點擊圖片字段
-2. 可以一次選擇多個文件上傳
-3. 上傳到 `/images/uploads/` 目錄
+**💡 上傳提示：**
+- 只需上傳一張高清圖片，系統會自動處理縮略圖
+- 圖片尺寸會在保存時自動偵測填寫
+- 上傳到 `/images/uploads/` 目錄
+- 單張圖片最大 10MB
 
 **快速找到文件：**
-- 列表顯示格式：`檔名 • 資料夾名稱`（例如：`1.png • featured-2025-test`）
+- 列表顯示格式：`檔名 • 資料夾名稱`（例如：`1.png • featured-2025`）
 - 使用右上角的 **篩選器** 快速查看：
-  - **Homepage Only**: 只顯示首頁的圖片
-  - **In Folders**: 只顯示資料夾裡的圖片
-- 使用 **搜尋框** 搜尋檔名或資料夾名稱
+  - 📍 **Homepage Only**: 只顯示首頁的圖片
+  - 📁 **All in Folders**: 只顯示資料夾裡的圖片
+  - ⭐ **Featured (All)**: Featured 及其所有子資料夾
+  - ✏️ **Sketches (All)**: Sketches 及其所有子資料夾
+  - 🗓️ **Featured › 2025**: 只顯示 featured-2025 資料夾
+  - 🗓️ **Sketches › 2025**: 只顯示 sketches-2025 資料夾
+- 使用 **搜尋框** 直接搜尋檔名或資料夾名稱
 - 點擊欄位標題排序：
   - **Folder Id**: 按資料夾分組查看（推薦！）
   - **Filename**: 按檔名排序
   - **Order**: 按自訂順序
   - **Date**: 按日期排序
 
-💡 **小提示**：點擊 **Folder Id** 欄位排序，可以把同一個資料夾的圖片集中在一起，方便批量管理！
+💡 **管理大量作品的技巧**：
+1. 使用 **篩選器** 快速定位到特定資料夾（如：Sketches › 2025）
+2. 點擊 **Folder Id** 排序，同資料夾的作品會集中在一起
+3. 使用 **搜尋框** 搜尋特定檔名或資料夾 ID
 
 ---
 
@@ -89,10 +110,14 @@ CMS 已啟用 **Editorial Workflow** 模式，讓你可以累積多個變更，�
 
 **快速找到文件：**
 - 列表顯示格式：`檔名 • 資料夾名稱`（例如：`About.txt • [Home]`）
-- 使用右上角的 **篩選器**：
-  - **Homepage Only**: 只顯示首頁的頁面
-  - **In Folders**: 只顯示資料夾裡的頁面
-- 使用 **搜尋框** 搜尋檔名或資料夾名稱
+- 使用右上角的 **篩選器** 快速查看：
+  - 📍 **Homepage Only**: 只顯示首頁的頁面
+  - 📁 **All in Folders**: 只顯示資料夾裡的頁面
+  - ⭐ **Featured (All)**: Featured 及其所有子資料夾
+  - ✏️ **Sketches (All)**: Sketches 及其所有子資料夾
+  - 🗓️ **Featured › 2025**: 只顯示 featured-2025 資料夾
+  - 🗓️ **Sketches › 2025**: 只顯示 sketches-2025 資料夾
+- 使用 **搜尋框** 直接搜尋檔名或資料夾名稱
 - 點擊 **Folder Id** 欄位排序，按資料夾分組查看
 
 **編輯現有頁面：**
@@ -195,12 +220,14 @@ git push
 
 ### 圖片管理
 
-- **建議尺寸**：
-  - 縮略圖：400x400 px
-  - 完整圖片：1920x1080 px 或更高
+- **建議尺寸**：1920x1080 px 或更高（系統會自動生成縮略圖）
 - **支持格式**：JPG、PNG、WebP
+- **文件大小**：單張圖片最大 10MB
 - **上傳位置**：所有圖片保存在 `public/images/uploads/`
-- **使用圖片**：上傳後可以在媒體庫中重複使用
+- **自動功能**：
+  - ✅ 上傳一張圖即可，縮略圖自動生成
+  - ✅ 圖片尺寸自動偵測填寫
+  - ✅ 可在媒體庫中重複使用
 
 ### 內容預覽
 
@@ -222,6 +249,45 @@ git push
 ---
 
 ## 🎨 高級功能
+
+### 自定義篩選器（半自動）
+
+當你添加新資料夾後，可以使用內建命令自動生成篩選器建議：
+
+**步驟：**
+1. 在 CMS 中創建新資料夾（例如 `commissions`、`sketches-2026`）
+2. 在終端運行：`npm run cms:suggest-filters`
+3. 腳本會顯示當前資料夾結構和建議的篩選器配置
+4. 複製輸出的 YAML 配置
+5. 粘貼到 `public/admin/config.yml` 中的兩個位置：
+   - Pages collection 的 `view_filters`
+   - Images collection 的 `view_filters`
+
+**範例輸出：**
+```
+📁 Current folder structure:
+
+⭐ Featured (featured)
+  ├─ 2025 (featured-2025)
+  └─ 2026 (featured-2026)  ← 新增的資料夾
+✏️ Sketches (sketches)
+  └─ 2025 (sketches-2025)
+💼 Commissions (commissions)  ← 新增的資料夾
+
+📋 Suggested view_filters:
+   (自動生成的配置，直接複製粘貼即可)
+```
+
+**篩選器語法說明：**
+- `^featured` - 匹配所有以 featured 開頭的資料夾
+- `^featured-2025$` - 精確匹配 featured-2025
+- 使用正則表達式，非常靈活
+
+**優點：**
+- ✅ 自動偵測所有資料夾
+- ✅ 自動生成配置
+- ✅ 安全（只顯示建議，不會修改文件）
+- ✅ 可以自定義 emoji 和標籤名稱
 
 ### 批量編輯
 
@@ -270,11 +336,27 @@ git push
 
 ### ID 命名規範
 
-- **Images ID**: 只需要輸入簡單的編號，例如 `1`, `2`, `3` 或 `portrait`, `landscape`
-  - 系統會自動生成：`featured-2025-1.json`, `sketches-portrait.json`
-  - 不同文件夾下可以用相同的 ID（如都用 `1`, `2`, `3`）
-- **Pages ID**: 小寫、連字符，例如 `about`, `privacy-policy`, `contact`
-- **Folder ID**: 小寫、連字符，例如 `featured`, `sketches-2025`, `commissions`
+**重要：所有 ID 和檔名必須使用英文，不可用中文或空格！**
+
+- **Images ID**: 簡單的英文編號
+  - ✅ 正確：`1`, `2`, `portrait`, `sketch-01`, `commission-2025`
+  - ❌ 錯誤：`作品1`, `portrait 1`, `sketch_01`（不可用中文、空格、底線）
+  - 只能用：小寫英文字母（a-z）、數字（0-9）、連字符（-）
+  - 系統會自動加上資料夾前綴：`featured-1.json`, `sketches-portrait.json`
+  - 不同文件夾可用相同 ID（如都用 `1`, `2`, `3`）
+
+- **Images Filename**: 顯示的英文檔名
+  - ✅ 正確：`1.png`, `artwork.jpg`, `sketch-01.webp`
+  - ❌ 錯誤：`作品.png`, `my art.jpg`, `圖片1.png`
+  - 必須包含副檔名：`.png` / `.jpg` / `.webp`
+
+- **Pages ID**: 小寫英文、連字符
+  - ✅ 正確：`about`, `privacy-policy`, `contact`
+  - ❌ 錯誤：`About`, `privacy_policy`, `聯絡我們`
+
+- **Folder ID**: 小寫英文、連字符
+  - ✅ 正確：`featured`, `sketches-2025`, `commissions`
+  - ❌ 錯誤：`Featured`, `sketches_2025`, `精選作品`
 
 ### 避免並發編輯
 
