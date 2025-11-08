@@ -98,6 +98,35 @@ pnpm dev
 - `npm run lint:fix` - Fix ESLint errors automatically
 - `npm run format` - Format code with Prettier
 
+## 📝 Content Management
+
+This project uses **Decap CMS** for easy content management.
+
+### Access the CMS
+
+Visit: `https://lum-bio-mh2.pages.dev/admin/`
+
+### What You Can Manage
+
+- **📄 Pages**: Text files (About, Contact, etc.)
+- **📁 Works**: Portfolio pieces with images
+- **🗂️ Folders**: Organize your works
+- **🔗 Social Links**: Social media links
+
+### Quick Start
+
+1. Visit `/admin/`
+2. Login with GitLab
+3. Add/edit content
+4. Click **Publish**
+5. Wait 1-2 minutes for deployment
+
+📚 **Full Guide**: See [CMS_GUIDE.md](./CMS_GUIDE.md) for detailed instructions
+
+### Setup Guide
+
+For initial OAuth configuration, see [DECAP_CMS_SETUP.md](./DECAP_CMS_SETUP.md)
+
 ## Deployment
 
 This project is configured for deployment on **Cloudflare Pages**.
