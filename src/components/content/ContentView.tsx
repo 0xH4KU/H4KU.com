@@ -291,63 +291,128 @@ const ContentView: React.FC = () => {
     // 主頁
     return (
       <motion.div
-        className={styles['file-grid']}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        className={styles['folder-content']}
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
         exit="exit"
         key="home"
       >
-        {mockData.folders.map(folder => (
+        <motion.div
+          className={styles['file-grid']}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          {mockData.folders.map(folder => (
+            <motion.div
+              key={folder.id}
+              className={styles['file-item']}
+              variants={itemVariants}
+              onClick={() => handleNavigate(folder)}
+              whileHover={
+                prefersReducedMotion
+                  ? {}
+                  : {
+                      scale: 1.02,
+                      y: -2,
+                      transition: { duration: 0.15 },
+                    }
+              }
+              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            >
+              <img
+                className={styles['file-icon']}
+                src={folderIcon}
+                alt="Folder icon"
+              />
+              <div className={styles['file-name']}>{folder.name}</div>
+            </motion.div>
+          ))}
+          {mockData.pages.map(page => (
+            <motion.div
+              key={page.id}
+              className={styles['file-item']}
+              variants={itemVariants}
+              onClick={() => handleNavigate(page)}
+              whileHover={
+                prefersReducedMotion
+                  ? {}
+                  : {
+                      scale: 1.02,
+                      y: -2,
+                      transition: { duration: 0.15 },
+                    }
+              }
+              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            >
+              <img
+                className={styles['file-icon']}
+                src={paperIcon}
+                alt="Text file icon"
+              />
+              <div className={styles['file-name']}>{page.name}</div>
+            </motion.div>
+          ))}
+        </motion.div>
+        {mockData.homeItems.length > 0 && (
           <motion.div
-            key={folder.id}
-            className={styles['file-item']}
-            variants={itemVariants}
-            onClick={() => handleNavigate(folder)}
-            whileHover={
-              prefersReducedMotion
-                ? {}
-                : {
-                    scale: 1.02,
-                    y: -2,
-                    transition: { duration: 0.15 },
-                  }
-            }
-            whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            className={styles['works-grid']}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
           >
-            <img
-              className={styles['file-icon']}
-              src={folderIcon}
-              alt="Folder icon"
-            />
-            <div className={styles['file-name']}>{folder.name}</div>
-          </motion.div>
-        ))}
-        {mockData.pages.map(page => (
-          <motion.div
-            key={page.id}
-            className={styles['file-item']}
-            variants={itemVariants}
-            onClick={() => handleNavigate(page)}
-            whileHover={
-              prefersReducedMotion
-                ? {}
-                : {
-                    scale: 1.02,
-                    y: -2,
-                    transition: { duration: 0.15 },
+            {mockData.homeItems.map(item => {
+              const isTextPage = item.itemType === 'page';
+              const handleClick = isTextPage
+                ? () => {
+                    const page: Page = {
+                      id: item.id,
+                      name: item.filename,
+                      type: 'txt',
+                      content: 'content' in item ? item.content : '',
+                    };
+                    navigateTo(page);
                   }
-            }
-            whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-          >
-            <img
-              className={styles['file-icon']}
-              src={paperIcon}
-              alt="Text file icon"
-            />
-            <div className={styles['file-name']}>{page.name}</div>
+                : () => handleOpenLightbox(item, mockData.homeItems);
+
+              return (
+                <motion.div
+                  key={item.id}
+                  className={styles['work-item']}
+                  variants={itemVariants}
+                  onClick={handleClick}
+                  whileHover={
+                    prefersReducedMotion
+                      ? {}
+                      : {
+                          scale: 1.02,
+                          y: -3,
+                          transition: { duration: 0.15 },
+                        }
+                  }
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                >
+                  {isTextPage ? (
+                    <img
+                      className={styles['file-icon']}
+                      src={paperIcon}
+                      alt="Text file icon"
+                    />
+                  ) : (
+                    <LazyImage
+                      src={'thumb' in item ? item.thumb : ''}
+                      alt={item.filename}
+                    />
+                  )}
+                  <div className={styles['work-info']}>{item.filename}</div>
+                </motion.div>
+              );
+            })}
           </motion.div>
-        ))}
+        )}
       </motion.div>
     );
   };

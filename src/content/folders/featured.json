@@ -1,12 +1,8 @@
 {
   "id": "featured",
-  "name": "featured",
+  "name": "Featured",
   "type": "folder",
-  "children": [
-    {
-      "id": "featured-2025",
-      "name": "2025",
-      "type": "folder"
-    }
-  ]
+  "parentId": null,
+  "order": 1,
+  "description": "Highlighted works"
 }

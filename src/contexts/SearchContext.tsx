@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from 'react';
 import { mockData } from '@/data/mockData';
-import { SearchResult } from '@/types';
+import { Folder, SearchResult, WorkItem } from '@/types';
 import { flattenFolders } from '@/utils/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DEBOUNCE_DELAYS } from '@/config/constants';
@@ -22,6 +22,34 @@ interface SearchContextValue {
 }
 
 const SearchContext = createContext<SearchContextValue | undefined>(undefined);
+
+const doesWorkItemMatch = (workItem: WorkItem, query: string) => {
+  const matchesFilename = workItem.filename.toLowerCase().includes(query);
+  const matchesTitle = workItem.title?.toLowerCase().includes(query);
+  const matchesDescription = workItem.description
+    ?.toLowerCase()
+    .includes(query);
+  const matchesTags = workItem.tags?.some(tag =>
+    tag.toLowerCase().includes(query)
+  );
+  const matchesClient =
+    workItem.itemType === 'work'
+      ? workItem.client?.toLowerCase().includes(query)
+      : false;
+  const matchesContent =
+    workItem.itemType === 'page' && 'content' in workItem
+      ? workItem.content.toLowerCase().includes(query)
+      : false;
+
+  return (
+    matchesFilename ||
+    matchesTitle ||
+    matchesDescription ||
+    matchesTags ||
+    matchesClient ||
+    matchesContent
+  );
+};
 
 export function SearchProvider({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -58,28 +86,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       // Search work items within folder
       if (flatFolder.folder.items) {
         flatFolder.folder.items.forEach(workItem => {
-          const matchesFilename = workItem.filename
-            .toLowerCase()
-            .includes(query);
-          const matchesTitle = workItem.title?.toLowerCase().includes(query);
-          const matchesDescription = workItem.description
-            ?.toLowerCase()
-            .includes(query);
-          const matchesTags = workItem.tags?.some(tag =>
-            tag.toLowerCase().includes(query)
-          );
-          const matchesClient =
-            workItem.itemType === 'work'
-              ? workItem.client?.toLowerCase().includes(query)
-              : false;
-
-          if (
-            matchesFilename ||
-            matchesTitle ||
-            matchesDescription ||
-            matchesTags ||
-            matchesClient
-          ) {
+          if (doesWorkItemMatch(workItem, query)) {
             results.push({
               type: 'work',
               id: workItem.id,
@@ -107,6 +114,29 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         });
       }
     });
+
+    // Search works on home (no folder)
+    if (mockData.homeItems.length > 0) {
+      const homeFolder: Folder = {
+        id: 'home',
+        name: 'Home',
+        type: 'folder',
+        items: mockData.homeItems,
+      };
+
+      mockData.homeItems.forEach(workItem => {
+        if (doesWorkItemMatch(workItem, query)) {
+          results.push({
+            type: 'work',
+            id: workItem.id,
+            label: 'Work',
+            path: ['home'],
+            folder: homeFolder,
+            work: workItem,
+          });
+        }
+      });
+    }
 
     return results;
   }, [debouncedSearchQuery, allFolders]);

@@ -31,12 +31,24 @@ collections:
     sortable_fields: ['name', 'id']
     fields:
       - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., about, contact)", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
-      - {label: "Display Name", name: "name", widget: "string", required: true, hint: "Filename shown in sidebar (e.g., About.txt)"}
+      - {label: "Display Name", name: "name", widget: "string", required: true, hint: "Name shown on the homepage (e.g., About.txt)"}
+      - {label: "Folder Filename Override", name: "filename", widget: "string", required: false, hint: "Optional filename displayed when this page lives inside a folder. Defaults to Display Name."}
+      - label: "Folder (optional)"
+        name: "folderId"
+        widget: "relation"
+        collection: "folders"
+        value_field: "id"
+        search_fields: ['name', 'id']
+        display_fields: ['name']
+        required: false
+        hint: "Select a folder to place this page inside. Leave empty to keep it on the homepage."
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower numbers appear first. Leave blank for automatic ordering."}
+      - {label: "Published Date", name: "date", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, hint: "Optional date used for sorting"}
       - {label: "Type", name: "type", widget: "hidden", default: "txt"}
       - {label: "Content", name: "body", widget: "text", required: true, hint: "Page text content"}
 
   # Manage work folder structure
-  - name: "work_folders"
+  - name: "folders"
     label: "Folders"
     label_singular: "Folder"
     folder: "src/content/folders"
@@ -45,20 +57,23 @@ collections:
     extension: "json"
     format: "json"
     summary: "{{name}} ({{id}})"
-    sortable_fields: ['name', 'id']
+    sortable_fields: ['order', 'name']
     fields:
       - {label: "Folder ID", name: "id", widget: "string", required: true, hint: "e.g., featured, sketches", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
-      - {label: "Folder Name", name: "name", widget: "string", required: true, hint: "Name displayed in sidebar"}
-      - {label: "Type", name: "type", widget: "hidden", default: "folder"}
-      - label: "Subfolders"
-        name: "children"
-        widget: "list"
+      - {label: "Folder Name", name: "name", widget: "string", required: true, hint: "Name displayed in the sidebar and file explorer"}
+      - label: "Parent Folder"
+        name: "parentId"
+        widget: "relation"
+        collection: "folders"
+        value_field: "id"
+        search_fields: ['name', 'id']
+        display_fields: ['name']
         required: false
-        summary: "{{fields.name}}"
-        fields:
-          - {label: "ID", name: "id", widget: "string", hint: "e.g., featured-2025"}
-          - {label: "Name", name: "name", widget: "string", hint: "e.g., 2025"}
-          - {label: "Type", name: "type", widget: "hidden", default: "folder"}
+        hint: "Leave empty for top-level folders. Select any folder to nest inside it."
+      - {label: "Folder Description", name: "description", widget: "text", required: false, hint: "Optional note shown only in CMS for organization"}
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Smaller numbers appear first"}
+      - {label: "Hide from navigation", name: "hidden", widget: "boolean", required: false, default: false, hint: "Hidden folders remain usable for works/pages but won't show up in the UI."}
+      - {label: "Type", name: "type", widget: "hidden", default: "folder"}
 
   # Manage work items
   - name: "works"
@@ -70,16 +85,9 @@ collections:
     extension: "json"
     format: "json"
     # List display template
-    summary: "{{title}} | {{folderId}} | {{date}}"
+    summary: "{{filename}} | {{folderId | default('home')}} | {{date}}"
     # Sort: newest first
-    sortable_fields: ['date', 'title', 'folderId']
-    view_filters:
-      - label: Featured
-        field: folderId
-        pattern: 'featured-.*'
-      - label: Sketches
-        field: folderId
-        pattern: 'sketches-.*'
+    sortable_fields: ['order', 'date', 'title', 'folderId']
     fields:
       # === Basic information ===
       - {label: "ID", name: "id", widget: "string", required: true, hint: "Unique identifier (e.g., work-001)"}
@@ -93,15 +101,17 @@ collections:
           - {label: "Text Page (.txt)", value: "page"}
         hint: "Select the type to create"
       - {label: "Filename", name: "filename", widget: "string", required: true, hint: "Displayed filename (image work or .txt page)"}
-      - label: "Folder"
+      - label: "Folder (optional)"
         name: "folderId"
-        widget: "select"
-        required: true
-        options:
-          - {label: "Featured 2025", value: "featured-2025"}
-          - {label: "Sketches 2025", value: "sketches-2025"}
-        hint: "Select the folder for this work"
+        widget: "relation"
+        collection: "folders"
+        value_field: "id"
+        search_fields: ['name', 'id']
+        display_fields: ['name']
+        required: false
+        hint: "Choose any folder (at any depth). Leave empty to pin this work directly on the homepage."
       - {label: "Date", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Override auto-sorting. Lower numbers appear first."}
 
       # === Image work fields (only when itemType = "work") ===
       - {label: "Thumbnail", name: "thumb", widget: "image", required: false, hint: "[Image work only] Preview image (recommended: 400x400)"}
