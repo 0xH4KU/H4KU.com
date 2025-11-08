@@ -227,7 +227,11 @@ describe('Component', () => {
 - `npm run dev` - Start dev server
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
-- `npm run format` - Format with Prettier
+- `npm run format` - Format with Prettier (auto-fix)
+- `npm run format:check` - Check if code is formatted
+- `npm run type-check` - Run TypeScript compiler check
+- `npm run test` - Run tests (Vitest watch mode)
+- `npm run test:run` - Run tests once
 
 ## Deployment Target
 
@@ -322,20 +326,61 @@ Search queries are automatically debounced (300ms):
 // No action needed when implementing search features
 ```
 
+## CI/CD Pipeline Checks
+
+**CRITICAL:** Always run these checks before committing to avoid CI failures:
+
+```bash
+# 1. Format code (auto-fix)
+npm run format
+
+# 2. Run all CI checks locally
+npm run lint           # ESLint - code quality
+npm run type-check     # TypeScript - type safety
+npm run format:check   # Prettier - code formatting
+
+# 3. Optional: Run tests
+npm run test:run       # Run all tests once
+```
+
+**Why these checks matter:**
+- CI pipeline runs these exact commands
+- If any check fails, the entire pipeline fails
+- Failed CI = blocked deployment to production
+- Running locally first saves time and CI resources
+
+**Common CI failures:**
+- ❌ **Prettier formatting** - Most common! Run `npm run format` before commit
+- ❌ **TypeScript errors** - Fix type errors before committing
+- ❌ **ESLint violations** - Clean up code quality issues
+
+**Best Practice Workflow:**
+```bash
+# After editing files
+npm run format        # Fix formatting automatically
+npm run type-check    # Verify no type errors
+git add .
+git commit -m "..."
+git push
+```
+
 ## Quick Checks Before Commit
 
-1. [ ] No TypeScript errors
-2. [ ] No ESLint errors
-3. [ ] CSS Modules used (no inline styles)
-4. [ ] Imports use @/ alias
-5. [ ] No console.log statements
-6. [ ] No unused imports/variables
-7. [ ] Component has proper TypeScript types
-8. [ ] Proper commit message format
-9. [ ] Accessibility: ARIA labels where needed
-10. [ ] Accessibility: Focus indicators present
-11. [ ] Animations respect reduced motion preference
-12. [ ] URLs are shareable (if navigation involved)
+1. [ ] **Run `npm run format`** ← Most important!
+2. [ ] **Run `npm run type-check`** ← Catches type errors
+3. [ ] **Run `npm run lint`** ← Catches code quality issues
+4. [ ] No TypeScript errors
+5. [ ] No ESLint errors
+6. [ ] CSS Modules used (no inline styles)
+7. [ ] Imports use @/ alias
+8. [ ] No console.log statements
+9. [ ] No unused imports/variables
+10. [ ] Component has proper TypeScript types
+11. [ ] Proper commit message format
+12. [ ] Accessibility: ARIA labels where needed
+13. [ ] Accessibility: Focus indicators present
+14. [ ] Animations respect reduced motion preference
+15. [ ] URLs are shareable (if navigation involved)
 
 ## Full Documentation
 
