@@ -8,8 +8,6 @@
   "full": "https://pbs.twimg.com/media/G5JZfNdagAAthqe?format=jpg&name=large",
   "thumb": "https://pbs.twimg.com/media/G5JZfNdagAAthqe?format=jpg&name=large",
   "title": "test",
-  "tags": [
-    "test"
-  ],
+  "tags": ["test"],
   "id": "test"
 }
