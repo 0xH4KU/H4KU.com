@@ -170,7 +170,8 @@ const ContentView: React.FC = () => {
       const { items = [], children = [] } = currentView.data;
       const textItems = items.filter(item => item.itemType === 'page');
       const workItems = items.filter(item => item.itemType !== 'page');
-      const hasFileGridContent = children.length > 0 || textItems.length > 0;
+      const hasFileGridContent =
+        children.length > 0 || textItems.length > 0 || workItems.length > 0;
 
       if (!items.length && !children.length) {
         return (
@@ -261,43 +262,31 @@ const ContentView: React.FC = () => {
                   <div className={styles['file-name']}>{item.filename}</div>
                 </motion.div>
               ))}
-            </motion.div>
-          )}
-          {workItems.length > 0 && (
-            <motion.div
-              className={styles['works-grid']}
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              {workItems.map(item => {
-                const handleClick = () => handleOpenLightbox(item, workItems);
-                return (
-                  <motion.div
-                    key={item.id}
-                    className={styles['work-item']}
-                    variants={itemVariants}
-                    onClick={handleClick}
-                    whileHover={
-                      prefersReducedMotion
-                        ? {}
-                        : {
-                            scale: 1.02,
-                            y: -3,
-                            transition: { duration: 0.15 },
-                          }
-                    }
-                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                  >
-                    <LazyImage
-                      src={'thumb' in item ? item.thumb : ''}
-                      alt={item.filename}
-                    />
-                    <div className={styles['work-info']}>{item.filename}</div>
-                  </motion.div>
-                );
-              })}
+              {workItems.map(item => (
+                <motion.div
+                  key={item.id}
+                  className={styles['file-item']}
+                  variants={itemVariants}
+                  onClick={() => handleOpenLightbox(item, workItems)}
+                  whileHover={
+                    prefersReducedMotion
+                      ? {}
+                      : {
+                          scale: 1.02,
+                          y: -2,
+                          transition: { duration: 0.15 },
+                        }
+                  }
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                >
+                  <LazyImage
+                    className={styles['file-thumb']}
+                    src={'thumb' in item ? item.thumb : ''}
+                    alt={item.filename}
+                  />
+                  <div className={styles['file-name']}>{item.filename}</div>
+                </motion.div>
+              ))}
             </motion.div>
           )}
         </motion.div>
@@ -419,6 +408,7 @@ const ContentView: React.FC = () => {
                     />
                   ) : (
                     <LazyImage
+                      className={styles['work-thumb']}
                       src={'thumb' in item ? item.thumb : ''}
                       alt={item.filename}
                     />
