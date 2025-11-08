@@ -26,8 +26,23 @@ const socialsModules = import.meta.glob<Social>('/src/content/socials/*.json', {
 });
 
 // Load works (JSON files)
-interface WorkFile extends WorkItem {
+interface WorkFile {
   folderId: string;
+  itemType?: 'work' | 'page';
+  // Common fields
+  id: string;
+  filename: string;
+  date: string;
+  title?: string;
+  description?: string;
+  tags?: string[];
+  // Image work fields
+  thumb?: string;
+  full?: string;
+  dimensions?: string;
+  client?: string;
+  // Text page fields
+  content?: string;
 }
 
 const worksModules = import.meta.glob<WorkFile>('/src/content/works/*.json', {
@@ -54,7 +69,42 @@ const works: WorkFile[] = Object.values(worksModules);
 const worksByFolder = new Map<string, WorkItem[]>();
 
 works.forEach(work => {
-  const { folderId, ...workItem } = work;
+  const { folderId, itemType, ...rest } = work;
+
+  // Determine item type (default to 'work' for backward compatibility)
+  const type = itemType || (work.thumb && work.full ? 'work' : 'page');
+
+  let workItem: WorkItem;
+
+  if (type === 'page') {
+    // Text work item
+    workItem = {
+      itemType: 'page',
+      id: rest.id || '',
+      filename: rest.filename || '',
+      date: rest.date || '',
+      content: rest.content || '',
+      title: rest.title,
+      description: rest.description,
+      tags: rest.tags,
+    };
+  } else {
+    // Image work item
+    workItem = {
+      itemType: 'work',
+      id: rest.id || '',
+      filename: rest.filename || '',
+      date: rest.date || '',
+      thumb: rest.thumb || '',
+      full: rest.full || '',
+      dimensions: rest.dimensions,
+      client: rest.client,
+      title: rest.title,
+      description: rest.description,
+      tags: rest.tags,
+    };
+  }
+
   if (!worksByFolder.has(folderId)) {
     worksByFolder.set(folderId, []);
   }

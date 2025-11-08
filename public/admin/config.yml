@@ -66,7 +66,7 @@ collections:
     label_singular: "Work"
     folder: "src/content/works"
     create: true
-    slug: "{{year}}-{{month}}-{{slug}}"
+    slug: "{{year}}-{{month}}-{{id}}"
     extension: "json"
     format: "json"
     # 列表顯示模板
@@ -83,7 +83,16 @@ collections:
     fields:
       # === 基本信息 ===
       - {label: "🆔 ID", name: "id", widget: "string", required: true, hint: "唯一標識符，例如: work-001"}
-      - {label: "📄 文件名", name: "filename", widget: "string", required: true, hint: "顯示的文件名"}
+      - label: "📦 項目類型"
+        name: "itemType"
+        widget: "select"
+        required: true
+        default: "work"
+        options:
+          - {label: "📷 圖片作品", value: "work"}
+          - {label: "📝 文字頁面 (.txt)", value: "page"}
+        hint: "選擇要創建的類型"
+      - {label: "📄 文件名", name: "filename", widget: "string", required: true, hint: "顯示的文件名（圖片作品或 .txt 頁面）"}
       - label: "📁 所屬文件夾"
         name: "folderId"
         widget: "select"
@@ -94,16 +103,19 @@ collections:
         hint: "選擇作品所屬的文件夾"
       - {label: "📅 日期", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
 
-      # === 圖片 ===
-      - {label: "🖼️ 縮略圖", name: "thumb", widget: "image", required: true, hint: "小圖預覽（建議尺寸: 400x400）"}
-      - {label: "🖼️ 完整圖片", name: "full", widget: "image", required: true, hint: "高清大圖"}
-      - {label: "📐 尺寸", name: "dimensions", widget: "string", required: false, hint: "例如: 1920x1080", pattern: ['\d+x\d+', "格式必須是: 寬x高，例如 1920x1080"]}
+      # === 圖片作品字段（僅當 itemType = "work" 時需要）===
+      - {label: "🖼️ 縮略圖", name: "thumb", widget: "image", required: false, hint: "【圖片作品專用】小圖預覽（建議尺寸: 400x400）"}
+      - {label: "🖼️ 完整圖片", name: "full", widget: "image", required: false, hint: "【圖片作品專用】高清大圖"}
+      - {label: "📐 尺寸", name: "dimensions", widget: "string", required: false, hint: "【圖片作品專用】例如: 1920x1080", pattern: ['\d+x\d+', "格式必須是: 寬x高，例如 1920x1080"]}
+      - {label: "👤 客戶", name: "client", widget: "string", required: false, hint: "【圖片作品專用】委託客戶"}
 
-      # === 詳細信息（可選）===
+      # === 文字頁面字段（僅當 itemType = "page" 時需要）===
+      - {label: "📝 內容", name: "content", widget: "text", required: false, hint: "【文字頁面專用】.txt 文件的文本內容"}
+
+      # === 通用詳細信息（可選）===
       - {label: "✨ 標題", name: "title", widget: "string", required: false}
       - {label: "📝 描述", name: "description", widget: "text", required: false}
       - {label: "🏷️ 標籤", name: "tags", widget: "list", required: false, hint: "添加多個標籤，按 Enter 添加"}
-      - {label: "👤 客戶", name: "client", widget: "string", required: false}
 
   # 管理社交媒體鏈接
   - name: "socials"

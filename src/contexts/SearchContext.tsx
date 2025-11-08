@@ -68,7 +68,10 @@ export function SearchProvider({ children }: { children: ReactNode }) {
           const matchesTags = workItem.tags?.some(tag =>
             tag.toLowerCase().includes(query)
           );
-          const matchesClient = workItem.client?.toLowerCase().includes(query);
+          const matchesClient =
+            workItem.itemType === 'work'
+              ? workItem.client?.toLowerCase().includes(query)
+              : false;
 
           if (
             matchesFilename ||
