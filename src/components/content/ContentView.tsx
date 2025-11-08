@@ -235,27 +235,53 @@ const ContentView: React.FC = () => {
               animate="visible"
               exit="exit"
             >
-              {items.map(item => (
-                <motion.div
-                  key={item.id}
-                  className={styles['work-item']}
-                  variants={itemVariants}
-                  onClick={() => handleOpenLightbox(item, items)}
-                  whileHover={
-                    prefersReducedMotion
-                      ? {}
-                      : {
-                          scale: 1.02,
-                          y: -3,
-                          transition: { duration: 0.15 },
-                        }
-                  }
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                >
-                  <LazyImage src={item.thumb} alt={item.filename} />
-                  <div className={styles['work-info']}>{item.filename}</div>
-                </motion.div>
-              ))}
+              {items.map(item => {
+                const isTextPage = item.itemType === 'page';
+                const handleClick = isTextPage
+                  ? () => {
+                      const page: Page = {
+                        id: item.id,
+                        name: item.filename,
+                        type: 'txt',
+                        content: 'content' in item ? item.content : '',
+                      };
+                      navigateTo(page);
+                    }
+                  : () => handleOpenLightbox(item, items);
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    className={styles['work-item']}
+                    variants={itemVariants}
+                    onClick={handleClick}
+                    whileHover={
+                      prefersReducedMotion
+                        ? {}
+                        : {
+                            scale: 1.02,
+                            y: -3,
+                            transition: { duration: 0.15 },
+                          }
+                    }
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                  >
+                    {isTextPage ? (
+                      <img
+                        className={styles['file-icon']}
+                        src={paperIcon}
+                        alt="Text file icon"
+                      />
+                    ) : (
+                      <LazyImage
+                        src={'thumb' in item ? item.thumb : ''}
+                        alt={item.filename}
+                      />
+                    )}
+                    <div className={styles['work-info']}>{item.filename}</div>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           )}
         </motion.div>

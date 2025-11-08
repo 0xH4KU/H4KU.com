@@ -68,16 +68,9 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ segments, onSelect }) => {
           return (
             <React.Fragment key="ellipsis">
               <span className={styles['breadcrumb-sep']}>/</span>
-              <button
-                type="button"
-                className={styles['breadcrumb-link']}
-                title="Show all path segments"
-                onClick={() => {
-                  // TODO: Show dropdown with all segments
-                }}
-              >
+              <span className={styles['breadcrumb-ellipsis']} title="Path truncated">
                 ...
-              </button>
+              </span>
             </React.Fragment>
           );
         }

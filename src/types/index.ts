@@ -1,15 +1,30 @@
-export interface WorkItem {
+// Base work item fields
+interface BaseWorkItem {
   id: string;
   filename: string;
-  thumb: string;
-  full: string;
   date: string;
-  dimensions?: string;
   title?: string;
   description?: string;
   tags?: string[];
+}
+
+// Image work item
+export interface ImageWorkItem extends BaseWorkItem {
+  itemType: 'work';
+  thumb: string;
+  full: string;
+  dimensions?: string;
   client?: string;
 }
+
+// Text page work item (shown as .txt in folder)
+export interface TextWorkItem extends BaseWorkItem {
+  itemType: 'page';
+  content: string;
+}
+
+// Union type for all work items
+export type WorkItem = ImageWorkItem | TextWorkItem;
 
 export interface Folder {
   id: string;

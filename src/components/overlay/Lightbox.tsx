@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { ImageWorkItem } from '@/types';
 import styles from './Lightbox.module.css';
 
 const Lightbox: React.FC = () => {
@@ -31,6 +32,14 @@ const Lightbox: React.FC = () => {
   }, [lightboxImage, closeLightbox, navigateToNextImage, navigateToPrevImage]);
 
   if (!lightboxImage) {
+    return null;
+  }
+
+  // Type guard: Lightbox should only be used with image work items
+  const imageItem = lightboxImage as ImageWorkItem;
+  if (imageItem.itemType !== 'work') {
+    // This shouldn't happen, but handle gracefully
+    closeLightbox();
     return null;
   }
 
@@ -89,31 +98,31 @@ const Lightbox: React.FC = () => {
       )}
 
       <img
-        src={lightboxImage.full}
-        alt={lightboxImage.filename}
+        src={imageItem.full}
+        alt={imageItem.filename}
         className={styles['lightbox-image']}
         onClick={handleImageClick}
       />
 
       <div className={styles['lightbox-info']}>
         <div className={styles['lightbox-metadata']}>
-          {lightboxImage.title && (
+          {imageItem.title && (
             <div className={styles['metadata-title']}>
-              {lightboxImage.title}
+              {imageItem.title}
             </div>
           )}
           <div className={styles['metadata-basic']}>
-            <span>{lightboxImage.filename}</span>
-            {lightboxImage.date && (
+            <span>{imageItem.filename}</span>
+            {imageItem.date && (
               <>
                 <span>|</span>
-                <span>{lightboxImage.date}</span>
+                <span>{imageItem.date}</span>
               </>
             )}
-            {lightboxImage.dimensions && (
+            {imageItem.dimensions && (
               <>
                 <span>|</span>
-                <span>{lightboxImage.dimensions}</span>
+                <span>{imageItem.dimensions}</span>
               </>
             )}
             {showNavigation && (
@@ -125,23 +134,23 @@ const Lightbox: React.FC = () => {
               </>
             )}
           </div>
-          {lightboxImage.description && (
+          {imageItem.description && (
             <div className={styles['metadata-description']}>
-              {lightboxImage.description}
+              {imageItem.description}
             </div>
           )}
-          {lightboxImage.tags && lightboxImage.tags.length > 0 && (
+          {imageItem.tags && imageItem.tags.length > 0 && (
             <div className={styles['metadata-tags']}>
-              {lightboxImage.tags.map(tag => (
+              {imageItem.tags.map(tag => (
                 <span key={tag} className={styles['tag']}>
                   #{tag}
                 </span>
               ))}
             </div>
           )}
-          {lightboxImage.client && (
+          {imageItem.client && (
             <div className={styles['metadata-client']}>
-              Client: {lightboxImage.client}
+              Client: {imageItem.client}
             </div>
           )}
         </div>
