@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bulk Content Manager - lum.bio</title>
-  <link rel="stylesheet" href="../bulk/index.html" type="text/css" media="none">
   <style>
     * {
       margin: 0;
@@ -50,49 +49,11 @@
       padding: 40px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
     .auth-section h2 {
       margin-bottom: 20px;
-    }
-
-    .auth-section p {
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    .token-input-group {
-      margin-bottom: 20px;
-    }
-
-    .token-input-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-
-    .token-input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #D1D5DB;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: monospace;
-    }
-
-    .help-text {
-      font-size: 13px;
-      color: #6B7280;
-      margin-top: 8px;
-    }
-
-    .help-text a {
-      color: #5850EC;
-      text-decoration: none;
-    }
-
-    .help-text a:hover {
-      text-decoration: underline;
     }
 
     .btn {
@@ -391,12 +352,6 @@
       border: 1px solid #6EE7B7;
     }
 
-    .alert-info {
-      background: #DBEAFE;
-      color: #1E40AF;
-      border: 1px solid #93C5FD;
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
       .list-header,
@@ -443,34 +398,9 @@
 
     <!-- Auth Section -->
     <div id="authSection" class="auth-section">
-      <h2>請先輸入 GitLab Access Token</h2>
-      <p>需要 GitLab 權限才能管理內容</p>
-
-      <div class="token-input-group">
-        <label for="tokenInput">GitLab Personal Access Token</label>
-        <input
-          type="password"
-          id="tokenInput"
-          class="token-input"
-          placeholder="glpat-xxxxxxxxxxxxxxxxxxxx"
-        >
-        <div class="help-text">
-          沒有 Token？<a href="https://gitlab.com/-/profile/personal_access_tokens" target="_blank">點擊這裡創建</a>
-          （需要 <code>api</code> scope）
-        </div>
-      </div>
-
-      <button id="loginBtn" class="btn btn-primary">🔐 登入</button>
-
-      <div class="alert alert-info" style="margin-top: 20px;">
-        <strong>如何獲取 Access Token：</strong><br>
-        1. 訪問 <a href="https://gitlab.com/-/profile/personal_access_tokens" target="_blank">GitLab Personal Access Tokens</a><br>
-        2. 點擊 "Add new token"<br>
-        3. 設置名稱（如 "Bulk Manager"）<br>
-        4. 選擇 <strong>api</strong> scope<br>
-        5. 點擊 "Create personal access token"<br>
-        6. 複製 token 並粘貼到上方輸入框
-      </div>
+      <h2>請先登入 GitLab</h2>
+      <p style="margin-bottom: 20px; color: #666;">需要 GitLab 權限才能管理內容</p>
+      <button id="loginBtn" class="btn btn-primary">🔐 Login with GitLab</button>
     </div>
 
     <!-- Main Content -->
@@ -551,6 +481,6 @@
     </div>
   </div>
 
-  <script src="app-token.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

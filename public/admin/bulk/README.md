@@ -13,6 +13,25 @@ https://lum-bio-mh2.pages.dev/admin/bulk/
 http://localhost:5173/admin/bulk/
 ```
 
+## 🔑 认证方式
+
+**使用 GitLab Personal Access Token（推荐）**
+
+由于 OAuth 配置复杂，工具改用更简单的 Personal Access Token 方式：
+
+1. 访问 [GitLab Personal Access Tokens](https://gitlab.com/-/profile/personal_access_tokens)
+2. 点击 "Add new token"
+3. 设置名称（如 "Bulk Manager"）
+4. 选择 **api** scope
+5. 点击 "Create personal access token"
+6. 复制 token 并粘贴到批量管理工具
+
+**优点：**
+- ✅ 无需配置 OAuth App redirect_uri
+- ✅ 更简单、更快速
+- ✅ Token 可以随时撤销
+- ✅ 可以设置过期时间
+
 ## ✨ 功能特性
 
 ### 已实现功能

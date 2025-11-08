@@ -153,8 +153,12 @@ CMS 已啟用 **Editorial Workflow** 模式，讓你可以累積多個變更，�
 **使用步驟：**
 
 1. **登入 GitLab**
-   - 點擊 "Login with GitLab"
-   - 授權（使用和 Decap CMS 相同的帳號）
+   - 首次使用：需要創建 Personal Access Token
+     - 訪問 [GitLab Personal Access Tokens](https://gitlab.com/-/profile/personal_access_tokens)
+     - 創建新 token（選擇 **api** scope）
+     - 複製 token
+   - 將 token 粘貼到輸入框，點擊登入
+   - Token 會保存在瀏覽器，下次無需重新輸入
 
 2. **查找要刪除的內容**
    - 使用 **搜尋框** 搜索關鍵詞（如 "test"）

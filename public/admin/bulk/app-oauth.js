@@ -1,8 +1,12 @@
-// GitLab Configuration
+// GitLab Configuration (from Decap CMS config)
 const GITLAB_CONFIG = {
   repo: 'lummuu/lum.bio',
   branch: 'main',
+  clientId: '6ceeef10ac66ea69ec434988759eaaffe0c6ab020547264c0600b5e8a86e183d',
+  authEndpoint: 'https://gitlab.com/oauth/authorize',
+  tokenEndpoint: 'https://gitlab.com/oauth/token',
   apiBase: 'https://gitlab.com/api/v4',
+  redirectUri: window.location.origin + window.location.pathname,
 };
 
 // State
@@ -14,7 +18,6 @@ let selectedItems = new Set();
 // DOM Elements
 const authSection = document.getElementById('authSection');
 const mainContent = document.getElementById('mainContent');
-const tokenInput = document.getElementById('tokenInput');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const statusAlert = document.getElementById('statusAlert');
@@ -34,10 +37,19 @@ const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 const dependencyWarning = document.getElementById('dependencyWarning');
 const quickSelectTest = document.getElementById('quickSelectTest');
 
+// Network helpers
+const API_RETRY_LIMIT = 3;
+const API_RETRY_BASE_DELAY = 500;
+const TOKEN_EXPIRY_BUFFER = 60 * 1000; // refresh 1 minute early
+let refreshPromise = null;
+
 // Initialize
 init();
 
 function init() {
+  // Check for OAuth callback
+  handleOAuthCallback();
+
   // Check if already logged in
   const savedToken = localStorage.getItem('gitlab_access_token');
   if (savedToken) {
@@ -59,30 +71,105 @@ function init() {
   quickSelectTest.addEventListener('click', selectTestFiles);
 }
 
-// Auth Functions
-function handleLogin() {
-  const token = tokenInput.value.trim();
+// OAuth Functions
+async function handleLogin() {
+  const state = generateRandomString(32);
+  const codeVerifier = generateRandomString(128);
 
-  if (!token) {
-    alert('請輸入 Access Token');
+  // Generate code challenge using S256 method
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+  localStorage.setItem('oauth_state', state);
+  localStorage.setItem('code_verifier', codeVerifier);
+
+  const params = new URLSearchParams({
+    client_id: GITLAB_CONFIG.clientId,
+    redirect_uri: GITLAB_CONFIG.redirectUri,
+    response_type: 'code',
+    state: state,
+    scope: 'api',
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  });
+
+  window.location.href = `${GITLAB_CONFIG.authEndpoint}?${params}`;
+}
+
+async function generateCodeChallenge(codeVerifier) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+
+  // Convert to base64url
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(hash)));
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function handleOAuthCallback() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  const state = urlParams.get('state');
+
+  if (!code || !state) return;
+
+  const savedState = localStorage.getItem('oauth_state');
+  if (state !== savedState) {
+    alert('OAuth state mismatch. Please try again.');
     return;
   }
 
-  accessToken = token;
-  localStorage.setItem('gitlab_access_token', token);
+  // Exchange code for token
+  exchangeCodeForToken(code);
+}
 
-  showMainContent();
+async function exchangeCodeForToken(code) {
+  const codeVerifier = localStorage.getItem('code_verifier');
+
+  try {
+    const response = await fetch(GITLAB_CONFIG.tokenEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: GITLAB_CONFIG.clientId,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: GITLAB_CONFIG.redirectUri,
+        code_verifier: codeVerifier,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to exchange code for token');
+    }
+
+    const data = await response.json();
+    persistTokenData(data);
+
+    localStorage.removeItem('oauth_state');
+    localStorage.removeItem('code_verifier');
+
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    showMainContent();
+  } catch (error) {
+    console.error('OAuth error:', error);
+    alert('登入失敗。請重試。');
+  }
 }
 
 function handleLogout() {
   accessToken = null;
   localStorage.removeItem('gitlab_access_token');
+  localStorage.removeItem('gitlab_refresh_token');
+  localStorage.removeItem('gitlab_token_expiry');
   authSection.style.display = 'block';
   mainContent.classList.remove('active');
   allContent = [];
   filteredContent = [];
   selectedItems.clear();
-  tokenInput.value = '';
   clearStatus();
 }
 
@@ -120,45 +207,22 @@ async function loadContent() {
   } catch (error) {
     console.error('Failed to load content:', error);
     showStatus('error', `內容載入失敗：${formatErrorMessage(error)}`);
-    contentItems.innerHTML = '<div class="empty-state">載入失敗。請檢查 Token 權限或網絡連接。</div>';
+    contentItems.innerHTML = '<div class="empty-state">載入失敗。請重試或檢查權限。</div>';
   }
 }
 
 async function loadFilesFromPath(path) {
   try {
-    const response = await fetch(
-      `${GITLAB_CONFIG.apiBase}/projects/${encodeURIComponent(GITLAB_CONFIG.repo)}/repository/tree?path=${path}&ref=${GITLAB_CONFIG.branch}&per_page=100`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
+    const files = await gitlabJson(
+      `${GITLAB_CONFIG.apiBase}/projects/${encodeURIComponent(GITLAB_CONFIG.repo)}/repository/tree?path=${path}&ref=${GITLAB_CONFIG.branch}&per_page=100`
     );
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return [];
-      }
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const files = await response.json();
 
     // Load file contents to get metadata
     const contentPromises = files.map(async (file) => {
       try {
-        const contentResponse = await fetch(
-          `${GITLAB_CONFIG.apiBase}/projects/${encodeURIComponent(GITLAB_CONFIG.repo)}/repository/files/${encodeURIComponent(file.path)}?ref=${GITLAB_CONFIG.branch}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-            },
-          }
+        const fileData = await gitlabJson(
+          `${GITLAB_CONFIG.apiBase}/projects/${encodeURIComponent(GITLAB_CONFIG.repo)}/repository/files/${encodeURIComponent(file.path)}?ref=${GITLAB_CONFIG.branch}`
         );
-
-        if (!contentResponse.ok) return null;
-
-        const fileData = await contentResponse.json();
         const content = atob(fileData.content);
 
         let metadata = {};
@@ -209,7 +273,11 @@ async function loadFilesFromPath(path) {
     return results.filter(r => r !== null);
   } catch (error) {
     console.error('Failed to load files from path:', path, error);
-    return [];
+    if (error.message && error.message.includes('404')) {
+      showStatus('warning', `${path} 未找到，已跳過。`);
+      return [];
+    }
+    throw new Error(`${path} 載入失敗：${error.message}`);
   }
 }
 
@@ -219,6 +287,7 @@ function populateFolderFilter() {
     .map(folder => folder.metadata.id || folder.name)
     .sort();
 
+  // Get unique folder IDs from all items
   const usedFolders = new Set();
   allContent.forEach(item => {
     if (item.folderId) {
@@ -226,6 +295,7 @@ function populateFolderFilter() {
     }
   });
 
+  // Combine and deduplicate
   const allFolders = [...new Set([...folders, ...usedFolders])].sort();
 
   folderFilter.innerHTML = `
@@ -242,12 +312,15 @@ function handleFilter() {
   const folderValue = folderFilter.value;
 
   filteredContent = allContent.filter(item => {
+    // Search filter
     const matchesSearch = !searchTerm ||
       item.name.toLowerCase().includes(searchTerm) ||
       (item.folderId && item.folderId.toLowerCase().includes(searchTerm));
 
+    // Type filter
     const matchesType = typeValue === 'all' || item.type === typeValue;
 
+    // Folder filter
     let matchesFolder = true;
     if (folderValue === 'home') {
       matchesFolder = !item.folderId || item.folderId === '';
@@ -268,6 +341,7 @@ function renderContent() {
     return;
   }
 
+  // Sort by folder, then by name
   const sorted = [...filteredContent].sort((a, b) => {
     const folderA = a.folderId || '';
     const folderB = b.folderId || '';
@@ -290,6 +364,7 @@ function renderContent() {
     `;
   }).join('');
 
+  // Add event listeners to checkboxes
   document.querySelectorAll('.list-item .item-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', handleItemSelect);
   });
@@ -356,6 +431,7 @@ function updateSelectionUI() {
   selectedCount.textContent = selectedItems.size;
   deleteBtn.disabled = selectedItems.size === 0;
 
+  // Update select all checkbox
   const visiblePaths = filteredContent.map(item => item.path);
   const allVisible = visiblePaths.every(path => selectedItems.has(path));
   const someVisible = visiblePaths.some(path => selectedItems.has(path));
@@ -377,11 +453,74 @@ function showDeleteModal() {
     .join('');
 
   deleteCount.textContent = itemsToDelete.length;
+  updateDependencyWarnings(itemsToDelete);
   deleteModal.classList.add('active');
 }
 
 function hideDeleteModal() {
   deleteModal.classList.remove('active');
+  resetDependencyWarning();
+}
+
+function updateDependencyWarnings(itemsToDelete) {
+  if (!dependencyWarning) return;
+
+  const warnings = [];
+  const selectedPaths = new Set(itemsToDelete.map(item => item.path));
+
+  itemsToDelete
+    .filter(item => item.type === 'folder')
+    .forEach(folderItem => {
+      const identifiers = getFolderIdentifiers(folderItem);
+      if (identifiers.size === 0) return;
+
+      const dependents = allContent.filter(item => {
+        if (selectedPaths.has(item.path) || !item.folderId) return false;
+        return identifiers.has(normalizeFolderId(item.folderId));
+      });
+
+      if (dependents.length > 0) {
+        warnings.push({
+          folderName: folderItem.name,
+          dependents: dependents,
+        });
+      }
+    });
+
+  if (warnings.length === 0) {
+    resetDependencyWarning();
+    return;
+  }
+
+  const warningHtml = warnings.map(warning => {
+    const visibleDependents = warning.dependents.slice(0, 5)
+      .map(dep => `<li>${dep.icon} ${dep.name}</li>`)
+      .join('');
+    const extraCount = warning.dependents.length > 5
+      ? `<li>... 以及其他 ${warning.dependents.length - 5} 個項目</li>`
+      : '';
+
+    return `
+      <div style="margin-bottom: 12px;">
+        <strong>${warning.folderName}</strong> 仍被以下內容引用：
+        <ul style="margin: 8px 0 0 20px; list-style: disc;">
+          ${visibleDependents}${extraCount}
+        </ul>
+      </div>
+    `;
+  }).join('');
+
+  dependencyWarning.innerHTML = `
+    <p style="margin-bottom: 8px;">以下文件夾尚有內容引用，建議刪除前確認：</p>
+    ${warningHtml}
+  `;
+  dependencyWarning.style.display = 'block';
+}
+
+function resetDependencyWarning() {
+  if (!dependencyWarning) return;
+  dependencyWarning.style.display = 'none';
+  dependencyWarning.innerHTML = '';
 }
 
 async function handleDelete() {
@@ -396,6 +535,7 @@ async function handleDelete() {
   confirmDeleteBtn.textContent = '刪除中...';
 
   try {
+    // Create a commit with all deletions
     const actions = itemsToDelete.map(item => ({
       action: 'delete',
       file_path: item.path,
@@ -404,12 +544,11 @@ async function handleDelete() {
     const commitMessage = `Delete ${itemsToDelete.length} items via Bulk Manager\n\n` +
       itemsToDelete.map(item => `- ${item.name}`).join('\n');
 
-    const response = await fetch(
+    await gitlabJson(
       `${GITLAB_CONFIG.apiBase}/projects/${encodeURIComponent(GITLAB_CONFIG.repo)}/repository/commits`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -420,21 +559,17 @@ async function handleDelete() {
       }
     );
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to delete files');
-    }
-
+    // Success!
     alert(`✅ 成功刪除 ${itemsToDelete.length} 個項目！`);
     showStatus('success', `已刪除 ${itemsToDelete.length} 個項目，並建立 1 個 commit。`);
 
+    // Clear selection and reload
     selectedItems.clear();
     hideDeleteModal();
     await loadContent();
   } catch (error) {
-    console.error('Delete error:', error);
-    alert(`❌ 刪除失敗：${error.message}`);
-    showStatus('error', `刪除失敗：${error.message}`);
+    handleApiError(error, '刪除失敗');
+    alert(`❌ 刪除失敗：${formatErrorMessage(error)}`);
   } finally {
     confirmDeleteBtn.disabled = false;
     confirmDeleteBtn.textContent = '確認刪除';
@@ -442,12 +577,43 @@ async function handleDelete() {
 }
 
 // Utility Functions
+function generateRandomString(length) {
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const values = new Uint8Array(length);
+  crypto.getRandomValues(values);
+  for (let i = 0; i < length; i++) {
+    result += charset[values[i] % charset.length];
+  }
+  return result;
+}
+
+function normalizeFolderId(value) {
+  return (value || '').toString().trim().toLowerCase();
+}
+
+function getFolderIdentifiers(folderItem) {
+  const identifiers = new Set();
+  if (folderItem.metadata && folderItem.metadata.id) {
+    identifiers.add(normalizeFolderId(folderItem.metadata.id));
+  }
+  if (folderItem.folderId) {
+    identifiers.add(normalizeFolderId(folderItem.folderId));
+  }
+  if (folderItem.name) {
+    identifiers.add(normalizeFolderId(folderItem.name));
+  }
+  identifiers.delete('');
+  return identifiers;
+}
+
 function showStatus(type, message) {
   if (!statusAlert || !message) return;
   const typeClassMap = {
     success: 'alert-success',
     warning: 'alert-warning',
     error: 'alert-error',
+    info: 'alert-warning',
   };
   statusAlert.className = `alert ${typeClassMap[type] || 'alert-warning'}`;
   statusAlert.textContent = message;
@@ -461,9 +627,199 @@ function clearStatus() {
   statusAlert.className = 'alert';
 }
 
-function formatErrorMessage(error) {
-  if (!error) return '操作失敗';
+function formatErrorMessage(error, fallback = '操作失敗') {
+  if (!error) return fallback;
   if (typeof error === 'string') return error;
   if (error.message) return error.message;
-  return '操作失敗';
+  return fallback;
+}
+
+function handleApiError(error, context = '操作失敗', options = {}) {
+  const { silent = false } = options;
+  console.error(context, error);
+  if (!silent) {
+    showStatus('error', `${context}：${formatErrorMessage(error)}`);
+  }
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function shouldRetryStatus(status) {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+function getRetryDelay(attempt) {
+  return API_RETRY_BASE_DELAY * Math.pow(2, attempt);
+}
+
+async function extractGitlabError(response, fallback = 'GitLab API 錯誤') {
+  if (!response) return fallback;
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    try {
+      const data = await response.json();
+      if (typeof data === 'string') return data;
+      if (Array.isArray(data.message)) {
+        return data.message.join(', ');
+      }
+      if (data.message) {
+        return typeof data.message === 'string'
+          ? data.message
+          : JSON.stringify(data.message);
+      }
+      if (data.error_description) return data.error_description;
+      if (data.error) return data.error;
+    } catch (parseError) {
+      console.debug('Failed to parse GitLab error JSON', parseError);
+    }
+  }
+
+  try {
+    const text = await response.text();
+    if (text) return text;
+  } catch (textError) {
+    console.debug('Failed to read GitLab error text', textError);
+  }
+
+  return `${fallback} (${response.status})`;
+}
+
+async function gitlabJson(url, options = {}) {
+  const response = await gitlabFetch(url, options);
+  if (!response.ok) {
+    const message = await extractGitlabError(response);
+    throw new Error(message);
+  }
+  return response.json();
+}
+
+async function gitlabFetch(url, options = {}) {
+  await ensureValidToken();
+
+  const headers = {
+    ...(options.headers || {}),
+    'Authorization': `Bearer ${accessToken}`,
+  };
+
+  const fetchOptions = {
+    ...options,
+    headers,
+  };
+
+  let lastError = null;
+
+  for (let attempt = 0; attempt < API_RETRY_LIMIT; attempt++) {
+    try {
+      const response = await fetch(url, fetchOptions);
+
+      if (response.status === 401) {
+        try {
+          await refreshAccessToken();
+          headers['Authorization'] = `Bearer ${accessToken}`;
+          continue;
+        } catch (refreshError) {
+          throw refreshError;
+        }
+      }
+
+      if (shouldRetryStatus(response.status) && attempt < API_RETRY_LIMIT - 1) {
+        await wait(getRetryDelay(attempt));
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt === API_RETRY_LIMIT - 1) {
+        throw error;
+      }
+      await wait(getRetryDelay(attempt));
+    }
+  }
+
+  throw lastError || new Error('GitLab 請求失敗');
+}
+
+async function ensureValidToken() {
+  if (!accessToken) {
+    const storedToken = localStorage.getItem('gitlab_access_token');
+    if (storedToken) {
+      accessToken = storedToken;
+    }
+  }
+
+  if (!accessToken) {
+    throw new Error('尚未登入 GitLab');
+  }
+
+  const expiry = parseInt(localStorage.getItem('gitlab_token_expiry') || '0', 10);
+  if (expiry && Date.now() > expiry - TOKEN_EXPIRY_BUFFER) {
+    await refreshAccessToken();
+  }
+}
+
+async function refreshAccessToken() {
+  const storedRefreshToken = localStorage.getItem('gitlab_refresh_token');
+  if (!storedRefreshToken) {
+    throw new Error('登入已過期，請重新登入。');
+  }
+
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const response = await fetch(GITLAB_CONFIG.tokenEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: GITLAB_CONFIG.clientId,
+          grant_type: 'refresh_token',
+          refresh_token: storedRefreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        const message = await extractGitlabError(response, '刷新 token 失敗');
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      persistTokenData(data);
+      return data;
+    })();
+  }
+
+  try {
+    return await refreshPromise;
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    handleLogout();
+    throw new Error('登入已過期，請重新登入。');
+  } finally {
+    refreshPromise = null;
+  }
+}
+
+function persistTokenData(data) {
+  if (!data || !data.access_token) {
+    throw new Error('Token 回應不完整，請重新登入。');
+  }
+
+  accessToken = data.access_token;
+  localStorage.setItem('gitlab_access_token', data.access_token);
+
+  if (data.refresh_token) {
+    localStorage.setItem('gitlab_refresh_token', data.refresh_token);
+  }
+
+  if (data.expires_in) {
+    const bufferSeconds = 30;
+    const expiresAt = Date.now() + Math.max(data.expires_in - bufferSeconds, 5) * 1000;
+    localStorage.setItem('gitlab_token_expiry', expiresAt.toString());
+  } else {
+    localStorage.removeItem('gitlab_token_expiry');
+  }
 }
