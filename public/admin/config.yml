@@ -39,7 +39,7 @@ collections:
         collection: "folders"
         value_field: "id"
         search_fields: ['name', 'id', 'parentId']
-        display_fields: ['name', 'id']
+        display_fields: ['id']
         required: false
         hint: "Select a folder to place this page inside. Leave empty to keep it on the homepage."
       - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower numbers appear first. Leave blank for automatic ordering."}
@@ -67,7 +67,7 @@ collections:
         collection: "folders"
         value_field: "id"
         search_fields: ['name', 'id', 'parentId']
-        display_fields: ['name', 'id']
+        display_fields: ['id']
         required: false
         hint: "Leave empty for top-level folders. Select any folder to nest inside it."
       - {label: "Folder Description", name: "description", widget: "text", required: false, hint: "Optional note shown only in CMS for organization"}
@@ -107,7 +107,7 @@ collections:
         collection: "folders"
         value_field: "id"
         search_fields: ['name', 'id', 'parentId']
-        display_fields: ['name', 'id']
+        display_fields: ['id']
         required: false
         hint: "Choose any folder (at any depth). Leave empty to pin this work directly on the homepage."
       - {label: "Date", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
