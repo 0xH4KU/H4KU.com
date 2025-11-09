@@ -11,7 +11,8 @@
     "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "cms": "node scripts/cms.js"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

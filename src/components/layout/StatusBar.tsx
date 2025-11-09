@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { useSortOrder } from '@/contexts/SortContext';
 import { mockData } from '@/data/mockData';
 import styles from './StatusBar.module.css';
 
 const StatusBar: React.FC = () => {
   const { currentView } = useNavigation();
+  const { sortOrder, toggleSortOrder } = useSortOrder();
   const { socials } = mockData;
 
   const itemCount = useMemo(() => {
@@ -40,6 +42,14 @@ const StatusBar: React.FC = () => {
           </a>
         ))}
       </div>
+      <span>|</span>
+      <button
+        onClick={toggleSortOrder}
+        className={styles['sort-button']}
+        title={`当前排序: ${sortOrder === 'desc' ? '新→旧 (Z-A)' : '旧→新 (A-Z)'}`}
+      >
+        [{sortOrder === 'desc' ? 'Z-A ↓' : 'A-Z ↑'}]
+      </button>
       <span>|</span>
       <span>{itemCount} items</span>
       <span>|</span>

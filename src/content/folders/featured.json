@@ -1,8 +1,7 @@
 {
   "id": "featured",
-  "name": "Featured",
+  "name": "featured",
   "type": "folder",
   "parentId": null,
-  "order": 1,
-  "description": "Highlighted works"
+  "order": 1
 }

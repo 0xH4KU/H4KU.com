@@ -4,6 +4,7 @@ import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSortOrder } from '@/contexts/SortContext';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
@@ -17,7 +18,20 @@ const ContentView: React.FC = () => {
   const { currentView, navigateTo, openLightbox, resetToHome } =
     useNavigation();
   const { theme } = useTheme();
+  const { sortOrder } = useSortOrder();
   const prefersReducedMotion = useReducedMotion();
+
+  // 排序函数
+  const sortItems = <T extends { name?: string; filename?: string; date?: string }>(
+    items: T[]
+  ): T[] => {
+    if (sortOrder === 'asc') {
+      // 正序(A-Z):直接返回mockData的倒序结果再反转
+      return [...items].reverse();
+    }
+    // 倒序(Z-A):直接返回mockData的倒序结果
+    return items;
+  };
 
   // 動畫變體配置 - 簡潔直接的動畫
   const defaultEase = useMemo<[number, number, number, number]>(
@@ -168,8 +182,9 @@ const ContentView: React.FC = () => {
 
     if (currentView?.type === 'folder') {
       const { items = [], children = [] } = currentView.data;
-      const textItems = items.filter(item => item.itemType === 'page');
-      const workItems = items.filter(item => item.itemType !== 'page');
+      const textItems = sortItems(items.filter(item => item.itemType === 'page'));
+      const workItems = sortItems(items.filter(item => item.itemType !== 'page'));
+      const sortedChildren = sortItems(children);
       const hasFileGridContent =
         children.length > 0 || textItems.length > 0 || workItems.length > 0;
 
@@ -204,7 +219,7 @@ const ContentView: React.FC = () => {
               animate="visible"
               exit="exit"
             >
-              {children.map(child => (
+              {sortedChildren.map(child => (
                 <motion.div
                   key={child.id}
                   className={styles['file-item']}
@@ -294,6 +309,10 @@ const ContentView: React.FC = () => {
     }
 
     // 主頁
+    const sortedFolders = sortItems(mockData.folders);
+    const sortedPages = sortItems(mockData.pages);
+    const sortedHomeItems = sortItems(mockData.homeItems);
+
     return (
       <motion.div
         className={styles['folder-content']}
@@ -310,7 +329,7 @@ const ContentView: React.FC = () => {
           animate="visible"
           exit="exit"
         >
-          {mockData.folders.map(folder => (
+          {sortedFolders.map(folder => (
             <motion.div
               key={folder.id}
               className={styles['file-item']}
@@ -335,7 +354,7 @@ const ContentView: React.FC = () => {
               <div className={styles['file-name']}>{folder.name}</div>
             </motion.div>
           ))}
-          {mockData.pages.map(page => (
+          {sortedPages.map(page => (
             <motion.div
               key={page.id}
               className={styles['file-item']}
@@ -361,7 +380,7 @@ const ContentView: React.FC = () => {
             </motion.div>
           ))}
         </motion.div>
-        {mockData.homeItems.length > 0 && (
+        {sortedHomeItems.length > 0 && (
           <motion.div
             className={styles['works-grid']}
             variants={containerVariants}
@@ -369,7 +388,7 @@ const ContentView: React.FC = () => {
             animate="visible"
             exit="exit"
           >
-            {mockData.homeItems.map(item => {
+            {sortedHomeItems.map(item => {
               const isTextPage = item.itemType === 'page';
               const handleClick = isTextPage
                 ? () => {
