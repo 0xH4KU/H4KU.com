@@ -11,6 +11,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
+import { SortProvider } from '@/contexts/SortContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { use100vh } from '@/hooks/use100vh';
 import styles from './App.module.css';
@@ -84,13 +85,15 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ThemeProvider>
-      <NavigationProvider>
-        <SearchProvider>
-          <SidebarProvider>
-            <AppContent />
-          </SidebarProvider>
-        </SearchProvider>
-      </NavigationProvider>
+      <SortProvider>
+        <NavigationProvider>
+          <SearchProvider>
+            <SidebarProvider>
+              <AppContent />
+            </SidebarProvider>
+          </SearchProvider>
+        </NavigationProvider>
+      </SortProvider>
     </ThemeProvider>
   );
 }

@@ -1,0 +1,11 @@
+# Ignore everything in content directory except what we want to track
+# This keeps the structure clean and focuses on actual content
+
+# Keep homepage directory and its contents
+!homepage/
+!homepage/**
+
+# But ignore common editor/system files
+.DS_Store
+Thumbs.db
+desktop.ini

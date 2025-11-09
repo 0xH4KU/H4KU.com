@@ -1,8 +1,7 @@
 {
   "id": "sketches",
-  "name": "Sketches",
+  "name": "sketches",
   "type": "folder",
   "parentId": null,
-  "order": 2,
-  "description": "WIP and loose studies"
+  "order": 2
 }

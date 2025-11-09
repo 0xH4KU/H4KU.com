@@ -31,10 +31,14 @@ interface WorkFile {
   content?: string;
 }
 
-// Load pages (markdown files with frontmatter)
-const pagesModules = import.meta.glob<string>('/src/content/pages/*.md', {
+// Load pages (JSON files)
+const pagesModules = import.meta.glob<{
+  id: string;
+  filename: string;
+  content: string;
+  title?: string;
+}>('/src/content/pages/*.json', {
   eager: true,
-  query: '?raw',
   import: 'default',
 });
 
@@ -54,7 +58,7 @@ const socialsModules = import.meta.glob<Social>('/src/content/socials/*.json', {
 });
 
 // Load works (JSON files)
-const worksModules = import.meta.glob<WorkFile>('/src/content/works/*.json', {
+const worksModules = import.meta.glob<WorkFile>('/src/content/images/*.json', {
   eager: true,
   import: 'default',
 });
@@ -87,7 +91,8 @@ const compareFolders = (a: Folder, b: Folder) => {
   if (orderDiff !== 0) {
     return orderDiff;
   }
-  return a.name.localeCompare(b.name);
+  // 默认倒序 (Z-A),让新的文件夹在前面 (如 2026 > 2025)
+  return b.name.localeCompare(a.name);
 };
 
 const comparePages = (a: Page, b: Page) => {
@@ -106,7 +111,12 @@ const sortWorkItems = (items: WorkItem[]): WorkItem[] =>
     }
     const dateA = a.date ? new Date(a.date).getTime() : 0;
     const dateB = b.date ? new Date(b.date).getTime() : 0;
-    return dateB - dateA;
+    // 日期排序: 新的在前
+    if (dateA !== dateB) {
+      return dateB - dateA;
+    }
+    // 文件名倒序 (Z-A),让新的在前面
+    return b.filename.localeCompare(a.filename);
   });
 
 // Build folder map and parent-child relationships
@@ -143,23 +153,21 @@ folderMap.forEach(folder => {
   }
 });
 
-// Parse pages from markdown files
+// Parse pages from JSON files
 const parsedPages: Page[] = Object.entries(pagesModules).map(
-  ([path, content]) => {
-    const { data, content: body } = parseFrontmatter(content);
-    const fallbackId = path.split('/').pop()?.replace('.md', '') || '';
-    const folderId = normalizeId(data.folderId);
-    const filename = data.filename || data.name || 'Untitled.txt';
+  ([path, pageData]) => {
+    const fallbackId = path.split('/').pop()?.replace('.json', '') || '';
+    const filename = pageData.filename || 'Untitled.txt';
 
     return {
-      id: data.id || fallbackId,
-      name: data.name || filename,
+      id: pageData.id || fallbackId,
+      name: pageData.title || filename,
       filename,
       type: 'txt',
-      content: body.trim(),
-      folderId,
-      date: data.date,
-      order: normalizeOrder(data.order),
+      content: pageData.content.trim(),
+      folderId: null,
+      date: undefined,
+      order: undefined,
     };
   }
 );
