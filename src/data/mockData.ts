@@ -2,8 +2,8 @@ import { MockData, Folder, Page, Social, WorkItem } from '@/types';
 import { parseFrontmatter } from '@/utils/frontmatter';
 
 /**
- * Load content from files using Vite's import.meta.glob
- * This allows Decap CMS to manage content through file editing
+ * Load content from local markdown/json files using Vite's import.meta.glob.
+ * Content is fully file-based so updates only require editing the repository.
  */
 
 interface FolderFile {

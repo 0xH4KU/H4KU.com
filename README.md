@@ -100,32 +100,14 @@ pnpm dev
 
 ## 📝 Content Management
 
-This project uses **Decap CMS** for easy content management.
+All content lives in the repository so you only need a text editor:
 
-### Access the CMS
+- **Pages**: `src/content/pages/*.md` (supports frontmatter + markdown body)
+- **Folders**: `src/content/folders/*.json`
+- **Works**: `src/content/works/*.json`
+- **Social Links**: `src/content/socials/*.json`
 
-Visit: `https://lum-bio-mh2.pages.dev/admin/`
-
-### What You Can Manage
-
-- **📄 Pages**: Text files (About, Contact, etc.)
-- **📁 Works**: Portfolio pieces with images
-- **🗂️ Folders**: Organize your works
-- **🔗 Social Links**: Social media links
-
-### Quick Start
-
-1. Visit `/admin/`
-2. Login with GitLab
-3. Add/edit content
-4. Click **Publish**
-5. Wait 1-2 minutes for deployment
-
-📚 **Full Guide**: See [CMS_GUIDE.md](./CMS_GUIDE.md) for detailed instructions
-
-### Setup Guide
-
-For initial OAuth configuration, see [DECAP_CMS_SETUP.md](./DECAP_CMS_SETUP.md)
+Update these files directly and re-run `npm run dev` to preview changes. No external CMS or admin UI is required.
 
 ## Deployment
 

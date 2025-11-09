@@ -856,8 +856,6 @@ Selected search result highlighted with primary color.
 
 ## Next Steps
 
-- [ ] Add unit tests (Vitest + React Testing Library)
-- [ ] Add E2E tests (Playwright)
 - [ ] Add performance monitoring
 - [ ] Add analytics
 - [ ] Add SEO optimization (meta tags, sitemap)
