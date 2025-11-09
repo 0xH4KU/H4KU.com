@@ -65,16 +65,12 @@ https://lum-bio-mh2.pages.dev/admin/
 - 上傳到 `/images/uploads/` 目錄
 - 單張圖片最大 10MB
 
-**快速找到文件：**
-- 列表顯示格式：`檔名 • 資料夾名稱`（例如：`1.png • featured-2025`）
-- 使用右上角的 **篩選器** 快速查看：
-  - 📍 **Homepage Only**: 只顯示首頁的圖片
-  - 📁 **All in Folders**: 只顯示資料夾裡的圖片
-  - ⭐ **Featured (All)**: Featured 及其所有子資料夾
-  - ✏️ **Sketches (All)**: Sketches 及其所有子資料夾
-  - 🗓️ **Featured › 2025**: 只顯示 featured-2025 資料夾
-  - 🗓️ **Sketches › 2025**: 只顯示 sketches-2025 資料夾
-- 使用 **搜尋框** 直接搜尋檔名或資料夾名稱
+- **列表預設會顯示所有作品**，並依照資料夾自動分組（沒有額外篩選條件）
+- 使用右上角的 **篩選器** 可快速切換：
+  - ⭐ **Featured**：顯示所有 `featured*` 資料夾
+  - ✏️ **Sketches**：顯示所有 `sketches*` 資料夾
+- 首頁作品（沒有 folderId）會顯示在分組列表的 **Other**/未分組區塊
+- 使用 **搜尋框** 或 **Folder Id** 排序欄可快速定位
 - 點擊欄位標題排序：
   - **Folder Id**: 按資料夾分組查看（推薦！）
   - **Filename**: 按檔名排序
@@ -106,17 +102,10 @@ https://lum-bio-mh2.pages.dev/admin/
 4. 點擊 **Publish**
 5. 等待 1-2 分鐘部署
 
-**快速找到文件：**
-- 列表顯示格式：`檔名 • 資料夾名稱`（例如：`About.txt • [Home]`）
-- 使用右上角的 **篩選器** 快速查看：
-  - 📍 **Homepage Only**: 只顯示首頁的頁面
-  - 📁 **All in Folders**: 只顯示資料夾裡的頁面
-  - ⭐ **Featured (All)**: Featured 及其所有子資料夾
-  - ✏️ **Sketches (All)**: Sketches 及其所有子資料夾
-  - 🗓️ **Featured › 2025**: 只顯示 featured-2025 資料夾
-  - 🗓️ **Sketches › 2025**: 只顯示 sketches-2025 資料夾
-- 使用 **搜尋框** 直接搜尋檔名或資料夾名稱
-- 點擊 **Folder Id** 欄位排序，按資料夾分組查看
+- 預設顯示所有頁面，由系統自動依資料夾分組
+- 如果頁面沒有 folderId，會落在分組列表的 **Other** 區塊
+- 目前暫時沒有額外的內建篩選器（Sveltia 不支援「folderId 為空」的條件）
+- 使用搜尋/排序即可快速定位所需頁面
 
 **編輯現有頁面：**
 1. 左側菜單 → **Pages**
@@ -228,11 +217,9 @@ Sveltia CMS 尚未提供 Editorial Workflow，所以沒有 Draft/Ready/Publish �
 **步驟：**
 1. 在 CMS 中創建新資料夾（例如 `commissions`、`sketches-2026`）
 2. 在終端運行：`npm run cms:suggest-filters`
-3. 腳本會顯示當前資料夾結構和建議的篩選器配置
-4. 複製輸出的 YAML 配置
-5. 粘貼到 `public/admin/config.yml` 中的兩個位置：
-   - Pages collection 的 `view_filters`
-   - Images collection 的 `view_filters`
+3. 腳本會顯示當前資料夾結構和建議的篩選器配置（供參考）
+4. 目前僅保留 `Images` 的 `Featured / Sketches` 兩個篩選器，建議只複製對應段落
+5. `Pages` 不再使用 `view_filters`（Sveltia 無法判斷「folderId 為空」的條件），所以不要再貼回該段落
 
 **範例輸出：**
 ```
@@ -255,10 +242,9 @@ Sveltia CMS 尚未提供 Editorial Workflow，所以沒有 Draft/Ready/Publish �
 - 使用正則表達式，非常靈活
 
 **優點：**
-- ✅ 自動偵測所有資料夾
-- ✅ 自動生成配置
-- ✅ 安全（只顯示建議，不會修改文件）
-- ✅ 可以自定義 emoji 和標籤名稱
+- ✅ 自動偵測資料夾，避免手動逐一輸入
+- ✅ 可自訂 emoji / 標籤
+- ⚠️ 目前僅用於 `Featured` / `Sketches` 這類有 folderId 的篩選條件
 
 ### 批量編輯
 

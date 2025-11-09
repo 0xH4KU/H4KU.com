@@ -29,13 +29,6 @@ collections:
     format: "frontmatter"
     summary: "{{name}} • {{folderId | default('[Home]')}}"
     sortable_fields: ['folderId', 'name', 'order', 'date']
-    view_filters:
-      - label: "📍 Homepage"
-        field: folderId
-        pattern: '^$'
-      - label: "📁 In Folders"
-        field: folderId
-        pattern: '.+'
     view_groups:
       - label: "Folder"
         field: folderId
@@ -105,9 +98,6 @@ collections:
     # Enhanced sorting and filtering
     sortable_fields: ['folderId', 'filename', 'order', 'date']
     view_filters:
-      - label: "📍 Homepage"
-        field: folderId
-        pattern: '^$'
       - label: "⭐ Featured"
         field: folderId
         pattern: '^featured'
