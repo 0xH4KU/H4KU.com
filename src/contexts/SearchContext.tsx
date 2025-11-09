@@ -32,10 +32,6 @@ const doesWorkItemMatch = (workItem: WorkItem, query: string) => {
   const matchesTags = workItem.tags?.some(tag =>
     tag.toLowerCase().includes(query)
   );
-  const matchesClient =
-    workItem.itemType === 'work'
-      ? workItem.client?.toLowerCase().includes(query)
-      : false;
   const matchesContent =
     workItem.itemType === 'page' && 'content' in workItem
       ? workItem.content.toLowerCase().includes(query)
@@ -46,7 +42,6 @@ const doesWorkItemMatch = (workItem: WorkItem, query: string) => {
     matchesTitle ||
     matchesDescription ||
     matchesTags ||
-    matchesClient ||
     matchesContent
   );
 };
