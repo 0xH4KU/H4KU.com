@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "cms:suggest-filters": "node scripts/suggest-filters.mjs",
+    "cms:config": "node scripts/build-cms-config.mjs",
+    "cms:lint": "node scripts/validate-content.mjs",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",

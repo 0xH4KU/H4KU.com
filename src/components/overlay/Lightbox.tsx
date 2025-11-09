@@ -117,12 +117,6 @@ const Lightbox: React.FC = () => {
                 <span>{imageItem.date}</span>
               </>
             )}
-            {imageItem.dimensions && (
-              <>
-                <span>|</span>
-                <span>{imageItem.dimensions}</span>
-              </>
-            )}
             {showNavigation && (
               <>
                 <span>|</span>
@@ -144,11 +138,6 @@ const Lightbox: React.FC = () => {
                   #{tag}
                 </span>
               ))}
-            </div>
-          )}
-          {imageItem.client && (
-            <div className={styles['metadata-client']}>
-              Client: {imageItem.client}
             </div>
           )}
         </div>

@@ -14,8 +14,6 @@ export interface ImageWorkItem extends BaseWorkItem {
   itemType: 'work';
   thumb: string;
   full: string;
-  dimensions?: string;
-  client?: string;
 }
 
 // Text page work item (shown as .txt in folder)

@@ -1,0 +1,150 @@
+backend:
+  name: gitlab
+  repo: lummuu/lum.bio
+  branch: main
+  auth_type: pkce
+  app_id: 6ceeef10ac66ea69ec434988759eaaffe0c6ab020547264c0600b5e8a86e183d
+
+# Local development mode (optional)
+# local_backend: true
+
+# Media library configuration
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
+
+# Display settings
+show_preview_links: true
+logo_url: https://lum-bio-mh2.pages.dev/favicon.ico
+
+# Content collections configuration
+collections:
+  # Manage text pages (About, Contact, etc.)
+  - name: "pages"
+    label: "Pages"
+    label_singular: "Page"
+    folder: "src/content/pages"
+    create: true
+    slug: "{{id}}"
+    extension: "md"
+    format: "frontmatter"
+    summary: "{{name}} • {{folderId | default('[Home]')}}"
+    sortable_fields: ['folderId', 'name', 'order', 'date']
+    view_groups:
+      - label: "Folder"
+        field: folderId
+        pattern: '(.+)'
+    fields:
+      # === Essential fields ===
+      - {label: "ID", name: "id", widget: "string", required: true, hint: "e.g., about, contact", pattern: ['^[a-z0-9-]+$', "lowercase, numbers, hyphens only"]}
+      - {label: "Display Name", name: "name", widget: "string", required: true, hint: "e.g., About.txt"}
+      - {label: "Content", name: "body", widget: "text", required: true}
+
+      # === Organization ===
+      - label: "Folder"
+        name: "folderId"
+        widget: "relation"
+        collection: "folders"
+        value_field: "id"
+        search_fields: ['name', 'id']
+        display_fields: ['{{parentId}}/{{name}}']
+        required: false
+        hint: "Leave empty for homepage"
+      - {label: "Sort Order", name: "order", widget: "number", required: false}
+
+      # === Optional ===
+      - {label: "Folder Filename", name: "filename", widget: "string", required: false, hint: "Override display name in folders"}
+      - {label: "Date", name: "date", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false}
+      - {label: "Type", name: "type", widget: "hidden", default: "txt"}
+
+  # Manage work folder structure
+  - name: "folders"
+    label: "Folders"
+    label_singular: "Folder"
+    folder: "src/content/folders"
+    create: true
+    slug: "{{id}}"
+    extension: "json"
+    format: "json"
+    summary: "{{name}} ({{id}})"
+    sortable_fields: ['order', 'name']
+    fields:
+      - {label: "Folder ID", name: "id", widget: "string", required: true, hint: "e.g., featured, sketches", pattern: ['^[a-z0-9-]+$', "Only lowercase letters, numbers, and hyphens allowed"]}
+      - {label: "Folder Name", name: "name", widget: "string", required: true, hint: "Name displayed in the sidebar and file explorer"}
+      - label: "Parent Folder"
+        name: "parentId"
+        widget: "relation"
+        collection: "folders"
+        value_field: "id"
+        search_fields: ['name', 'id', 'parentId']
+        display_fields: ['id']
+        required: false
+        hint: "Leave empty for top-level folders. Select any folder to nest inside it."
+      - {label: "Folder Description", name: "description", widget: "text", required: false, hint: "Optional note shown only in CMS for organization"}
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Smaller numbers appear first"}
+      - {label: "Hide from navigation", name: "hidden", widget: "boolean", required: false, default: false, hint: "Hidden folders remain usable for works/pages but won't show up in the UI."}
+      - {label: "Type", name: "type", widget: "hidden", default: "folder"}
+
+  # Manage image works
+  - name: "images"
+    label: "Images"
+    label_singular: "Image"
+    folder: "src/content/works"
+    create: true
+    slug: "{{folderId | default('home')}}-{{id}}"
+    extension: "json"
+    format: "json"
+    # Clearer list display
+    summary: "{{filename}} • {{folderId | default('[Home]')}}"
+    # Enhanced sorting and filtering
+    sortable_fields: ['folderId', 'filename', 'order', 'date']
+    view_filters:
+      - label: "⭐ Featured"
+        field: folderId
+        pattern: '^featured'
+      - label: "✏️ Sketches"
+        field: folderId
+        pattern: '^sketches'
+    view_groups:
+      - label: "Folder"
+        field: folderId
+        pattern: '(.+)'
+    fields:
+      # === Essentials ===
+      - {label: "ID", name: "id", widget: "string", required: true, hint: "Short slug (e.g., star-girl)", pattern: ['^[a-z0-9-]+$', "Lowercase, numbers, hyphens only"]}
+      - {label: "Display Name", name: "filename", widget: "string", required: true, hint: "Shown in gallery (e.g., STAR_GIRL.png)"}
+      - {label: "Image", name: "full", widget: "image", required: true, hint: "Upload or paste the artwork URL"}
+      - {label: "Date", name: "date", widget: "datetime", required: true, default: "", date_format: "YYYY-MM-DD", time_format: false}
+      - label: "Folder"
+        name: "folderId"
+        widget: "relation"
+        collection: "folders"
+        value_field: "id"
+        search_fields: ['name', 'id']
+        display_fields: ['{{parentId}}/{{name}}']
+        required: false
+        hint: "Leave empty for homepage"
+      - {label: "Sort Order", name: "order", widget: "number", required: false, hint: "Lower = higher position"}
+
+      # === Optional details ===
+      - {label: "Title", name: "title", widget: "string", required: false}
+      - {label: "Description", name: "description", widget: "text", required: false}
+      - {label: "Tags", name: "tags", widget: "list", required: false}
+
+      # === Hidden fields ===
+      - {label: "Item Type", name: "itemType", widget: "hidden", default: "work"}
+
+  # Manage social media links
+  - name: "socials"
+    label: "Social Links"
+    label_singular: "Social Link"
+    folder: "src/content/socials"
+    create: true
+    slug: "{{name}}"
+    extension: "json"
+    format: "json"
+    summary: "{{code}} - {{name}}"
+    sortable_fields: ['name', 'code']
+    fields:
+      - {label: "Name", name: "name", widget: "string", required: true, hint: "e.g., Instagram, Twitter"}
+      - {label: "Code", name: "code", widget: "string", required: true, hint: "2-3 letter abbreviation (e.g., IG, TW)", pattern: ['^[A-Z]{2,3}$', "Must be 2-3 uppercase letters"]}
+      - {label: "URL", name: "url", widget: "string", required: true, hint: "Full URL (e.g., https://instagram.com/username)"}

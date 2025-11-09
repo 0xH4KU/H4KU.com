@@ -28,8 +28,6 @@ interface WorkFile {
   order?: number;
   thumb?: string;
   full?: string;
-  dimensions?: string;
-  client?: string;
   content?: string;
 }
 
@@ -205,15 +203,14 @@ works.forEach(work => {
     };
     pushItemToFolder(folderId, workItem);
   } else {
+    const imageSource = work.full ?? '';
     const workItem: WorkItem = {
       itemType: 'work',
       id: work.id,
       filename: work.filename,
       date: work.date,
-      thumb: work.thumb ?? '',
-      full: work.full ?? '',
-      dimensions: work.dimensions,
-      client: work.client,
+      thumb: work.thumb ?? imageSource,
+      full: imageSource,
       title: work.title,
       description: work.description,
       tags: work.tags,

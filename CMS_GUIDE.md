@@ -41,13 +41,11 @@ https://lum-bio-mh2.pages.dev/admin/
    - **Date**: 選擇作品日期
    - **Sort Order**: 可選，調整顯示順序，數字越小越靠前；不填則依日期排序
 4. 上傳圖片：
-   - **Image**: 上傳高清圖片（建議 1920x1080 或更高）
-   - **Dimensions**: 圖片尺寸 - **會自動填寫**，無需手動輸入！
-   - 💡 系統會自動生成縮略圖，只需上傳一張圖即可
+   - **Image**: 上傳或貼上圖片 URL（建議 1920x1080 以上）
+   - 💡 無需額外縮圖欄位，系統會自動沿用原圖做預覽
 5. 添加詳細信息（可選）：
    - **Title**: 作品標題
    - **Description**: 作品描述
-   - **Client**: 委託客戶
    - **Tags**: 從預設標籤中選擇（可多選）：
      - 🎨 Fan Art（同人創作）
      - ✨ Original Character (OC)（原創角色）
@@ -60,15 +58,14 @@ https://lum-bio-mh2.pages.dev/admin/
 6. 點擊 **Publish**
 
 **💡 上傳提示：**
-- 只需上傳一張高清圖片，系統會自動處理縮略圖
-- 圖片尺寸會在保存時自動偵測填寫
+- 只需上傳一張高清圖片，系統會自動沿用於清單與 Lightbox
 - 上傳到 `/images/uploads/` 目錄
 - 單張圖片最大 10MB
 
 - **列表預設會顯示所有作品**，並依照資料夾自動分組（沒有額外篩選條件）
 - 使用右上角的 **篩選器** 可快速切換：
-  - ⭐ **Featured**：顯示所有 `featured*` 資料夾
-  - ✏️ **Sketches**：顯示所有 `sketches*` 資料夾
+  - ⭐ **Featured (All)**、✏️ **Sketches (All)** 等「父層集合」
+  - 🗂️ **Featured › 2025** 這類子資料夾（清單會依 `src/content/folders` 自動生成）
 - 首頁作品（沒有 folderId）會顯示在分組列表的 **Other**/未分組區塊
 - 使用 **搜尋框** 或 **Folder Id** 排序欄可快速定位
 - 點擊欄位標題排序：
@@ -180,13 +177,12 @@ Sveltia CMS 尚未提供 Editorial Workflow，所以沒有 Draft/Ready/Publish �
 
 ### 圖片管理
 
-- **建議尺寸**：1920x1080 px 或更高（系統會自動生成縮略圖）
+- **建議尺寸**：1920x1080 px 或更高（同一張圖會用於縮圖與 Lightbox）
 - **支持格式**：JPG、PNG、WebP
 - **文件大小**：單張圖片最大 10MB
 - **上傳位置**：所有圖片保存在 `public/images/uploads/`
 - **自動功能**：
-  - ✅ 上傳一張圖即可，縮略圖自動生成
-  - ✅ 圖片尺寸自動偵測填寫
+  - ✅ 上傳一張圖即可，同時供列表與 Lightbox 使用
   - ✅ 可在媒體庫中重複使用
 
 ### 內容預覽
@@ -210,16 +206,24 @@ Sveltia CMS 尚未提供 Editorial Workflow，所以沒有 Draft/Ready/Publish �
 
 ## 🎨 高級功能
 
-### 自定義篩選器（半自動）
+### 自動更新篩選器與分組
 
-當你添加新資料夾後，可以使用內建命令自動生成篩選器建議：
+新增/調整資料夾後，記得重新生成 CMS 設定：
 
-**步驟：**
-1. 在 CMS 中創建新資料夾（例如 `commissions`、`sketches-2026`）
-2. 在終端運行：`npm run cms:suggest-filters`
-3. 腳本會顯示當前資料夾結構和建議的篩選器配置（供參考）
-4. 目前僅保留 `Images` 的 `Featured / Sketches` 兩個篩選器，建議只複製對應段落
-5. `Pages` 不再使用 `view_filters`（Sveltia 無法判斷「folderId 為空」的條件），所以不要再貼回該段落
+1. 在 repo 中新增或編輯 `src/content/folders/*.json`
+2. 執行 `npm run cms:config`
+3. 腳本會讀取資料夾結構，重新產生 `public/admin/config.yml`
+   - ⭐/✏️ 等父層濾鏡和 `🗂️ Featured › 2025` 等子濾鏡都會自動更新
+4. 將 `public/admin/config.yml` 的變更提交即可
+
+### 內容驗證（避免 CMS 卡死）
+
+在提交前執行 `npm run cms:lint`：
+- 檢查 `pages`/`works`/`folders` 是否有重複 ID
+- 確認 `folderId` 都指向有效資料夾
+- 若有問題會列出清單並以非零狀態碼結束
+
+💡 建議把 `cms:lint` 納入 CI 或至少在 Merge Request 前跑一次，就不會再出現「點集合作品後整個卡死」的情況。
 
 **範例輸出：**
 ```
@@ -369,7 +373,7 @@ Sveltia CMS 尚未提供 Editorial Workflow，所以沒有 Draft/Ready/Publish �
 
 - 上傳前使用工具壓縮圖片
 - 保持合理的文件大小
-- 為縮略圖和完整圖使用不同尺寸
+- 若同時需要社群預覽，可額外生成一份低解析度檔案（前端仍只需要一張圖）
 
 ---
 
