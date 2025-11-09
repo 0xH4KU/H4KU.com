@@ -1,5 +1,4 @@
 import { MockData, Folder, Page, Social, WorkItem } from '@/types';
-import { parseFrontmatter } from '@/utils/frontmatter';
 
 /**
  * Load content from local markdown/json files using Vite's import.meta.glob.
