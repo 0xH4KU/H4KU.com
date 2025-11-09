@@ -86,9 +86,6 @@ npm run type-check
 # 运行格式检查
 npm run format:check
 
-# 运行测试
-npm run test:run
-
 # 运行构建
 npm run build
 ```

@@ -207,21 +207,6 @@ Examples:
 - New types → `src/types/`
 - New utils → `src/utils/`
 
-## Testing (When Added)
-
-```tsx
-// Component.test.tsx
-import { render, screen } from '@testing-library/react';
-import { Component } from './Component';
-
-describe('Component', () => {
-  it('renders correctly', () => {
-    render(<Component title="Test" />);
-    expect(screen.getByText('Test')).toBeInTheDocument();
-  });
-});
-```
-
 ## Build Commands
 
 - `npm run dev` - Start dev server
@@ -230,8 +215,6 @@ describe('Component', () => {
 - `npm run format` - Format with Prettier (auto-fix)
 - `npm run format:check` - Check if code is formatted
 - `npm run type-check` - Run TypeScript compiler check
-- `npm run test` - Run tests (Vitest watch mode)
-- `npm run test:run` - Run tests once
 
 ## Deployment Target
 
@@ -338,9 +321,6 @@ npm run format
 npm run lint           # ESLint - code quality
 npm run type-check     # TypeScript - type safety
 npm run format:check   # Prettier - code formatting
-
-# 3. Optional: Run tests
-npm run test:run       # Run all tests once
 ```
 
 **Why these checks matter:**

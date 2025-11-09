@@ -628,30 +628,6 @@ Follow these URL conventions:
 - Folders: `/folder/{id}` or `/folder/{parent}/{child}`
 - Pages: `/page/{id}`
 
-## Testing Guidelines (Future)
-
-When tests are added:
-
-```tsx
-// ComponentName.test.tsx
-import { render, screen } from '@testing-library/react';
-import { MyComponent } from './MyComponent';
-
-describe('MyComponent', () => {
-  it('renders with correct text', () => {
-    render(<MyComponent title="Test" />);
-    expect(screen.getByText('Test')).toBeInTheDocument();
-  });
-
-  it('is keyboard accessible', () => {
-    render(<MyComponent />);
-    const button = screen.getByRole('button');
-    button.focus();
-    expect(button).toHaveFocus();
-  });
-});
-```
-
 ## Questions?
 
 If you have questions about these guidelines, please:
