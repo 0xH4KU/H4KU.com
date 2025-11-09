@@ -31,10 +31,9 @@
 - Homepage filter 经常出 bug
 
 **现在：**
-- ✅ 简化为 3 个核心 Filter：Homepage、Featured、Sketches
-- ✅ 添加 `view_groups` 按 folderId 自动分组
-- ✅ 修复 Homepage filter（从 `pattern: false` 改为 `pattern: '^$'`）
-- ✅ 更宽泛的 pattern（`^featured` 匹配所有 featured-*）
+- ✅ 先依 folderId 自动分组，快速找到同一资料夹
+- ✅ 保留 2 个常用 Filter：⭐ Featured、✏️ Sketches
+- ⚠️ 目前暫無「Homepage」Filter（Sveltia 無法辨識 folderId 為空的條件）
 
 **Sveltia CMS 的优势：**
 - 自动按 folderId 分组展示
@@ -104,10 +103,10 @@ npm run dev
 #### 1. 管理作品（Images）
 - 点击 **Images** collection
 - 使用 Filter：
-  - **📍 Homepage** - 查看首页作品
-  - **⭐ Featured** - 查看所有 Featured 作品（包括 2025, 2026...）
+  - **⭐ Featured** - 查看所有 Featured 作品（包含 2025、2026…）
   - **✏️ Sketches** - 查看所有 Sketches 作品
-- Sveltia 会自动按文件夹分组显示
+- 首頁作品沒有 folderId，會顯示在分組列表的 **Other** 區塊
+- 系统会自动按文件夹分组显示
 
 **创建新作品：**
 1. 点击 **New Image**
@@ -118,8 +117,8 @@ npm run dev
 
 #### 2. 管理页面（Pages）
 - 点击 **Pages** collection
-- Filter 同样简化为：Homepage / In Folders
-- 创建/编辑页面流程相同
+- 目前没有额外 Filter，直接依资料夹分组
+- 使用搜尋或排序就能快速找到頁面
 
 #### 3. 管理文件夹（Folders）
 - 点击 **Folders** collection
@@ -251,11 +250,10 @@ display_fields: ['{{parentId}}/{{name}}']
 ```
 
 **config.yml 主要优化：**
-1. 简化 view_filters（3 个核心 filter）
-2. 添加 view_groups（自动分组）
-3. 调整字段顺序（必填优先）
-4. 修复 Homepage filter（`pattern: '^$'`）
-5. 优化 display_fields（显示完整路径）
+1. 精简 view_filters（僅保留 Featured / Sketches 兩個熱門條件）
+2. 添加 view_groups（自動按 folderId 分組，首頁落在 Other 群組）
+3. 調整字段順序（必填優先，選填折疊）
+4. 優化 display_fields（顯示完整路徑）
 
 ---
 
@@ -288,17 +286,7 @@ git status
 
 # 2. 提交更改
 git add public/admin/
-git commit -m "Migrate from Decap CMS to Sveltia CMS
-
-- Replace Decap with Sveltia for better performance (500KB vs 1.5MB)
-- Simplify filters: Homepage, Featured, Sketches
-- Add view_groups for automatic folder grouping
-- Optimize form fields order (required fields first)
-- Fix homepage filter pattern
-- Improve folder selector display
-
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>"
+git commit -m "Migrate from Decap CMS to Sveltia CMS"
 
 # 3. 推送
 git push origin main
