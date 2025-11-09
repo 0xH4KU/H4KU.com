@@ -7,7 +7,7 @@ const collator = new Intl.Collator('en', {
 
 const removeFileExtension = (value: string) => value.replace(/\.[^.]+$/, '');
 
-const NUMERIC_WITH_SEPARATORS = /^\d+(?:[-_/\.]\d+)*$/;
+const NUMERIC_WITH_SEPARATORS = /^\d+(?:[-_/.]\d+)*$/;
 const LEADING_NUMBER = /^\d+/;
 
 const normalizeLabel = (value: string) => value.trim();
@@ -19,7 +19,7 @@ const parseNumericLikeValue = (value: string): number | null => {
   }
 
   if (NUMERIC_WITH_SEPARATORS.test(normalized)) {
-    return Number(normalized.replace(/[-_/\.]/g, ''));
+    return Number(normalized.replace(/[-_/.]/g, ''));
   }
 
   const prefixMatch = normalized.match(LEADING_NUMBER);
