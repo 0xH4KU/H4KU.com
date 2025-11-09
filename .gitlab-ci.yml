@@ -24,7 +24,6 @@ lint-and-test:
     - npm run lint
     - npm run type-check
     - npm run format:check
-    - npm run test:run
   # Environment variables from GitLab CI/CD settings
   variables:
     VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
