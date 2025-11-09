@@ -123,59 +123,53 @@ const ContentView: React.FC = () => {
     if (currentView?.type === 'txt') {
       return (
         <motion.div
-          className={styles['txt-viewer-overlay']}
+          className={`${styles['txt-viewer']} ${theme}`}
           variants={pageVariants}
           initial="initial"
           animate="animate"
           exit="exit"
           key={`txt-${currentView.data.id}`}
-          onClick={handleCloseTextView}
         >
-          <div
-            className={`${styles['txt-viewer']} ${theme}`}
-            onClick={event => event.stopPropagation()}
+          <motion.div
+            className={styles['txt-header']}
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{
+              delay: 0.05,
+              duration: 0.3,
+              ease: defaultEase,
+            }}
           >
-            <motion.div
-              className={styles['txt-header']}
-              initial={{ x: -30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{
-                delay: 0.05,
-                duration: 0.3,
-                ease: defaultEase,
-              }}
+            <img
+              className={styles['txt-icon']}
+              src={paperIcon}
+              alt="Text file icon"
+            />
+            <span>{currentView.data.name}</span>
+            <motion.button
+              onClick={handleCloseTextView}
+              className={styles['close-btn']}
+              whileHover={
+                prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }
+              }
+              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
             >
-              <img
-                className={styles['txt-icon']}
-                src={paperIcon}
-                alt="Text file icon"
-              />
-              <span>{currentView.data.name}</span>
-              <motion.button
-                onClick={handleCloseTextView}
-                className={styles['close-btn']}
-                whileHover={
-                  prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }
-                }
-                whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
-              >
-                ×
-              </motion.button>
-            </motion.div>
-            <motion.div
-              className={styles['txt-content']}
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{
-                delay: 0.15,
-                duration: 0.3,
-                ease: defaultEase,
-              }}
-            >
-              <pre>{currentView.data.content}</pre>
-              {currentView.data.id === 'contact' && <ContactForm />}
-            </motion.div>
-          </div>
+              ×
+            </motion.button>
+          </motion.div>
+          <motion.div
+            className={styles['txt-content']}
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{
+              delay: 0.15,
+              duration: 0.3,
+              ease: defaultEase,
+            }}
+          >
+            <pre>{currentView.data.content}</pre>
+            {currentView.data.id === 'contact' && <ContactForm />}
+          </motion.div>
         </motion.div>
       );
     }

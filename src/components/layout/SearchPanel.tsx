@@ -115,46 +115,58 @@ const SearchPanel: React.FC = () => {
   }
 
   return (
-    <div className={styles['search-panel']}>
-      <div className={styles['search-header']}>
-        <input
-          ref={inputRef}
-          type="text"
-          value={searchQuery}
-          placeholder="Type to search…"
-          onChange={event => handleQueryChange(event.target.value)}
-          onKeyDown={handleInputKeyDown}
-        />
-        <button
-          type="button"
-          onClick={handleClose}
-          className={styles['search-close-btn']}
-        >
-          ×
-        </button>
-      </div>
-      <div className={styles['search-results']}>
-        {searchQuery.trim().length === 0 && (
-          <div className={styles['search-hint']}>
-            Start typing to search folders, works, and text files
-          </div>
-        )}
-        {searchQuery.trim().length > 0 && formattedResults.length === 0 && (
-          <div className={styles['search-empty']}>No matches found</div>
-        )}
-        {formattedResults.map((result, index) => (
+    <div
+      className={styles['search-overlay']}
+      role="presentation"
+      onClick={handleClose}
+    >
+      <div
+        className={styles['search-panel']}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search panel"
+        onClick={event => event.stopPropagation()}
+      >
+        <div className={styles['search-header']}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchQuery}
+            placeholder="Type to search…"
+            onChange={event => handleQueryChange(event.target.value)}
+            onKeyDown={handleInputKeyDown}
+          />
           <button
-            key={`${result.type}-${result.id}`}
-            className={`${styles['search-result']} ${index === selectedIndex ? styles['search-result--selected'] : ''}`}
             type="button"
-            onClick={() => handleSelect(result)}
+            onClick={handleClose}
+            className={styles['search-close-btn']}
           >
-            <div className={styles['search-result-label']}>{result.label}</div>
-            {'meta' in result && result.meta ? (
-              <div className={styles['search-result-meta']}>{result.meta}</div>
-            ) : null}
+            ×
           </button>
-        ))}
+        </div>
+        <div className={styles['search-results']}>
+          {searchQuery.trim().length === 0 && (
+            <div className={styles['search-hint']}>
+              Start typing to search folders, works, and text files
+            </div>
+          )}
+          {searchQuery.trim().length > 0 && formattedResults.length === 0 && (
+            <div className={styles['search-empty']}>No matches found</div>
+          )}
+          {formattedResults.map((result, index) => (
+            <button
+              key={`${result.type}-${result.id}`}
+              className={`${styles['search-result']} ${index === selectedIndex ? styles['search-result--selected'] : ''}`}
+              type="button"
+              onClick={() => handleSelect(result)}
+            >
+              <div className={styles['search-result-label']}>{result.label}</div>
+              {'meta' in result && result.meta ? (
+                <div className={styles['search-result-meta']}>{result.meta}</div>
+              ) : null}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
