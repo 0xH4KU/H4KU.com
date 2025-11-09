@@ -77,13 +77,20 @@ export const sortByLabel = <T>(
   return [...items].sort((a, b) => comparator(getLabel(a), getLabel(b)));
 };
 
-export const getWorkItemLabel = (work: { filename?: string; title?: string; id?: string }) =>
+export const getWorkItemLabel = (work: {
+  filename?: string;
+  title?: string;
+  id?: string;
+}) =>
   deriveSortableLabel(work.filename ?? work.title ?? work.id ?? '', {
     stripExtension: true,
   });
 
-export const getPageLabel = (page: { name?: string; filename?: string; id?: string }) =>
-  deriveSortableLabel(page.name ?? page.filename ?? page.id ?? '');
+export const getPageLabel = (page: {
+  name?: string;
+  filename?: string;
+  id?: string;
+}) => deriveSortableLabel(page.name ?? page.filename ?? page.id ?? '');
 
 export const getFolderLabel = (folder: { name?: string; id?: string }) =>
   deriveSortableLabel(folder.name ?? folder.id ?? '');

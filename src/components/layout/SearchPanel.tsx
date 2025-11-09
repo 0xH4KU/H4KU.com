@@ -160,9 +160,13 @@ const SearchPanel: React.FC = () => {
               type="button"
               onClick={() => handleSelect(result)}
             >
-              <div className={styles['search-result-label']}>{result.label}</div>
+              <div className={styles['search-result-label']}>
+                {result.label}
+              </div>
               {'meta' in result && result.meta ? (
-                <div className={styles['search-result-meta']}>{result.meta}</div>
+                <div className={styles['search-result-meta']}>
+                  {result.meta}
+                </div>
               ) : null}
             </button>
           ))}
