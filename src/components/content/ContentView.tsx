@@ -10,6 +10,12 @@ import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
 import { LazyImage } from '@/components/common/LazyImage';
 import { ContactForm } from '@/components/forms/ContactForm';
+import {
+  getFolderLabel,
+  getPageLabel,
+  getWorkItemLabel,
+  sortByLabel,
+} from '@/utils/sortHelpers';
 import styles from './ContentView.module.css';
 
 type NavigableItem = Folder | Page;
@@ -18,20 +24,8 @@ const ContentView: React.FC = () => {
   const { currentView, navigateTo, openLightbox, resetToHome } =
     useNavigation();
   const { theme } = useTheme();
-  const { sortOrder } = useSortOrder();
+  const { sortOrder, typeOrder } = useSortOrder();
   const prefersReducedMotion = useReducedMotion();
-
-  // 排序函数
-  const sortItems = <T extends { name?: string; filename?: string; date?: string }>(
-    items: T[]
-  ): T[] => {
-    if (sortOrder === 'asc') {
-      // 正序(A-Z):直接返回mockData的倒序结果再反转
-      return [...items].reverse();
-    }
-    // 倒序(Z-A):直接返回mockData的倒序结果
-    return items;
-  };
 
   // 動畫變體配置 - 簡潔直接的動畫
   const defaultEase = useMemo<[number, number, number, number]>(
@@ -129,62 +123,80 @@ const ContentView: React.FC = () => {
     if (currentView?.type === 'txt') {
       return (
         <motion.div
-          className={`${styles['txt-viewer']} ${theme}`}
+          className={styles['txt-viewer-overlay']}
           variants={pageVariants}
           initial="initial"
           animate="animate"
           exit="exit"
           key={`txt-${currentView.data.id}`}
+          onClick={handleCloseTextView}
         >
-          <motion.div
-            className={styles['txt-header']}
-            initial={{ x: -30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{
-              delay: 0.05,
-              duration: 0.3,
-              ease: defaultEase,
-            }}
+          <div
+            className={`${styles['txt-viewer']} ${theme}`}
+            onClick={event => event.stopPropagation()}
           >
-            <img
-              className={styles['txt-icon']}
-              src={paperIcon}
-              alt="Text file icon"
-            />
-            <span>{currentView.data.name}</span>
-            <motion.button
-              onClick={handleCloseTextView}
-              className={styles['close-btn']}
-              whileHover={
-                prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }
-              }
-              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+            <motion.div
+              className={styles['txt-header']}
+              initial={{ x: -30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{
+                delay: 0.05,
+                duration: 0.3,
+                ease: defaultEase,
+              }}
             >
-              ×
-            </motion.button>
-          </motion.div>
-          <motion.div
-            className={styles['txt-content']}
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{
-              delay: 0.15,
-              duration: 0.3,
-              ease: defaultEase,
-            }}
-          >
-            <pre>{currentView.data.content}</pre>
-            {currentView.data.id === 'contact' && <ContactForm />}
-          </motion.div>
+              <img
+                className={styles['txt-icon']}
+                src={paperIcon}
+                alt="Text file icon"
+              />
+              <span>{currentView.data.name}</span>
+              <motion.button
+                onClick={handleCloseTextView}
+                className={styles['close-btn']}
+                whileHover={
+                  prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }
+                }
+                whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+              >
+                ×
+              </motion.button>
+            </motion.div>
+            <motion.div
+              className={styles['txt-content']}
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{
+                delay: 0.15,
+                duration: 0.3,
+                ease: defaultEase,
+              }}
+            >
+              <pre>{currentView.data.content}</pre>
+              {currentView.data.id === 'contact' && <ContactForm />}
+            </motion.div>
+          </div>
         </motion.div>
       );
     }
 
     if (currentView?.type === 'folder') {
       const { items = [], children = [] } = currentView.data;
-      const textItems = sortItems(items.filter(item => item.itemType === 'page'));
-      const workItems = sortItems(items.filter(item => item.itemType !== 'page'));
-      const sortedChildren = sortItems(children);
+      const textItems = sortByLabel(
+        items.filter(item => item.itemType === 'page'),
+        sortOrder,
+        getWorkItemLabel
+      );
+      const workItems = sortByLabel(
+        items.filter(item => item.itemType !== 'page'),
+        sortOrder,
+        getWorkItemLabel
+      );
+      const sortedChildren = sortByLabel(children, sortOrder, getFolderLabel);
+      const bucketSequence =
+        typeOrder === 'folders-first'
+          ? (['folders', 'pages', 'works'] as const)
+          : (['works', 'pages', 'folders'] as const);
       const hasFileGridContent =
         children.length > 0 || textItems.length > 0 || workItems.length > 0;
 
@@ -219,89 +231,95 @@ const ContentView: React.FC = () => {
               animate="visible"
               exit="exit"
             >
-              {sortedChildren.map(child => (
-                <motion.div
-                  key={child.id}
-                  className={styles['file-item']}
-                  variants={itemVariants}
-                  onClick={() => handleNavigate(child)}
-                  whileHover={
-                    prefersReducedMotion
-                      ? {}
-                      : {
-                          scale: 1.02,
-                          y: -2,
-                          transition: { duration: 0.15 },
-                        }
-                  }
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                >
-                  <img
-                    className={styles['file-icon']}
-                    src={folderIcon}
-                    alt="Folder icon"
-                  />
-                  <div className={styles['file-name']}>{child.name}</div>
-                </motion.div>
-              ))}
-              {textItems.map(item => (
-                <motion.div
-                  key={item.id}
-                  className={styles['file-item']}
-                  variants={itemVariants}
-                  onClick={() => {
-                    const page: Page = {
-                      id: item.id,
-                      name: item.filename,
-                      type: 'txt',
-                      content: 'content' in item ? item.content : '',
-                    };
-                    navigateTo(page);
-                  }}
-                  whileHover={
-                    prefersReducedMotion
-                      ? {}
-                      : {
-                          scale: 1.02,
-                          y: -2,
-                          transition: { duration: 0.15 },
-                        }
-                  }
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                >
-                  <img
-                    className={styles['file-icon']}
-                    src={paperIcon}
-                    alt="Text file icon"
-                  />
-                  <div className={styles['file-name']}>{item.filename}</div>
-                </motion.div>
-              ))}
-              {workItems.map(item => (
-                <motion.div
-                  key={item.id}
-                  className={styles['file-item']}
-                  variants={itemVariants}
-                  onClick={() => handleOpenLightbox(item, workItems)}
-                  whileHover={
-                    prefersReducedMotion
-                      ? {}
-                      : {
-                          scale: 1.02,
-                          y: -2,
-                          transition: { duration: 0.15 },
-                        }
-                  }
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                >
-                  <LazyImage
-                    className={styles['file-thumb']}
-                    src={'thumb' in item ? item.thumb : ''}
-                    alt={item.filename}
-                  />
-                  <div className={styles['file-name']}>{item.filename}</div>
-                </motion.div>
-              ))}
+              {bucketSequence.flatMap(bucket => {
+                if (bucket === 'folders') {
+                  return sortedChildren.map(child => (
+                    <motion.div
+                      key={child.id}
+                      className={styles['file-item']}
+                      variants={itemVariants}
+                      onClick={() => handleNavigate(child)}
+                      whileHover={
+                        prefersReducedMotion
+                          ? {}
+                          : {
+                              scale: 1.02,
+                              y: -2,
+                              transition: { duration: 0.15 },
+                            }
+                      }
+                      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                    >
+                      <img
+                        className={styles['file-icon']}
+                        src={folderIcon}
+                        alt="Folder icon"
+                      />
+                      <div className={styles['file-name']}>{child.name}</div>
+                    </motion.div>
+                  ));
+                }
+                if (bucket === 'pages') {
+                  return textItems.map(item => (
+                    <motion.div
+                      key={item.id}
+                      className={styles['file-item']}
+                      variants={itemVariants}
+                      onClick={() => {
+                        const page: Page = {
+                          id: item.id,
+                          name: item.filename,
+                          type: 'txt',
+                          content: 'content' in item ? item.content : '',
+                        };
+                        navigateTo(page);
+                      }}
+                      whileHover={
+                        prefersReducedMotion
+                          ? {}
+                          : {
+                              scale: 1.02,
+                              y: -2,
+                              transition: { duration: 0.15 },
+                            }
+                      }
+                      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                    >
+                      <img
+                        className={styles['file-icon']}
+                        src={paperIcon}
+                        alt="Text file icon"
+                      />
+                      <div className={styles['file-name']}>{item.filename}</div>
+                    </motion.div>
+                  ));
+                }
+                return workItems.map(item => (
+                  <motion.div
+                    key={item.id}
+                    className={styles['file-item']}
+                    variants={itemVariants}
+                    onClick={() => handleOpenLightbox(item, workItems)}
+                    whileHover={
+                      prefersReducedMotion
+                        ? {}
+                        : {
+                            scale: 1.02,
+                            y: -2,
+                            transition: { duration: 0.15 },
+                          }
+                    }
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                  >
+                    <LazyImage
+                      className={styles['file-thumb']}
+                      src={'thumb' in item ? item.thumb : ''}
+                      alt={item.filename}
+                    />
+                    <div className={styles['file-name']}>{item.filename}</div>
+                  </motion.div>
+                ));
+              })}
             </motion.div>
           )}
         </motion.div>
@@ -309,9 +327,80 @@ const ContentView: React.FC = () => {
     }
 
     // 主頁
-    const sortedFolders = sortItems(mockData.folders);
-    const sortedPages = sortItems(mockData.pages);
-    const sortedHomeItems = sortItems(mockData.homeItems);
+    const sortedFolders = sortByLabel(
+      mockData.folders,
+      sortOrder,
+      getFolderLabel
+    );
+    const sortedPages = sortByLabel(mockData.pages, sortOrder, getPageLabel);
+    const sortedHomeItems = sortByLabel(
+      mockData.homeItems,
+      sortOrder,
+      getWorkItemLabel
+    );
+    const homeFileBucketSequence =
+      typeOrder === 'folders-first'
+        ? (['folders', 'pages'] as const)
+        : (['pages', 'folders'] as const);
+
+    const renderHomeWorksGrid = () => (
+      <motion.div
+        className={styles['works-grid']}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        {sortedHomeItems.map(item => {
+          const isTextPage = item.itemType === 'page';
+          const handleClick = isTextPage
+            ? () => {
+                const page: Page = {
+                  id: item.id,
+                  name: item.filename,
+                  type: 'txt',
+                  content: 'content' in item ? item.content : '',
+                };
+                navigateTo(page);
+              }
+            : () => handleOpenLightbox(item, sortedHomeItems);
+
+          return (
+            <motion.div
+              key={item.id}
+              className={styles['work-item']}
+              variants={itemVariants}
+              onClick={handleClick}
+              whileHover={
+                prefersReducedMotion
+                  ? {}
+                  : {
+                      scale: 1.02,
+                      y: -3,
+                      transition: { duration: 0.15 },
+                    }
+              }
+              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+            >
+              {isTextPage ? (
+                <img
+                  className={styles['file-icon']}
+                  src={paperIcon}
+                  alt="Text file icon"
+                />
+              ) : (
+                <LazyImage
+                  className={styles['work-thumb']}
+                  src={'thumb' in item ? item.thumb : ''}
+                  alt={item.filename}
+                />
+              )}
+              <div className={styles['work-info']}>{item.filename}</div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    );
 
     return (
       <motion.div
@@ -322,6 +411,9 @@ const ContentView: React.FC = () => {
         exit="exit"
         key="home"
       >
+        {typeOrder === 'images-first' &&
+          sortedHomeItems.length > 0 &&
+          renderHomeWorksGrid()}
         <motion.div
           className={styles['file-grid']}
           variants={containerVariants}
@@ -329,115 +421,63 @@ const ContentView: React.FC = () => {
           animate="visible"
           exit="exit"
         >
-          {sortedFolders.map(folder => (
-            <motion.div
-              key={folder.id}
-              className={styles['file-item']}
-              variants={itemVariants}
-              onClick={() => handleNavigate(folder)}
-              whileHover={
-                prefersReducedMotion
-                  ? {}
-                  : {
-                      scale: 1.02,
-                      y: -2,
-                      transition: { duration: 0.15 },
+          {homeFileBucketSequence.flatMap(bucket =>
+            bucket === 'folders'
+              ? sortedFolders.map(folder => (
+                  <motion.div
+                    key={folder.id}
+                    className={styles['file-item']}
+                    variants={itemVariants}
+                    onClick={() => handleNavigate(folder)}
+                    whileHover={
+                      prefersReducedMotion
+                        ? {}
+                        : {
+                            scale: 1.02,
+                            y: -2,
+                            transition: { duration: 0.15 },
+                          }
                     }
-              }
-              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-            >
-              <img
-                className={styles['file-icon']}
-                src={folderIcon}
-                alt="Folder icon"
-              />
-              <div className={styles['file-name']}>{folder.name}</div>
-            </motion.div>
-          ))}
-          {sortedPages.map(page => (
-            <motion.div
-              key={page.id}
-              className={styles['file-item']}
-              variants={itemVariants}
-              onClick={() => handleNavigate(page)}
-              whileHover={
-                prefersReducedMotion
-                  ? {}
-                  : {
-                      scale: 1.02,
-                      y: -2,
-                      transition: { duration: 0.15 },
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                  >
+                    <img
+                      className={styles['file-icon']}
+                      src={folderIcon}
+                      alt="Folder icon"
+                    />
+                    <div className={styles['file-name']}>{folder.name}</div>
+                  </motion.div>
+                ))
+              : sortedPages.map(page => (
+                  <motion.div
+                    key={page.id}
+                    className={styles['file-item']}
+                    variants={itemVariants}
+                    onClick={() => handleNavigate(page)}
+                    whileHover={
+                      prefersReducedMotion
+                        ? {}
+                        : {
+                            scale: 1.02,
+                            y: -2,
+                            transition: { duration: 0.15 },
+                          }
                     }
-              }
-              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-            >
-              <img
-                className={styles['file-icon']}
-                src={paperIcon}
-                alt="Text file icon"
-              />
-              <div className={styles['file-name']}>{page.name}</div>
-            </motion.div>
-          ))}
-        </motion.div>
-        {sortedHomeItems.length > 0 && (
-          <motion.div
-            className={styles['works-grid']}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            {sortedHomeItems.map(item => {
-              const isTextPage = item.itemType === 'page';
-              const handleClick = isTextPage
-                ? () => {
-                    const page: Page = {
-                      id: item.id,
-                      name: item.filename,
-                      type: 'txt',
-                      content: 'content' in item ? item.content : '',
-                    };
-                    navigateTo(page);
-                  }
-                : () => handleOpenLightbox(item, mockData.homeItems);
-
-              return (
-                <motion.div
-                  key={item.id}
-                  className={styles['work-item']}
-                  variants={itemVariants}
-                  onClick={handleClick}
-                  whileHover={
-                    prefersReducedMotion
-                      ? {}
-                      : {
-                          scale: 1.02,
-                          y: -3,
-                          transition: { duration: 0.15 },
-                        }
-                  }
-                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                >
-                  {isTextPage ? (
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                  >
                     <img
                       className={styles['file-icon']}
                       src={paperIcon}
                       alt="Text file icon"
                     />
-                  ) : (
-                    <LazyImage
-                      className={styles['work-thumb']}
-                      src={'thumb' in item ? item.thumb : ''}
-                      alt={item.filename}
-                    />
-                  )}
-                  <div className={styles['work-info']}>{item.filename}</div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
+                    <div className={styles['file-name']}>{page.name}</div>
+                  </motion.div>
+                ))
+          )}
+        </motion.div>
+        {typeOrder === 'folders-first' &&
+          sortedHomeItems.length > 0 &&
+          renderHomeWorksGrid()}
       </motion.div>
     );
   };

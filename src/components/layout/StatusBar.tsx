@@ -6,7 +6,8 @@ import styles from './StatusBar.module.css';
 
 const StatusBar: React.FC = () => {
   const { currentView } = useNavigation();
-  const { sortOrder, toggleSortOrder } = useSortOrder();
+  const { sortOrder, toggleSortOrder, typeOrder, toggleTypeOrder } =
+    useSortOrder();
   const { socials } = mockData;
 
   const itemCount = useMemo(() => {
@@ -42,19 +43,46 @@ const StatusBar: React.FC = () => {
           </a>
         ))}
       </div>
-      <span>|</span>
+      <span className={styles['status-divider']} aria-hidden="true">
+        |
+      </span>
       <button
         onClick={toggleSortOrder}
         className={styles['sort-button']}
-        title={`当前排序: ${sortOrder === 'desc' ? '新→旧 (Z-A)' : '旧→新 (A-Z)'}`}
+        title={
+          sortOrder === 'desc'
+            ? '默认排序：文字 A→Z，数字 9→0'
+            : '反转排序：文字 Z→A，数字 0→9'
+        }
       >
-        [{sortOrder === 'desc' ? 'Z-A ↓' : 'A-Z ↑'}]
+        [{sortOrder === 'desc' ? 'A→Z|9→0' : 'Z→A|0→9'}]
       </button>
-      <span>|</span>
+      <span className={styles['status-divider']} aria-hidden="true">
+        |
+      </span>
+      <button
+        onClick={toggleTypeOrder}
+        className={styles['sort-button']}
+        title={
+          typeOrder === 'folders-first'
+            ? '类型排序: Folder > Page > Image'
+            : '类型排序: Image > Page > Folder'
+        }
+      >
+        [{typeOrder === 'folders-first' ? 'F>P>Img' : 'Img>P>F'}]
+      </button>
+      <span className={styles['status-divider']} aria-hidden="true">
+        |
+      </span>
       <span>{itemCount} items</span>
-      <span>|</span>
+      <span className={styles['status-divider']} aria-hidden="true">
+        |
+      </span>
       <span className={styles['status-hint']}>
         Press ESC to toggle crosshair
+      </span>
+      <span className={styles['status-divider']} aria-hidden="true">
+        |
       </span>
       <span
         className={styles['status-right']}
