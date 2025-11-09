@@ -71,27 +71,16 @@
 ---
 
 ### 问题 3：批量 Commit
-**配置：**
-```yaml
-publish_mode: editorial_workflow
-```
 
-**使用方法：**
+Sveltia CMS 目前**尚未支援 Editorial Workflow**，所以我們只能依靠 Git 分支來合併多個變更。網站已經移除 `publish_mode: editorial_workflow`，避免介面壞掉。
 
-#### 方式 1：Editorial Workflow（CMS 内）
-1. 在 CMS 中编辑多个内容
-2. 点击 **Save**（不要直接 Publish）
-3. 内容会进入 **Workflow** 标签（Draft 状态）
-4. 去 **Workflow** 页面，批量选择多个 drafts
-5. 点击 **Publish** 一次性发布
-6. **结果**：一个 commit 包含所有变更
+**建議流程：**
+1. 在 CMS 內儲存時，Sveltia 會自動建立或沿用一個分支（如 `sveltia/content-update`）
+2. 持續在該分支編輯所有頁面/作品（先按 **Save**）
+3. 完成後進入 GitLab 建立 Merge Request
+4. 選擇 **Squash and merge**，所有變更會合成一個 commit
 
-#### 方式 2：Git 分支（推荐）
-1. 在 CMS 中编辑内容时，Sveltia 会创建新分支（如 `cms/content-update`）
-2. 所有变更都提交到这个分支
-3. 完成所有编辑后，创建 Pull Request
-4. Merge PR
-5. **结果**：一个 merge commit 包含所有变更
+💡 若是批次刪除/搬移檔案，仍推薦直接在 repo 內操作（`git rm`、`git mv` 等），再手動提交，效率最高。
 
 ---
 
@@ -225,7 +214,7 @@ display_fields: ['{{parentId}}/{{name}}']
 ### 推荐操作：
 1. 创建几个 2026 年的文件夹（为未来准备）
 2. 整理现有的测试内容
-3. 测试 Editorial Workflow 批量提交
+3. 走一遍「Sveltia 建分支 → GitLab MR → Squash merge」流程，確保能一次提交多個變更
 
 ### 未来优化（可选）：
 1. 启用 Sveltia CMS 的图片优化功能
