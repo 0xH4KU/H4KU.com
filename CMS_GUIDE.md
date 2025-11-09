@@ -10,17 +10,15 @@ https://lum-bio-mh2.pages.dev/admin/
 
 首次訪問時，點擊 **Login with GitLab** 並授權即可。
 
-### 📋 工作流模式（批量操作）
+### 📋 工作流模式（目前暫停）
 
-CMS 已啟用 **Editorial Workflow** 模式，讓你可以累積多個變更，最後統一發布成一個 commit。
+2025-11 Sveltia CMS 尚未支援 **Editorial Workflow**。目前在 CMS 內按 **Publish** 就會直接建立 commit。
 
-**界面說明：**
-- **Content**: 查看和編輯所有內容（和以前一樣）
-- **Workflow**: 管理草稿和待發布的變更（新功能！）
+🔁 **如果需要一次提交多個變更：**
+- 在 CMS 內 **Save draft**，待所有內容修改完成後，到 GitLab 建立 MR 時手動 squash
+- 或者先在 CMS 裡建立一個專用分支（Sveltia 會自動開分支），所有變更完成後一次 Merge
 
-**推薦使用方式：**
-- **單個修改**：直接在 Content 裡編輯 → 點 Publish（立即生成 commit）
-- **批量操作**：在 Content 裡進行多次編輯/刪除 → 到 Workflow 統一發布
+一旦 Sveltia 支援 Editorial Workflow，我們會再更新設定與文件。
 
 ## 📚 功能說明
 
@@ -163,56 +161,29 @@ CMS 已啟用 **Editorial Workflow** 模式，讓你可以累積多個變更，�
 
 ## 🔄 批量操作說明
 
-### Editorial Workflow 的限制
+### 目前的批量操作策略
 
-**重要：** Editorial Workflow 使用 Git Pull Request 機制，每個內容項是獨立的分支和 PR。
+Sveltia CMS 尚未提供 Editorial Workflow，所以沒有 Draft/Ready/Publish 流程。建議改用下列方式：
 
-**這意味著：**
-- ✅ 可以累積多個**新增或編輯**操作
-- ❌ **無法批量刪除**（每次刪除都是獨立的 PR，必須逐個發布）
-- ✅ 適合需要審批流程的團隊
-- ❌ 不適合批量清理操作
+1. **GitLab 分支 / MR**
+   - Sveltia 會在你首次儲存時自動建立一個 branch（例如 `sveltia/cms-username`）
+   - 在該分支完成所有內容修改
+   - 回到 GitLab 建立 Merge Request，最後選擇 **Squash and merge**，即可把多個變更合併成一個 commit
 
-### 使用建議
+2. **手動腳本（大量刪除/搬移）**
+   ```bash
+   # 批量刪除或搬移仍建議直接在 repo 內操作
+   git rm src/content/**/*test*
+   git commit -m "Clean up test files"
+   git push
+   ```
+   使用命令列可以一次處理多個檔案，也不會被 CMS 的限制卡住。
 
-**日常操作：**
-- 創建新內容 → **Save** → 到 Workflow → **Publish**（一個 commit）
-- 編輯內容 → 修改完成後 **Publish now**（立即生效）
-- 刪除內容 → 直接刪除（會立即生成 commit）
+3. **小幅變更**
+   - 在 CMS 中直接 **Publish**，即時生成 commit
+   - 若覺得 commit 太多，可定期在 GitLab 上 rebase/squash
 
-**批量刪除：**
-如果需要一次性刪除多個測試文件，使用命令行更簡單：
-
-```bash
-# 刪除所有包含 test 的文件
-git rm src/content/**/*test*
-git commit -m "Clean up test files"
-git push
-```
-
-或者手動選擇要刪除的文件：
-```bash
-# 刪除特定文件
-git rm src/content/folders/featured-2025-test.json
-git rm src/content/works/featured-2025-test-*.json
-git commit -m "Remove test content"
-git push
-```
-
-**優點：**
-- ✅ 真正的批量操作
-- ✅ 只產生一個 commit
-- ✅ 完全掌控
-
-### 情境：批量添加新內容
-
-1. 在 Content 中創建第一個新項目 → **Save**（進入 Draft）
-2. 繼續創建其他項目 → 都 **Save**
-3. 到 **Workflow** 標籤 → 檢查所有新項目
-4. 逐個或批量移動到 **Ready**
-5. 統一 **Publish** → 生成一個 commit 包含所有新內容
-
-**注意：** 雖然可以累積多個新增，但 Publish 時每個項目仍是獨立的 PR 合併，最終可能產生多個 commit（取決於 GitLab 設定）。
+等 Sveltia 官方支援 Editorial Workflow 後，我們會再重新啟用並更新流程。
 
 ---
 
@@ -303,30 +274,13 @@ git push
 
 ## ⚠️ 注意事項
 
-### Editorial Workflow 模式說明
+### 為什麼暫時看不到 Workflow？
 
-**兩種發布方式：**
+- Sveltia CMS 官方文件指出：**Editorial Workflow 尚未推出**，預計會在 1.x 版才支援
+- 因此我們已停用相關設定，避免出現「No entries found」「New button 失效」等錯誤
+- 目前只能使用「Publish 立即提交」或「GitLab 分支/MR」的方式整理 commit
 
-1. **立即發布（單個變更）**
-   - 在編輯頁面直接點 **Publish now**
-   - 立即生成一個 commit 並部署
-   - 適合：單個緊急修改
-
-2. **延遲發布（批量變更）**
-   - 在編輯頁面點 **Save**（不要點 Publish）
-   - 變更進入 Workflow
-   - 累積多個變更後，到 Workflow 統一 Publish
-   - 適合：大量清理、批量上傳
-
-**已發布的內容如何編輯？**
-- 編輯已發布的內容時，會創建一個「待審核」版本
-- 修改會進入 Workflow，不會立即生效
-- 在 Workflow 中 Publish 後才會更新
-
-**如何取消草稿？**
-- 在 Workflow 中點擊項目
-- 點擊 **Delete unpublished changes**
-- 不會影響已發布的內容
+一旦官方釋出支援，會再重新開啟並同步更新文件。
 
 ### 不要運行 sync-images
 
