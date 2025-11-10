@@ -75,7 +75,7 @@ describe('ThemeProvider', () => {
       const color = theme === 'dark' ? '#111111' : '#ffffff';
       return {
         getPropertyValue: () => color,
-      } as CSSStyleDeclaration;
+      } as unknown as CSSStyleDeclaration;
     });
 
     const { result } = renderHook(() => useTheme(), { wrapper: createWrapper() });
