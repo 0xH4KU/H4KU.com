@@ -30,7 +30,7 @@ A modern, interactive portfolio website built with React, TypeScript, and Vite. 
 
 ### Developer Tools
 - **Crosshair Tool**: Precise pixel alignment helper for designers
-- **Test Suite**: Comprehensive testing with 95.8% coverage (147 tests)
+- **Test Suite**: Comprehensive testing with 95.2% coverage (175 tests)
 - **Type Safety**: Full TypeScript coverage with strict mode enabled
 
 ## Tech Stack
@@ -55,7 +55,7 @@ src/
 ├── config/            # Application configuration constants
 ├── contexts/          # React Context providers
 ├── hooks/             # Custom React hooks
-│   └── __tests__/    # Hook unit tests (74 tests, 94.59% coverage)
+│   └── __tests__/    # Hook unit tests (71 tests, 93.12% coverage)
 ├── content/           # Static portfolio content (markdown, JSON)
 │   ├── pages/        # Markdown pages with frontmatter
 │   ├── folders/      # Folder structure definitions
@@ -128,12 +128,12 @@ This project uses **Vitest** and **React Testing Library** for testing. We maint
 
 ### Test Coverage
 
-Current test coverage: **95.8%** overall
+Current test coverage: **95.2%** overall
 
 | Category | Coverage | Tests |
 |----------|----------|-------|
 | Config   | 100%     | Full coverage |
-| Hooks    | 94.59%   | 74 tests |
+| Hooks    | 93.12%   | 71 tests |
 | Utils    | 97.16%   | 73 tests |
 
 ### Running Tests

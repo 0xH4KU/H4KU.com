@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { useSearch } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { SearchResult } from '@/types';
@@ -21,12 +21,24 @@ const SearchPanel: React.FC = () => {
   } = useSearch();
   const { navigateTo, openLightbox } = useNavigation();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const titleId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     if (searchOpen) {
+      previouslyFocusedElement.current =
+        (document.activeElement as HTMLElement | null) ?? null;
       inputRef.current?.focus();
       setSelectedIndex(0);
+      return;
+    }
+
+    if (previouslyFocusedElement.current) {
+      previouslyFocusedElement.current.focus();
+      previouslyFocusedElement.current = null;
     }
   }, [searchOpen]);
 
@@ -40,14 +52,63 @@ const SearchPanel: React.FC = () => {
       return;
     }
 
+    const getFocusableElements = () => {
+      if (!panelRef.current) {
+        return [];
+      }
+
+      const selectors = [
+        'a[href]',
+        'button:not([disabled])',
+        'input:not([disabled])',
+        'textarea:not([disabled])',
+        '[tabindex]:not([tabindex="-1"])',
+      ].join(',');
+
+      return Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(selectors)
+      ).filter(element => !element.hasAttribute('aria-hidden'));
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        event.preventDefault();
         closeSearch();
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const focusableElements = getFocusableElements();
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        panelRef.current?.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (!activeElement || activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+        return;
+      }
+
+      if (activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [searchOpen, closeSearch]);
 
   type FormattedResult = SearchResult & { meta?: string };
@@ -125,8 +186,19 @@ const SearchPanel: React.FC = () => {
         role="dialog"
         aria-modal="true"
         aria-label="Search panel"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        ref={panelRef}
+        tabIndex={-1}
         onClick={event => event.stopPropagation()}
       >
+        <div className={styles['sr-only']} id={titleId}>
+          Search lum.bio
+        </div>
+        <p className={styles['sr-only']} id={descriptionId}>
+          Type to search folders, works, and text files. Use arrow keys to
+          navigate results and press Enter to open the selection.
+        </p>
         <div className={styles['search-header']}>
           <input
             ref={inputRef}
@@ -135,11 +207,13 @@ const SearchPanel: React.FC = () => {
             placeholder="Type to search…"
             onChange={event => handleQueryChange(event.target.value)}
             onKeyDown={handleInputKeyDown}
+            aria-describedby={descriptionId}
           />
           <button
             type="button"
             onClick={handleClose}
             className={styles['search-close-btn']}
+            aria-label="Close search panel"
           >
             ×
           </button>

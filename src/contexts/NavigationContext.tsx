@@ -157,8 +157,19 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setCurrentView({ type: 'folder', data: canonicalFolder });
   };
 
-  const openPage = (page: Page) => {
-    setCurrentPath(['home', page.id]);
+  const normalizePath = (pathOverride?: string[]) => {
+    if (!pathOverride || pathOverride.length === 0) {
+      return ['home'];
+    }
+    return pathOverride[0] === 'home'
+      ? [...pathOverride]
+      : ['home', ...pathOverride];
+  };
+
+  const openPage = (page: Page, pathOverride?: string[]) => {
+    const basePath = normalizePath(pathOverride);
+    const nextPath = [...basePath, page.id];
+    setCurrentPath(nextPath);
     setCurrentView({ type: 'txt', data: page });
   };
 
@@ -166,7 +177,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     if (item.type === 'folder') {
       openFolder(item, pathOverride);
     } else if (item.type === 'txt') {
-      openPage(item);
+      openPage(item, pathOverride);
     }
   };
 
@@ -191,7 +202,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     const page = mockData.pages.find(item => item.id === targetId);
     if (page) {
-      openPage(page);
+      openPage(page, nextPath.slice(0, -1));
       return;
     }
 
@@ -220,7 +231,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     const page = mockData.pages.find(item => item.id === targetId);
     if (page) {
-      openPage(page);
+      openPage(page, targetPath.slice(0, -1));
     }
   };
 

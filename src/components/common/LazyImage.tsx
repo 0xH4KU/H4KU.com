@@ -26,7 +26,7 @@ export function LazyImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
-  const previousSrcRef = useRef<string>();
+  const previousSrcRef = useRef<string | undefined>(undefined);
   const placeholderRef = useRef<string | undefined>(placeholder);
 
   useEffect(() => {

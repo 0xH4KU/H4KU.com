@@ -62,12 +62,25 @@ export const Tooltip: React.FC<TooltipProps> = ({
     };
   }, []);
 
+  const childProps = children.props as {
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
+  };
+
   return (
     <>
       {React.cloneElement(children, {
-        onMouseEnter: handleMouseEnter,
-        onMouseLeave: handleMouseLeave,
-      })}
+        onMouseEnter: (event: React.MouseEvent<HTMLElement>) => {
+          childProps.onMouseEnter?.(event);
+          if (!event.defaultPrevented) {
+            handleMouseEnter(event);
+          }
+        },
+        onMouseLeave: (event: React.MouseEvent<HTMLElement>) => {
+          childProps.onMouseLeave?.(event);
+          handleMouseLeave();
+        },
+      } as Partial<typeof children.props>)}
       {isVisible && (
         <div
           className={`${styles.tooltip} ${placement === 'bottom' ? styles['tooltip--bottom'] : ''}`}

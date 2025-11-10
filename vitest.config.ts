@@ -19,6 +19,8 @@ export default mergeConfig(
           '**/*.d.ts',
           '**/*.config.*',
           '**/mockData.ts',
+          'src/**/*.module.css',
+          'src/content/**',
           'dist/',
           '.eslintrc.cjs',
           'scripts/',
