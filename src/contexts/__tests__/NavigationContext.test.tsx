@@ -48,7 +48,9 @@ describe('NavigationProvider', () => {
   };
 
   const createWrapper = (initialEntries: string[] = ['/']) => {
-    const NavigationTestWrapper: FC<{ children: ReactNode }> = ({ children }) => (
+    const NavigationTestWrapper: FC<{ children: ReactNode }> = ({
+      children,
+    }) => (
       <MemoryRouter initialEntries={initialEntries}>
         <NavigationProvider>{children}</NavigationProvider>
       </MemoryRouter>
@@ -183,9 +185,11 @@ describe('NavigationProvider', () => {
 
   it('navigates back through nested folders', () => {
     const innerFolder = createFolder('inner', []);
-    const outerFolder = createFolder('outer', [createWorkItem('cover')], [
-      innerFolder,
-    ]);
+    const outerFolder = createFolder(
+      'outer',
+      [createWorkItem('cover')],
+      [innerFolder]
+    );
     mockData.folders = [outerFolder];
     mockData.pages = [];
     mockData.homeItems = [];

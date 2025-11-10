@@ -48,7 +48,9 @@ describe('ThemeProvider', () => {
 
   it('provides theme values and toggles stored preference', () => {
     setupMatchMedia(false);
-    const { result } = renderHook(() => useTheme(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: createWrapper(),
+    });
 
     expect(result.current.theme).toBe('light');
     expect(result.current.systemTheme).toBe('light');
@@ -78,7 +80,9 @@ describe('ThemeProvider', () => {
       } as unknown as CSSStyleDeclaration;
     });
 
-    const { result } = renderHook(() => useTheme(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useTheme(), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() =>
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
