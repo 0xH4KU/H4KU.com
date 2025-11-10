@@ -7,16 +7,20 @@ import {
   useNavigation,
 } from '@/contexts/NavigationContext';
 import { mockData } from '@/data/mockData';
-import type { Folder, Page, WorkItem } from '@/types';
+import type { Folder, ImageWorkItem, Page, WorkItem } from '@/types';
 
-const createWorkItem = (id: string, overrides: Partial<WorkItem> = {}) => ({
-  itemType: 'work' as const,
-  id,
-  filename: `${id}.png`,
-  thumb: `/${id}.png`,
-  full: `/${id}.png`,
-  ...overrides,
-});
+const createWorkItem = (
+  id: string,
+  overrides: Partial<ImageWorkItem> = {}
+): ImageWorkItem =>
+  ({
+    itemType: 'work',
+    id,
+    filename: `${id}.png`,
+    thumb: `/${id}.png`,
+    full: `/${id}.png`,
+    ...overrides,
+  }) satisfies ImageWorkItem;
 
 const createPage = (id: string, overrides: Partial<Page> = {}) => ({
   id,

@@ -4,28 +4,31 @@ import { render, screen } from '@testing-library/react';
 import SearchPanel from '../SearchPanel';
 import styles from '../SearchPanel.module.css';
 
-type MockSearchResult =
-  | {
-      type: 'folder';
-      id: string;
-      label: string;
-      path: string[];
-      folder: { id: string; name: string; type: 'folder' };
-    }
-  | {
-      type: 'page';
-      id: string;
-      label: string;
-      page: { id: string; name: string; type: 'txt'; content: string };
-    }
-  | {
-      type: 'work';
-      id: string;
-      label: string;
-      path: string[];
-      folder: { id: string; name: string; type: 'folder'; items?: unknown[] };
-      work: { id: string; filename: string; itemType: 'work' };
-    };
+type FolderResult = {
+  type: 'folder';
+  id: string;
+  label: string;
+  path: string[];
+  folder: { id: string; name: string; type: 'folder' };
+};
+
+type PageResult = {
+  type: 'page';
+  id: string;
+  label: string;
+  page: { id: string; name: string; type: 'txt'; content: string };
+};
+
+type WorkResult = {
+  type: 'work';
+  id: string;
+  label: string;
+  path: string[];
+  folder: { id: string; name: string; type: 'folder'; items?: unknown[] };
+  work: { id: string; filename: string; itemType: 'work' };
+};
+
+type MockSearchResult = FolderResult | PageResult | WorkResult;
 
 const navigationMock = {
   navigateTo: vi.fn(),
@@ -49,29 +52,31 @@ vi.mock('@/contexts/NavigationContext', () => ({
   useNavigation: () => navigationMock,
 }));
 
-const baseResults: MockSearchResult[] = [
-  {
-    type: 'folder',
-    id: 'folder-1',
-    label: 'Folder',
-    path: ['folder-1'],
-    folder: { id: 'folder-1', name: 'Folder One', type: 'folder' },
-  },
-  {
-    type: 'page',
-    id: 'page-1',
-    label: 'Text File',
-    page: { id: 'page-1', name: 'Doc', type: 'txt', content: 'Body' },
-  },
-  {
-    type: 'work',
-    id: 'work-1',
-    label: 'Work',
-    path: ['folder-1'],
-    folder: { id: 'folder-1', name: 'Folder One', type: 'folder' },
-    work: { id: 'work-1', filename: 'work.png', itemType: 'work' },
-  },
-];
+const folderResult: FolderResult = {
+  type: 'folder',
+  id: 'folder-1',
+  label: 'Folder',
+  path: ['folder-1'],
+  folder: { id: 'folder-1', name: 'Folder One', type: 'folder' },
+};
+
+const pageResult: PageResult = {
+  type: 'page',
+  id: 'page-1',
+  label: 'Text File',
+  page: { id: 'page-1', name: 'Doc', type: 'txt', content: 'Body' },
+};
+
+const workResult: WorkResult = {
+  type: 'work',
+  id: 'work-1',
+  label: 'Work',
+  path: ['folder-1'],
+  folder: { id: 'folder-1', name: 'Folder One', type: 'folder' },
+  work: { id: 'work-1', filename: 'work.png', itemType: 'work' },
+};
+
+const baseResults: MockSearchResult[] = [folderResult, pageResult, workResult];
 
 const getResultButtonByLabel = (label: string) => {
   const buttons = screen.getAllByRole('button');
@@ -108,7 +113,7 @@ describe('SearchPanel interactions', () => {
     expect(pageButton).toHaveClass(styles['search-result--selected']);
 
     await userEvent.keyboard('{Enter}');
-    expect(navigationMock.navigateTo).toHaveBeenCalledWith(baseResults[1].page);
+    expect(navigationMock.navigateTo).toHaveBeenCalledWith(pageResult.page);
     expect(searchState.closeSearch).toHaveBeenCalled();
 
      await userEvent.keyboard('{ArrowUp}');
@@ -124,8 +129,8 @@ describe('SearchPanel interactions', () => {
     const folderButton = getResultButtonByLabel('Folder');
     await userEvent.click(folderButton);
     expect(navigationMock.navigateTo).toHaveBeenCalledWith(
-      baseResults[0].folder,
-      baseResults[0].path
+      folderResult.folder,
+      folderResult.path
     );
     expect(searchState.closeSearch).toHaveBeenCalled();
   });
@@ -135,7 +140,7 @@ describe('SearchPanel interactions', () => {
     const workButton = getResultButtonByLabel('Work');
     await userEvent.click(workButton);
     expect(navigationMock.openLightbox).toHaveBeenCalledWith(
-      baseResults[2].work,
+      workResult.work,
       expect.any(Array)
     );
   });
