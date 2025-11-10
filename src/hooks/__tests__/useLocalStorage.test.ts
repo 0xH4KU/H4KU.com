@@ -56,7 +56,9 @@ describe('useLocalStorage', () => {
         result.current[1](value);
       });
 
-      expect(JSON.parse(localStorage.getItem(key)!)).toEqual(value);
+      const stored = localStorage.getItem(key);
+      expect(stored).not.toBeNull();
+      expect(JSON.parse(stored as string)).toEqual(value);
     });
   });
 

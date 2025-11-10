@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useReducedMotion } from '../useReducedMotion';
 
 describe('useReducedMotion', () => {
-  let matchMediaMock: any;
+  let matchMediaMock: MediaQueryList;
   let listeners: ((event: MediaQueryListEvent) => void)[] = [];
 
   beforeEach(() => {
@@ -11,17 +11,17 @@ describe('useReducedMotion', () => {
     matchMediaMock = {
       matches: false,
       media: '(prefers-reduced-motion: reduce)',
-      addEventListener: vi.fn((event: string, listener: any) => {
+      addEventListener: vi.fn((event: string, listener: (event: MediaQueryListEvent) => void) => {
         if (event === 'change') {
           listeners.push(listener);
         }
       }),
-      removeEventListener: vi.fn((event: string, listener: any) => {
+      removeEventListener: vi.fn((event: string, listener: (event: MediaQueryListEvent) => void) => {
         if (event === 'change') {
           listeners = listeners.filter((l) => l !== listener);
         }
       }),
-    };
+    } as unknown as MediaQueryList;
 
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
