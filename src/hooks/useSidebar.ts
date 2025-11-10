@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
 
-export function useSidebar(initialWidth = SIDEBAR_CONFIG.DEFAULT_WIDTH) {
+export function useSidebar(
+  initialWidth: number = SIDEBAR_CONFIG.DEFAULT_WIDTH,
+) {
   const [storedWidth, setStoredWidth] = useLocalStorage<number>(
     STORAGE_KEYS.SIDEBAR_WIDTH,
     initialWidth
