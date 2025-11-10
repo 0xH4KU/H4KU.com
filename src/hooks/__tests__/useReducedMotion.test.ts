@@ -2,8 +2,21 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useReducedMotion } from '../useReducedMotion';
 
+type MatchMediaMock = {
+  matches: boolean;
+  media: string;
+  addEventListener: (
+    event: string,
+    listener: (event: MediaQueryListEvent) => void,
+  ) => void;
+  removeEventListener: (
+    event: string,
+    listener: (event: MediaQueryListEvent) => void,
+  ) => void;
+};
+
 describe('useReducedMotion', () => {
-  let matchMediaMock: MediaQueryList;
+  let matchMediaMock: MatchMediaMock;
   let listeners: ((event: MediaQueryListEvent) => void)[] = [];
 
   beforeEach(() => {
@@ -21,11 +34,11 @@ describe('useReducedMotion', () => {
           listeners = listeners.filter((l) => l !== listener);
         }
       }),
-    } as unknown as MediaQueryList;
+    };
 
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
-      value: vi.fn(() => matchMediaMock),
+      value: vi.fn(() => matchMediaMock as unknown as MediaQueryList),
     });
   });
 
