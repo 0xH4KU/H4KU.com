@@ -10,10 +10,7 @@ import { SidebarProvider } from '@/contexts/SidebarContext';
  */
 export function renderWithProviders(
   ui: ReactElement,
-  {
-    initialEntries = ['/'],
-    ...renderOptions
-  }: RenderOptions & { initialEntries?: string[] } = {},
+  renderOptions?: RenderOptions,
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (

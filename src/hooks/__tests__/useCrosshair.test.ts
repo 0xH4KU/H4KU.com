@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useCrosshair } from '../useCrosshair';
 
 describe('useCrosshair', () => {
-  let requestAnimationFrameSpy: any;
-  let cancelAnimationFrameSpy: any;
+  let requestAnimationFrameSpy: ReturnType<typeof vi.fn>;
+  let cancelAnimationFrameSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     // Mock window dimensions
@@ -28,6 +28,7 @@ describe('useCrosshair', () => {
     });
 
     // Remove any touch event support
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).ontouchstart;
 
     // Mock requestAnimationFrame

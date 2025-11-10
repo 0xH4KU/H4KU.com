@@ -232,8 +232,10 @@ describe('navigation utils', () => {
       const folder = findFolderById(mockFolders, 'week2');
       expect(folder).not.toBeNull();
 
-      const path = findFolderPathById(mockFolders, folder!.id);
-      expect(path).toEqual(['2024', 'feb', 'week2']);
+      if (folder) {
+        const path = findFolderPathById(mockFolders, folder.id);
+        expect(path).toEqual(['2024', 'feb', 'week2']);
+      }
     });
 
     it('should work together: find by path and verify id', () => {
@@ -243,8 +245,10 @@ describe('navigation utils', () => {
       expect(folder).not.toBeNull();
       expect(folder?.id).toBe('mar');
 
-      const foundPath = findFolderPathById(mockFolders, folder!.id);
-      expect(foundPath).toEqual(path);
+      if (folder) {
+        const foundPath = findFolderPathById(mockFolders, folder.id);
+        expect(foundPath).toEqual(path);
+      }
     });
 
     it('should flatten and then find all folders', () => {
