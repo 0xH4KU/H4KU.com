@@ -116,8 +116,8 @@ describe('SearchPanel interactions', () => {
     expect(navigationMock.navigateTo).toHaveBeenCalledWith(pageResult.page);
     expect(searchState.closeSearch).toHaveBeenCalled();
 
-     await userEvent.keyboard('{ArrowUp}');
-     expect(folderButton).toHaveClass(styles['search-result--selected']);
+    await userEvent.keyboard('{ArrowUp}');
+    expect(folderButton).toHaveClass(styles['search-result--selected']);
   });
 
   it('invokes navigateTo for folder results and updates query text', async () => {
@@ -149,8 +149,8 @@ describe('SearchPanel interactions', () => {
     render(<SearchPanel />);
     const panel = screen.getByRole('dialog');
     const originalQuerySelectorAll = panel.querySelectorAll;
-    panel.querySelectorAll =
-      (() => [] as unknown as NodeListOf<Element>) as typeof panel.querySelectorAll;
+    panel.querySelectorAll = (() =>
+      [] as unknown as NodeListOf<Element>) as typeof panel.querySelectorAll;
 
     await userEvent.keyboard('{Tab}');
     expect(panel).toHaveFocus();
