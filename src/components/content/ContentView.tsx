@@ -21,7 +21,7 @@ import styles from './ContentView.module.css';
 type NavigableItem = Folder | Page;
 
 const ContentView: React.FC = () => {
-  const { currentView, navigateTo, openLightbox, resetToHome } =
+  const { currentView, currentPath, navigateTo, openLightbox, resetToHome } =
     useNavigation();
   const { theme } = useTheme();
   const { sortOrder, typeOrder } = useSortOrder();
@@ -266,7 +266,7 @@ const ContentView: React.FC = () => {
                           type: 'txt',
                           content: 'content' in item ? item.content : '',
                         };
-                        navigateTo(page);
+                        navigateTo(page, currentPath);
                       }}
                       whileHover={
                         prefersReducedMotion
