@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import type { ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 import {
   NavigationProvider,
   useNavigation,
@@ -43,14 +43,15 @@ describe('NavigationProvider', () => {
     home: mockData.homeItems,
   };
 
-  const createWrapper =
-    (initialEntries: string[] = ['/']) =>
-    ({ children }: { children: ReactNode }) =>
-      (
-        <MemoryRouter initialEntries={initialEntries}>
-          <NavigationProvider>{children}</NavigationProvider>
-        </MemoryRouter>
-      );
+  const createWrapper = (initialEntries: string[] = ['/']) => {
+    const NavigationTestWrapper: FC<{ children: ReactNode }> = ({ children }) => (
+      <MemoryRouter initialEntries={initialEntries}>
+        <NavigationProvider>{children}</NavigationProvider>
+      </MemoryRouter>
+    );
+    NavigationTestWrapper.displayName = 'NavigationTestWrapper';
+    return NavigationTestWrapper;
+  };
 
   beforeEach(() => {
     window.history.replaceState({}, '', '/');

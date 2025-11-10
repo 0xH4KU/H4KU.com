@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { STORAGE_KEYS } from '@/config/constants';
 
-const createWrapper =
-  () =>
-  ({ children }: { children: ReactNode }) =>
-    <ThemeProvider>{children}</ThemeProvider>;
+const createWrapper = () => {
+  const ThemeTestWrapper: FC<{ children: ReactNode }> = ({ children }) => (
+    <ThemeProvider>{children}</ThemeProvider>
+  );
+  ThemeTestWrapper.displayName = 'ThemeTestWrapper';
+  return ThemeTestWrapper;
+};
 
 const setupMatchMedia = (matches: boolean) => {
   const queryMock = {
