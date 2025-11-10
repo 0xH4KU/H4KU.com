@@ -10,7 +10,7 @@ import { SidebarProvider } from '@/contexts/SidebarContext';
  */
 export function renderWithProviders(
   ui: ReactElement,
-  renderOptions?: RenderOptions,
+  renderOptions?: RenderOptions
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -30,7 +30,10 @@ export function renderWithProviders(
 /**
  * Minimal wrapper for testing hooks that need only ThemeProvider
  */
-export function renderWithTheme(ui: ReactElement, renderOptions?: RenderOptions) {
+export function renderWithTheme(
+  ui: ReactElement,
+  renderOptions?: RenderOptions
+) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return <ThemeProvider>{children}</ThemeProvider>;
   }
@@ -41,11 +44,7 @@ export function renderWithTheme(ui: ReactElement, renderOptions?: RenderOptions)
 /**
  * Create a mock file for testing
  */
-export function createMockFile(
-  name: string,
-  size: number,
-  type: string,
-): File {
+export function createMockFile(name: string, size: number, type: string): File {
   const blob = new Blob(['a'.repeat(size)], { type });
   return new File([blob], name, { type });
 }
@@ -55,7 +54,7 @@ export function createMockFile(
  */
 export async function waitFor(
   condition: () => boolean,
-  timeout = 3000,
+  timeout = 3000
 ): Promise<void> {
   const startTime = Date.now();
 
@@ -63,7 +62,7 @@ export async function waitFor(
     if (Date.now() - startTime > timeout) {
       throw new Error('Timeout waiting for condition');
     }
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 50));
   }
 }
 

@@ -25,14 +25,16 @@ describe('use100vh', () => {
     // Should set --vh to 1% of window height (1000 * 0.01 = 10px)
     expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
       '--vh',
-      '10px',
+      '10px'
     );
   });
 
   it('should update --vh on window resize', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = vi.mocked(document.documentElement.style.setProperty);
+    const setPropertySpy = vi.mocked(
+      document.documentElement.style.setProperty
+    );
 
     // Clear previous calls
     setPropertySpy.mockClear();
@@ -53,11 +55,13 @@ describe('use100vh', () => {
   it('should handle multiple resizes', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = vi.mocked(document.documentElement.style.setProperty);
+    const setPropertySpy = vi.mocked(
+      document.documentElement.style.setProperty
+    );
 
     const heights = [600, 900, 1200];
 
-    heights.forEach((height) => {
+    heights.forEach(height => {
       setPropertySpy.mockClear();
 
       Object.defineProperty(window, 'innerHeight', {
@@ -79,7 +83,10 @@ describe('use100vh', () => {
 
     unmount();
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function)
+    );
   });
 
   it('should calculate vh correctly for different screen sizes', () => {
@@ -91,7 +98,9 @@ describe('use100vh', () => {
     ];
 
     testCases.forEach(({ height, expected }) => {
-      const setPropertySpy = vi.mocked(document.documentElement.style.setProperty);
+      const setPropertySpy = vi.mocked(
+        document.documentElement.style.setProperty
+      );
       setPropertySpy.mockClear();
 
       Object.defineProperty(window, 'innerHeight', {

@@ -7,11 +7,11 @@ type MatchMediaMock = {
   media: string;
   addEventListener: (
     event: string,
-    listener: (event: MediaQueryListEvent) => void,
+    listener: (event: MediaQueryListEvent) => void
   ) => void;
   removeEventListener: (
     event: string,
-    listener: (event: MediaQueryListEvent) => void,
+    listener: (event: MediaQueryListEvent) => void
   ) => void;
 };
 
@@ -24,16 +24,20 @@ describe('useReducedMotion', () => {
     matchMediaMock = {
       matches: false,
       media: '(prefers-reduced-motion: reduce)',
-      addEventListener: vi.fn((event: string, listener: (event: MediaQueryListEvent) => void) => {
-        if (event === 'change') {
-          listeners.push(listener);
+      addEventListener: vi.fn(
+        (event: string, listener: (event: MediaQueryListEvent) => void) => {
+          if (event === 'change') {
+            listeners.push(listener);
+          }
         }
-      }),
-      removeEventListener: vi.fn((event: string, listener: (event: MediaQueryListEvent) => void) => {
-        if (event === 'change') {
-          listeners = listeners.filter((l) => l !== listener);
+      ),
+      removeEventListener: vi.fn(
+        (event: string, listener: (event: MediaQueryListEvent) => void) => {
+          if (event === 'change') {
+            listeners = listeners.filter(l => l !== listener);
+          }
         }
-      }),
+      ),
     };
 
     Object.defineProperty(window, 'matchMedia', {
@@ -63,7 +67,7 @@ describe('useReducedMotion', () => {
     // Simulate media query change
     act(() => {
       const event = { matches: true } as MediaQueryListEvent;
-      listeners.forEach((listener) => listener(event));
+      listeners.forEach(listener => listener(event));
     });
 
     rerender();

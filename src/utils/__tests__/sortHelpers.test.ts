@@ -22,9 +22,15 @@ describe('sortHelpers', () => {
     });
 
     it('should strip file extension when option is true', () => {
-      expect(deriveSortableLabel('file.txt', { stripExtension: true })).toBe('file');
-      expect(deriveSortableLabel('image.jpg', { stripExtension: true })).toBe('image');
-      expect(deriveSortableLabel('doc.pdf', { stripExtension: true })).toBe('doc');
+      expect(deriveSortableLabel('file.txt', { stripExtension: true })).toBe(
+        'file'
+      );
+      expect(deriveSortableLabel('image.jpg', { stripExtension: true })).toBe(
+        'image'
+      );
+      expect(deriveSortableLabel('doc.pdf', { stripExtension: true })).toBe(
+        'doc'
+      );
     });
 
     it('should not strip extension by default', () => {
@@ -33,13 +39,21 @@ describe('sortHelpers', () => {
     });
 
     it('should handle multiple dots in filename', () => {
-      expect(deriveSortableLabel('file.name.txt', { stripExtension: true })).toBe('file.name');
-      expect(deriveSortableLabel('my.test.file.js', { stripExtension: true })).toBe('my.test.file');
+      expect(
+        deriveSortableLabel('file.name.txt', { stripExtension: true })
+      ).toBe('file.name');
+      expect(
+        deriveSortableLabel('my.test.file.js', { stripExtension: true })
+      ).toBe('my.test.file');
     });
 
     it('should handle files without extension', () => {
-      expect(deriveSortableLabel('README', { stripExtension: true })).toBe('README');
-      expect(deriveSortableLabel('noext', { stripExtension: true })).toBe('noext');
+      expect(deriveSortableLabel('README', { stripExtension: true })).toBe(
+        'README'
+      );
+      expect(deriveSortableLabel('noext', { stripExtension: true })).toBe(
+        'noext'
+      );
     });
   });
 
@@ -97,8 +111,8 @@ describe('sortHelpers', () => {
     ];
 
     it('should sort items correctly', () => {
-      const result = sortByLabel(items, 'asc', (item) => item.label);
-      const labels = result.map((r) => r.label);
+      const result = sortByLabel(items, 'asc', item => item.label);
+      const labels = result.map(r => r.label);
 
       // In asc mode: text items first (reverse alphabetical), then numeric items (ascending)
       expect(labels).toEqual(['zebra', 'apple', '1-item', '2-item', '10-item']);
@@ -106,7 +120,7 @@ describe('sortHelpers', () => {
 
     it('should not mutate original array', () => {
       const original = [...items];
-      sortByLabel(items, 'asc', (item) => item.label);
+      sortByLabel(items, 'asc', item => item.label);
 
       expect(items).toEqual(original);
     });
@@ -117,13 +131,17 @@ describe('sortHelpers', () => {
     });
 
     it('should handle undefined array', () => {
-      const result = sortByLabel(undefined, 'asc', (item: TestItem) => item.label);
+      const result = sortByLabel(
+        undefined,
+        'asc',
+        (item: TestItem) => item.label
+      );
       expect(result).toEqual([]);
     });
 
     it('should handle single item', () => {
       const single = [{ id: '1', label: 'only' }];
-      const result = sortByLabel(single, 'asc', (item) => item.label);
+      const result = sortByLabel(single, 'asc', item => item.label);
 
       expect(result).toEqual(single);
     });
@@ -131,7 +149,11 @@ describe('sortHelpers', () => {
 
   describe('getWorkItemLabel', () => {
     it('should prefer filename over title', () => {
-      const work = { filename: '01-artwork.jpg', title: 'My Artwork', id: 'id1' };
+      const work = {
+        filename: '01-artwork.jpg',
+        title: 'My Artwork',
+        id: 'id1',
+      };
       expect(getWorkItemLabel(work)).toBe('01-artwork');
     });
 
@@ -222,18 +244,11 @@ describe('sortHelpers', () => {
 
       const sorted = sortByLabel(folders, 'desc', getFolderLabel);
 
-      expect(sorted.map((f) => f.name)).toEqual(['2025', '2024', '2023']);
+      expect(sorted.map(f => f.name)).toEqual(['2025', '2024', '2023']);
     });
 
     it('should handle mixed content correctly', () => {
-      const items = [
-        '10',
-        '2',
-        'zebra',
-        '1',
-        'apple',
-        '100',
-      ];
+      const items = ['10', '2', 'zebra', '1', 'apple', '100'];
 
       const compare = createLabelComparator('asc');
       const sorted = [...items].sort(compare);

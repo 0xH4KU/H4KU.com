@@ -163,7 +163,7 @@ Content.`;
     const result = parseFrontmatter(content);
 
     expect(result.data).toEqual({
-      'title_key': 'Value 1',
+      title_key: 'Value 1',
       'author-name': 'Value 2',
       'some_mixed-key': 'Value 3',
     });

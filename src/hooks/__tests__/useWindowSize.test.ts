@@ -131,7 +131,7 @@ describe('useWindowSize', () => {
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'resize',
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -207,7 +207,7 @@ describe('useWindowSize', () => {
 
     expect(setTimeoutSpy).toHaveBeenCalledWith(
       expect.any(Function),
-      DEBOUNCE_DELAYS.RESIZE,
+      DEBOUNCE_DELAYS.RESIZE
     );
   });
 

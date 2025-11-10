@@ -35,7 +35,7 @@ describe('useCrosshair', () => {
     let frameId = 0;
     requestAnimationFrameSpy = vi
       .spyOn(window, 'requestAnimationFrame')
-      .mockImplementation((callback) => {
+      .mockImplementation(callback => {
         callback(0);
         return ++frameId;
       });
@@ -115,9 +115,15 @@ describe('useCrosshair', () => {
 
     // Rapid mouse moves
     act(() => {
-      window.dispatchEvent(new MouseEvent('mousemove', { clientX: 100, clientY: 100 }));
-      window.dispatchEvent(new MouseEvent('mousemove', { clientX: 200, clientY: 200 }));
-      window.dispatchEvent(new MouseEvent('mousemove', { clientX: 300, clientY: 300 }));
+      window.dispatchEvent(
+        new MouseEvent('mousemove', { clientX: 100, clientY: 100 })
+      );
+      window.dispatchEvent(
+        new MouseEvent('mousemove', { clientX: 200, clientY: 200 })
+      );
+      window.dispatchEvent(
+        new MouseEvent('mousemove', { clientX: 300, clientY: 300 })
+      );
     });
 
     expect(cancelAnimationFrameSpy).toHaveBeenCalled();
@@ -252,11 +258,11 @@ describe('useCrosshair', () => {
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'mousemove',
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'keydown',
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -275,7 +281,9 @@ describe('useCrosshair', () => {
 
     // Trigger mouse move
     act(() => {
-      window.dispatchEvent(new MouseEvent('mousemove', { clientX: 300, clientY: 300 }));
+      window.dispatchEvent(
+        new MouseEvent('mousemove', { clientX: 300, clientY: 300 })
+      );
     });
 
     unmount();
@@ -292,7 +300,7 @@ describe('useCrosshair', () => {
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'mousemove',
       expect.any(Function),
-      { passive: true },
+      { passive: true }
     );
   });
 
@@ -323,7 +331,7 @@ describe('useCrosshair', () => {
       { x: 400, y: 400 },
     ];
 
-    positions.forEach((pos) => {
+    positions.forEach(pos => {
       act(() => {
         const mouseMoveEvent = new MouseEvent('mousemove', {
           clientX: pos.x,

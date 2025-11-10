@@ -29,10 +29,7 @@ describe('useSidebar', () => {
 
   it('should restore width from localStorage', () => {
     const storedWidth = 280;
-    localStorage.setItem(
-      'lum.bio.sidebar.width',
-      JSON.stringify(storedWidth),
-    );
+    localStorage.setItem('lum.bio.sidebar.width', JSON.stringify(storedWidth));
 
     const { result } = renderHook(() => useSidebar());
 
@@ -198,11 +195,11 @@ describe('useSidebar', () => {
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'mousemove',
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'mouseup',
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -249,7 +246,7 @@ describe('useSidebar', () => {
 
     const positions = [150, 180, 220, 280, 320, 360, 400];
 
-    positions.forEach((clientX) => {
+    positions.forEach(clientX => {
       act(() => {
         document.dispatchEvent(new MouseEvent('mousemove', { clientX }));
       });
@@ -265,10 +262,7 @@ describe('useSidebar', () => {
     const initialValue = 250;
     const storedValue = 300;
 
-    localStorage.setItem(
-      'lum.bio.sidebar.width',
-      JSON.stringify(storedValue),
-    );
+    localStorage.setItem('lum.bio.sidebar.width', JSON.stringify(storedValue));
 
     const { result } = renderHook(() => useSidebar(initialValue));
 

@@ -12,7 +12,7 @@ describe('navigation utils', () => {
   const createFolder = (
     id: string,
     name: string,
-    children?: Folder[],
+    children?: Folder[]
   ): Folder => ({
     id,
     name,
@@ -28,9 +28,7 @@ describe('navigation utils', () => {
         createFolder('week2', 'Week 2'),
       ]),
     ]),
-    createFolder('2025', '2025', [
-      createFolder('mar', 'March'),
-    ]),
+    createFolder('2025', '2025', [createFolder('mar', 'March')]),
     createFolder('featured', 'Featured'),
   ];
 
@@ -86,8 +84,17 @@ describe('navigation utils', () => {
     it('should preserve folder order', () => {
       const result = flattenFolders(mockFolders);
 
-      const ids = result.map((r) => r.folder.id);
-      expect(ids).toEqual(['2024', 'jan', 'feb', 'week1', 'week2', '2025', 'mar', 'featured']);
+      const ids = result.map(r => r.folder.id);
+      expect(ids).toEqual([
+        '2024',
+        'jan',
+        'feb',
+        'week1',
+        'week2',
+        '2025',
+        'mar',
+        'featured',
+      ]);
     });
   });
 
@@ -217,9 +224,18 @@ describe('navigation utils', () => {
     });
 
     it('should find folder regardless of nesting level', () => {
-      const allIds = ['2024', 'jan', 'feb', 'week1', 'week2', '2025', 'mar', 'featured'];
+      const allIds = [
+        '2024',
+        'jan',
+        'feb',
+        'week1',
+        'week2',
+        '2025',
+        'mar',
+        'featured',
+      ];
 
-      allIds.forEach((id) => {
+      allIds.forEach(id => {
         const result = findFolderById(mockFolders, id);
         expect(result).not.toBeNull();
         expect(result?.id).toBe(id);

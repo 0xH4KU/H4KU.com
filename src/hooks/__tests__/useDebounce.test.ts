@@ -22,7 +22,7 @@ describe('useDebounce', () => {
       ({ value, delay }) => useDebounce(value, delay),
       {
         initialProps: { value: 'initial', delay: 500 },
-      },
+      }
     );
 
     expect(result.current).toBe('initial');
@@ -46,7 +46,7 @@ describe('useDebounce', () => {
       ({ value, delay }) => useDebounce(value, delay),
       {
         initialProps: { value: '1', delay: 500 },
-      },
+      }
     );
 
     // Make multiple rapid changes
@@ -81,7 +81,7 @@ describe('useDebounce', () => {
       ({ value, delay }) => useDebounce(value, delay),
       {
         initialProps: { value: 42, delay: 300 },
-      },
+      }
     );
 
     expect(result.current).toBe(42);
@@ -103,7 +103,7 @@ describe('useDebounce', () => {
       ({ value, delay }) => useDebounce(value, delay),
       {
         initialProps: { value: obj1, delay: 300 },
-      },
+      }
     );
 
     expect(result.current).toEqual(obj1);
@@ -122,7 +122,7 @@ describe('useDebounce', () => {
       ({ value, delay }) => useDebounce(value, delay),
       {
         initialProps: { value: 'test', delay: 500 },
-      },
+      }
     );
 
     rerender({ value: 'updated', delay: 1000 });

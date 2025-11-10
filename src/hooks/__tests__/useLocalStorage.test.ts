@@ -66,20 +66,22 @@ describe('useLocalStorage', () => {
     const { result } = renderHook(() => useLocalStorage('counter', 0));
 
     act(() => {
-      result.current[1]((prev) => prev + 1);
+      result.current[1](prev => prev + 1);
     });
 
     expect(result.current[0]).toBe(1);
 
     act(() => {
-      result.current[1]((prev) => prev + 5);
+      result.current[1](prev => prev + 5);
     });
 
     expect(result.current[0]).toBe(6);
   });
 
   it('should handle storage event from another tab', () => {
-    const { result } = renderHook(() => useLocalStorage('shared-key', 'initial'));
+    const { result } = renderHook(() =>
+      useLocalStorage('shared-key', 'initial')
+    );
 
     expect(result.current[0]).toBe('initial');
 
@@ -89,7 +91,7 @@ describe('useLocalStorage', () => {
       const storageEvent = new Event('storage');
       Object.defineProperty(storageEvent, 'key', { value: 'shared-key' });
       Object.defineProperty(storageEvent, 'newValue', {
-        value: JSON.stringify('from-another-tab')
+        value: JSON.stringify('from-another-tab'),
       });
       window.dispatchEvent(storageEvent);
     });
@@ -104,7 +106,7 @@ describe('useLocalStorage', () => {
       const storageEvent = new Event('storage');
       Object.defineProperty(storageEvent, 'key', { value: 'other-key' });
       Object.defineProperty(storageEvent, 'newValue', {
-        value: JSON.stringify('other-value')
+        value: JSON.stringify('other-value'),
       });
       window.dispatchEvent(storageEvent);
     });
@@ -114,13 +116,15 @@ describe('useLocalStorage', () => {
   });
 
   it('should handle corrupted localStorage data gracefully', () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     // Set invalid JSON
     localStorage.setItem('corrupted-key', 'this is not valid JSON {]');
 
     const { result } = renderHook(() =>
-      useLocalStorage('corrupted-key', 'fallback'),
+      useLocalStorage('corrupted-key', 'fallback')
     );
 
     // Should fall back to initial value
@@ -131,7 +135,9 @@ describe('useLocalStorage', () => {
   });
 
   it('should handle localStorage quota exceeded error', () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     // Mock setItem to throw quota exceeded error
     const originalSetItem = localStorage.setItem;
@@ -164,13 +170,13 @@ describe('useLocalStorage', () => {
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'storage',
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
   it('should persist value across hook instances with same key', () => {
     const { result: result1 } = renderHook(() =>
-      useLocalStorage('shared-key', 'initial'),
+      useLocalStorage('shared-key', 'initial')
     );
 
     act(() => {
@@ -179,7 +185,7 @@ describe('useLocalStorage', () => {
 
     // Create second instance with same key
     const { result: result2 } = renderHook(() =>
-      useLocalStorage('shared-key', 'initial'),
+      useLocalStorage('shared-key', 'initial')
     );
 
     expect(result2.current[0]).toBe('updated-value');
@@ -201,7 +207,9 @@ describe('useLocalStorage', () => {
   });
 
   it('should handle corrupted data in storage event', () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
 
@@ -209,7 +217,9 @@ describe('useLocalStorage', () => {
       // Storage event with invalid JSON
       const storageEvent = new Event('storage');
       Object.defineProperty(storageEvent, 'key', { value: 'test-key' });
-      Object.defineProperty(storageEvent, 'newValue', { value: 'invalid JSON {]' });
+      Object.defineProperty(storageEvent, 'newValue', {
+        value: 'invalid JSON {]',
+      });
       window.dispatchEvent(storageEvent);
     });
 
