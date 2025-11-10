@@ -63,9 +63,9 @@ describe('sortHelpers', () => {
     it('should handle equal values', () => {
       const compare = createLabelComparator('asc');
       // Note: comparator returns -0 for equal values in asc mode (0 * -1 = -0)
-      // Using == instead of === since -0 == 0 is true
-      expect(compare('same', 'same') == 0).toBe(true);
-      expect(compare('123', '123') == 0).toBe(true);
+      // Using Math.abs to handle -0 vs 0 comparison
+      expect(Math.abs(compare('same', 'same'))).toBe(0);
+      expect(Math.abs(compare('123', '123'))).toBe(0);
     });
 
     it('should sort items by actual output', () => {

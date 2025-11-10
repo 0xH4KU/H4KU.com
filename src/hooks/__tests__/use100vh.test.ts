@@ -32,7 +32,7 @@ describe('use100vh', () => {
   it('should update --vh on window resize', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = document.documentElement.style.setProperty as any;
+    const setPropertySpy = vi.mocked(document.documentElement.style.setProperty);
 
     // Clear previous calls
     setPropertySpy.mockClear();
@@ -53,7 +53,7 @@ describe('use100vh', () => {
   it('should handle multiple resizes', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = document.documentElement.style.setProperty as any;
+    const setPropertySpy = vi.mocked(document.documentElement.style.setProperty);
 
     const heights = [600, 900, 1200];
 
@@ -91,7 +91,7 @@ describe('use100vh', () => {
     ];
 
     testCases.forEach(({ height, expected }) => {
-      const setPropertySpy = document.documentElement.style.setProperty as any;
+      const setPropertySpy = vi.mocked(document.documentElement.style.setProperty);
       setPropertySpy.mockClear();
 
       Object.defineProperty(window, 'innerHeight', {
