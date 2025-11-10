@@ -196,7 +196,7 @@ describe('useWindowSize', () => {
   });
 
   it('should use correct debounce delay from constants', () => {
-    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
 
     renderHook(() => useWindowSize());
 
