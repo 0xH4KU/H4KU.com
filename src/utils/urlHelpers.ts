@@ -10,8 +10,7 @@ export interface SafeUrlInfo {
 
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
 
-const MAILTO_PATTERN =
-  /^mailto:[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+const MAILTO_PATTERN = /^mailto:[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 
 /**
  * Returns metadata for a URL only if it uses a safe scheme.
