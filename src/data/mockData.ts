@@ -1,8 +1,13 @@
 import { MockData, Folder, Page, Social, WorkItem } from '@/types';
+// Import aggregated data (built at build time by scripts/build-data.js)
+import aggregatedData from '@/content/_aggregated.json';
 
 /**
- * Load content from local markdown/json files using Vite's import.meta.glob.
- * Content is fully file-based so updates only require editing the repository.
+ * Load content from aggregated JSON file instead of glob imports.
+ * This eliminates multiple eager imports and reduces bundle overhead.
+ *
+ * To rebuild the aggregated file, run: npm run build:data
+ * (This happens automatically during the build process)
  */
 
 interface FolderFile {
@@ -13,6 +18,15 @@ interface FolderFile {
   description?: string;
   order?: number;
   hidden?: boolean;
+}
+
+interface PageFile {
+  id?: string;
+  filename?: string;
+  content: string;
+  title?: string;
+  folderId?: string | null;
+  order?: number | string;
 }
 
 interface WorkFile {
@@ -30,37 +44,15 @@ interface WorkFile {
   content?: string;
 }
 
-// Load pages (JSON files)
-const pagesModules = import.meta.glob<{
-  id: string;
-  filename: string;
-  content: string;
-  title?: string;
-}>('/src/content/pages/*.json', {
-  eager: true,
-  import: 'default',
-});
-
-// Load folders (JSON files)
-const foldersModules = import.meta.glob<FolderFile>(
-  '/src/content/folders/*.json',
-  {
-    eager: true,
-    import: 'default',
-  }
-);
-
-// Load socials (JSON files)
-const socialsModules = import.meta.glob<Social>('/src/content/socials/*.json', {
-  eager: true,
-  import: 'default',
-});
-
-// Load works (JSON files)
-const worksModules = import.meta.glob<WorkFile>('/src/content/images/*.json', {
-  eager: true,
-  import: 'default',
-});
+/**
+ * Data is loaded from a single pre-aggregated file.
+ * Previously used import.meta.glob with eager:true which required
+ * bundling all JSON files separately at build time.
+ */
+const foldersData = (aggregatedData.folders ?? []) as FolderFile[];
+const worksData = (aggregatedData.works ?? []) as WorkFile[];
+const pagesData = (aggregatedData.pages ?? []) as PageFile[];
+const socialsData = (aggregatedData.socials ?? []) as Social[];
 
 const ORDER_FALLBACK = Number.MAX_SAFE_INTEGER;
 
@@ -119,7 +111,7 @@ const sortWorkItems = (items: WorkItem[]): WorkItem[] =>
   });
 
 // Build folder map and parent-child relationships
-const folderEntries = Object.values(foldersModules);
+const folderEntries = foldersData;
 const folderMap = new Map<string, Folder>();
 
 folderEntries.forEach(entry => {
@@ -152,24 +144,23 @@ folderMap.forEach(folder => {
   }
 });
 
-// Parse pages from JSON files
-const parsedPages: Page[] = Object.entries(pagesModules).map(
-  ([path, pageData]) => {
-    const fallbackId = path.split('/').pop()?.replace('.json', '') || '';
-    const filename = pageData.filename || 'Untitled.txt';
+// Parse pages from aggregated data
+const parsedPages: Page[] = pagesData.map(pageData => {
+  const fallbackId = pageData.id || 'untitled';
+  const filename = pageData.filename || 'Untitled.txt';
+  const folderId = normalizeId(pageData.folderId ?? null);
 
-    return {
-      id: pageData.id || fallbackId,
-      name: pageData.title || filename,
-      filename,
-      type: 'txt',
-      content: pageData.content.trim(),
-      folderId: null,
-      date: undefined,
-      order: undefined,
-    };
-  }
-);
+  return {
+    id: pageData.id || fallbackId,
+    name: pageData.title || filename,
+    filename,
+    type: 'txt',
+    content: pageData.content.trim(),
+    folderId,
+    date: undefined,
+    order: normalizeOrder(pageData.order),
+  };
+});
 
 const standalonePages = parsedPages
   .filter(page => !page.folderId)
@@ -177,7 +168,7 @@ const standalonePages = parsedPages
 const folderPages = parsedPages.filter(page => page.folderId);
 
 // Load works and attach to folders
-const works: WorkFile[] = Object.values(worksModules);
+const works: WorkFile[] = worksData;
 const homeItems: WorkItem[] = [];
 
 const pushItemToFolder = (folderId: string | null, item: WorkItem) => {
@@ -273,7 +264,7 @@ const folders: Folder[] = rootFolders
   .sort(compareFolders)
   .map(finalizeFolder);
 
-const socials: Social[] = Object.values(socialsModules);
+const socials: Social[] = socialsData;
 
 export const mockData: MockData = {
   folders,

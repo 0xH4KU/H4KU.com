@@ -4,31 +4,30 @@
 
 ## CI/CD Pipeline 结构
 
-Pipeline 包含两个阶段：
+Pipeline 分为两个主要阶段：
 
-### 1. Lint and Test Stage
-- 代码风格检查（ESLint）
-- TypeScript 类型检查
-- 代码格式检查（Prettier）
-- 单元测试运行
+### 1. Quality Gate
+- `npm run lint`
+- `npm run type-check`
+- `npm run test:run`
+- 失败会立即阻断后续步骤
 
-### 2. Build Stage
-- 同步图片资源
-- 生产环境构建
-- 保存构建产物（7天）
+### 2. Build & Artifact
+- `npm run build:data`（保证 `_aggregated.json` 是最新的）
+- `vite build`
+- 上传 `dist/` 产物（保留 7 天，供 Cloudflare Pages 拉取）
 
 ## 环境变量设置
 
-需要在 GitLab 项目中设置以下环境变量：
+在 **Settings → CI/CD → Variables** 中添加：
 
-进入：**Settings** → **CI/CD** → **Variables**
+| 变量 | 说明 |
+| --- | --- |
+| `VITE_EMAILJS_SERVICE_ID` | EmailJS 服务 ID |
+| `VITE_EMAILJS_TEMPLATE_ID` | 模板 ID |
+| `VITE_EMAILJS_PUBLIC_KEY` | 公钥 |
 
-添加以下变量：
-- `VITE_EMAILJS_SERVICE_ID`
-- `VITE_EMAILJS_TEMPLATE_ID`
-- `VITE_EMAILJS_PUBLIC_KEY`
-
-**注意**：这些变量应该设置为 **Masked** 和 **Protected**（可选）
+建议全部勾选 **Masked**，必要时设置为 **Protected**。
 
 ## 触发 Pipeline
 
@@ -47,12 +46,13 @@ Pipeline 会在以下情况自动触发：
 
 ## Cloudflare Pages 部署
 
-Cloudflare Pages 会在 GitLab CI 之后自动部署（external stage）。
+Cloudflare Pages 监听 `main` 分支的构建产物。保持以下配置：
 
-部署配置：
-- Build command: `npm run build`
-- Build output: `dist`
-- 环境变量也需要在 Cloudflare Pages 设置中配置
+| 项目 | 值 |
+| --- | --- |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Environment | 同 CI 变量（EmailJS） |
 
 ## 查看 Pipeline 状态
 
@@ -62,15 +62,12 @@ Cloudflare Pages 会在 GitLab CI 之后自动部署（external stage）。
 
 ## 故障排查
 
-### Pipeline 未运行
-- 检查 **Settings** → **General** → **Visibility** 中 CI/CD 是否启用
-- 检查 `.gitlab-ci.yml` 文件是否存在于仓库根目录
-- 检查分支名称是否匹配（main/develop）
-
-### 构建失败
-- 查看 Job 日志获取详细错误信息
-- 检查环境变量是否正确设置
-- 确认依赖安装成功
+| 问题 | 处理 |
+| --- | --- |
+| Pipeline 未触发 | 确认 `.gitlab-ci.yml` 在仓库根目录、CI 功能已开启、推送的分支匹配触发规则。 |
+| `build:data` 失败 | 检查 `src/content/` 中是否有无效 JSON；本地运行 `npm run build:data` 以复现。 |
+| 缺少 EmailJS 凭证 | 确认变量在 GitLab 和 Cloudflare Pages 中均已设置。 |
+| Cloudflare 404 | 确保 `public/_redirects` 被包含在 `dist/` 中。 |
 
 ## 本地测试
 
@@ -90,4 +87,4 @@ npm run format:check
 npm run build
 ```
 
-确保所有命令都成功后再推送代码。
+确保上述命令全部通过后再推送代码，以保持 CI 绿色状态。

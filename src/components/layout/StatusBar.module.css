@@ -63,6 +63,12 @@
   white-space: nowrap;
 }
 
+.status-social-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  white-space: nowrap;
+}
+
 .status-hint {
   font-size: var(--font-size-xxs);
   opacity: 0.6;

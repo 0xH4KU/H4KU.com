@@ -4,123 +4,166 @@ import {
   useState,
   useMemo,
   useEffect,
+  useCallback,
   ReactNode,
 } from 'react';
 import { mockData } from '@/data/mockData';
-import { Folder, SearchResult, WorkItem } from '@/types';
-import { flattenFolders } from '@/utils/navigation';
+import { Folder, Page, SearchResult, WorkItem } from '@/types';
+import { buildNavigationMap } from '@/utils/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DEBOUNCE_DELAYS } from '@/config/constants';
 
-interface SearchContextValue {
+interface SearchUIContextValue {
   searchOpen: boolean;
   searchQuery: string;
-  searchResults: SearchResult[];
   openSearch: () => void;
   closeSearch: () => void;
   setSearchQuery: (query: string) => void;
 }
 
-const SearchContext = createContext<SearchContextValue | undefined>(undefined);
+interface SearchResultsContextValue {
+  searchResults: SearchResult[];
+}
+
+const SearchUIContext = createContext<SearchUIContextValue | undefined>(
+  undefined
+);
+const SearchResultsContext = createContext<
+  SearchResultsContextValue | undefined
+>(undefined);
 
 const doesWorkItemMatch = (workItem: WorkItem, query: string) => {
-  const matchesFilename = workItem.filename.toLowerCase().includes(query);
-  const matchesTitle = workItem.title?.toLowerCase().includes(query);
-  const matchesDescription = workItem.description
-    ?.toLowerCase()
-    .includes(query);
-  const matchesTags = workItem.tags?.some(tag =>
-    tag.toLowerCase().includes(query)
-  );
-  const matchesContent =
-    workItem.itemType === 'page' && 'content' in workItem
-      ? workItem.content.toLowerCase().includes(query)
-      : false;
+  const normalizedFilename = workItem.filename.toLowerCase();
+  if (normalizedFilename.includes(query)) {
+    return true;
+  }
 
-  return (
-    matchesFilename ||
-    matchesTitle ||
-    matchesDescription ||
-    matchesTags ||
-    matchesContent
-  );
+  if (workItem.title?.toLowerCase().includes(query)) {
+    return true;
+  }
+
+  if (workItem.description?.toLowerCase().includes(query)) {
+    return true;
+  }
+
+  if (workItem.tags?.some(tag => tag.toLowerCase().includes(query))) {
+    return true;
+  }
+
+  if (
+    workItem.itemType === 'page' &&
+    'content' in workItem &&
+    workItem.content.toLowerCase().includes(query)
+  ) {
+    return true;
+  }
+
+  return false;
 };
 
-export function SearchProvider({ children }: { children: ReactNode }) {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAYS.SEARCH);
-  const allFolders = useMemo(() => flattenFolders(mockData.folders), []);
+interface FolderIndexEntry {
+  folder: Folder;
+  path: string[];
+  searchableLabel: string;
+}
 
-  // Clear search query when panel closes
-  useEffect(() => {
-    if (!searchOpen) {
-      setSearchQuery('');
-    }
-  }, [searchOpen]);
+interface StandalonePageEntry {
+  page: Page;
+  searchableName: string;
+  searchableContent: string;
+}
+
+const buildFolderIndex = (): FolderIndexEntry[] => {
+  // Reuse NavigationMap for consistency and efficiency
+  const navMap = buildNavigationMap(mockData.folders);
+  return navMap.flattened.map(flatFolder => ({
+    folder: flatFolder.folder,
+    path: flatFolder.path,
+    searchableLabel: flatFolder.folder.name.toLowerCase(),
+  }));
+};
+
+const buildStandalonePageIndex = (): StandalonePageEntry[] =>
+  mockData.pages.map(page => ({
+    page,
+    searchableName: page.name.toLowerCase(),
+    searchableContent: page.content.toLowerCase(),
+  }));
+
+const buildHomeFolder = (): Folder | null => {
+  if (mockData.homeItems.length === 0) {
+    return null;
+  }
+  return {
+    id: 'home',
+    name: 'Home',
+    type: 'folder',
+    items: mockData.homeItems,
+  };
+};
+
+const SearchResultsProvider = ({
+  children,
+  query,
+}: {
+  children: ReactNode;
+  query: string;
+}) => {
+  const debouncedSearchQuery = useDebounce(query, DEBOUNCE_DELAYS.SEARCH);
+  const folderIndex = useMemo(() => buildFolderIndex(), []);
+  const standalonePages = useMemo(() => buildStandalonePageIndex(), []);
+  const homeFolder = useMemo(() => buildHomeFolder(), []);
 
   const searchResults = useMemo(() => {
     if (!debouncedSearchQuery.trim()) {
       return [];
     }
 
-    const query = debouncedSearchQuery.toLowerCase();
+    const queryValue = debouncedSearchQuery.toLowerCase();
     const results: SearchResult[] = [];
 
-    allFolders.forEach(flatFolder => {
-      if (flatFolder.folder.name.toLowerCase().includes(query)) {
+    folderIndex.forEach(entry => {
+      if (entry.searchableLabel.includes(queryValue)) {
         results.push({
           type: 'folder',
-          id: flatFolder.folder.id,
+          id: entry.folder.id,
           label: 'Folder',
-          path: flatFolder.path,
-          folder: flatFolder.folder,
+          path: entry.path,
+          folder: entry.folder,
         });
       }
 
-      // Search work items within folder
-      if (flatFolder.folder.items) {
-        flatFolder.folder.items.forEach(workItem => {
-          if (doesWorkItemMatch(workItem, query)) {
-            results.push({
-              type: 'work',
-              id: workItem.id,
-              label: 'Work',
-              path: flatFolder.path,
-              folder: flatFolder.folder,
-              work: workItem,
-            });
-          }
-        });
-      }
+      entry.folder.items?.forEach(workItem => {
+        if (doesWorkItemMatch(workItem, queryValue)) {
+          results.push({
+            type: 'work',
+            id: workItem.id,
+            label: 'Work',
+            path: entry.path,
+            folder: entry.folder,
+            work: workItem,
+          });
+        }
+      });
     });
 
-    // Search pages
-    mockData.pages.forEach(page => {
+    standalonePages.forEach(entry => {
       if (
-        page.name.toLowerCase().includes(query) ||
-        page.content.toLowerCase().includes(query)
+        entry.searchableName.includes(queryValue) ||
+        entry.searchableContent.includes(queryValue)
       ) {
         results.push({
           type: 'page',
-          id: page.id,
+          id: entry.page.id,
           label: 'Text File',
-          page: page,
+          page: entry.page,
         });
       }
     });
 
-    // Search works on home (no folder)
-    if (mockData.homeItems.length > 0) {
-      const homeFolder: Folder = {
-        id: 'home',
-        name: 'Home',
-        type: 'folder',
-        items: mockData.homeItems,
-      };
-
-      mockData.homeItems.forEach(workItem => {
-        if (doesWorkItemMatch(workItem, query)) {
+    if (homeFolder?.items?.length) {
+      homeFolder.items.forEach(workItem => {
+        if (doesWorkItemMatch(workItem, queryValue)) {
           results.push({
             type: 'work',
             id: workItem.id,
@@ -134,31 +177,72 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     }
 
     return results;
-  }, [debouncedSearchQuery, allFolders]);
+  }, [debouncedSearchQuery, folderIndex, standalonePages, homeFolder]);
 
-  const openSearch = () => setSearchOpen(true);
-  const closeSearch = () => setSearchOpen(false);
+  const resultsValue = useMemo(
+    () => ({ searchResults }),
+    [searchResults]
+  );
 
   return (
-    <SearchContext.Provider
-      value={{
-        searchOpen,
-        searchQuery,
-        searchResults,
-        openSearch,
-        closeSearch,
-        setSearchQuery,
-      }}
-    >
+    <SearchResultsContext.Provider value={resultsValue}>
       {children}
-    </SearchContext.Provider>
+    </SearchResultsContext.Provider>
+  );
+};
+
+export function SearchProvider({ children }: { children: ReactNode }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+
+  useEffect(() => {
+    if (!searchOpen) {
+      setSearchQuery('');
+    }
+  }, [searchOpen]);
+
+  const uiValue = useMemo(
+    () => ({
+      searchOpen,
+      searchQuery,
+      openSearch,
+      closeSearch,
+      setSearchQuery,
+    }),
+    [searchOpen, searchQuery, openSearch, closeSearch]
+  );
+
+  return (
+    <SearchUIContext.Provider value={uiValue}>
+      <SearchResultsProvider query={searchQuery}>
+        {children}
+      </SearchResultsProvider>
+    </SearchUIContext.Provider>
   );
 }
 
-export function useSearch() {
-  const context = useContext(SearchContext);
+export function useSearchUI() {
+  const context = useContext(SearchUIContext);
   if (!context) {
-    throw new Error('useSearch must be used within SearchProvider');
+    throw new Error('useSearchUI must be used within SearchProvider');
   }
   return context;
+}
+
+export function useSearchResults() {
+  const context = useContext(SearchResultsContext);
+  if (!context) {
+    throw new Error('useSearchResults must be used within SearchProvider');
+  }
+  return context;
+}
+
+export function useSearch() {
+  return {
+    ...useSearchUI(),
+    ...useSearchResults(),
+  };
 }

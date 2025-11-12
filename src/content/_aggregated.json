@@ -1,0 +1,66 @@
+{
+  "folders": [
+    {
+      "id": "featured",
+      "name": "featured",
+      "type": "folder",
+      "parentId": null,
+      "order": 1
+    },
+    {
+      "id": "sketches-2025",
+      "name": "2025",
+      "type": "folder",
+      "parentId": "sketches",
+      "order": 1
+    },
+    {
+      "id": "sketches",
+      "name": "sketches",
+      "type": "folder",
+      "parentId": null,
+      "order": 2
+    }
+  ],
+  "works": [
+    {
+      "id": "sketches-2025-2025-11-06",
+      "filename": "2025-11-06.jpeg",
+      "folderId": "sketches-2025",
+      "itemType": "work",
+      "thumb": "/content/homepage/sketches/2025/2025-11-06.jpeg",
+      "full": "/content/homepage/sketches/2025/2025-11-06.jpeg",
+      "order": 1
+    }
+  ],
+  "pages": [
+    {
+      "id": "about",
+      "filename": "About.txt",
+      "content": "ABOUT\n════════════════════════\n\nLum (@lummuu_)\nFreelance illustrator\n\nAnime-style illustrations\nCharacter design\nDigital art\n\nAvailable for commissions\n"
+    },
+    {
+      "id": "contact",
+      "filename": "Contact.txt",
+      "content": "CONTACT\n════════════════════════\n\nEmail: hi@lum.bio\n\nFor commissions and inquiries,\nplease reach out via email or\nuse the contact form.\n\nResponse time: 1-2 business days\n"
+    }
+  ],
+  "socials": [
+    {
+      "name": "Email",
+      "code": "EM",
+      "url": "mailto:hi@lum.bio"
+    },
+    {
+      "name": "Instagram",
+      "code": "IG",
+      "url": "https://instagram.com/lummuu_"
+    },
+    {
+      "name": "Twitter",
+      "code": "TW",
+      "url": "https://twitter.com/lummuu_"
+    }
+  ],
+  "_buildTime": "2025-11-12T11:16:55.499Z"
+}

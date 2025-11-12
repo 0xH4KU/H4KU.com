@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronLeft, Moon, Sun, Search, Menu } from 'lucide-react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useSearch } from '@/contexts/SearchContext';
+import { useSearchUI } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import Breadcrumb from './Breadcrumb';
 import styles from './TopBar.module.css';
@@ -15,7 +15,7 @@ const TopBar: React.FC = () => {
     currentPath,
   } = useNavigation();
   const { theme, toggleTheme } = useTheme();
-  const { searchOpen, openSearch } = useSearch();
+  const { searchOpen, openSearch } = useSearchUI();
   const { isSidebarOpen, toggleSidebar } = useSidebarContext();
 
   const canGoBack = currentPath.length > 1;

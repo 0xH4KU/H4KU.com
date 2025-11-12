@@ -270,11 +270,30 @@ function main() {
   console.log('\n✨ Content sync completed successfully!\n');
 }
 
-// Run main function
-try {
-  main();
-} catch (error) {
-  console.error('❌ Error:', error.message);
-  console.error(error.stack);
-  process.exit(1);
+// Auto-run build-data after CMS sync
+async function runBuildData() {
+  console.log('\n🔄 Running data aggregation...');
+  try {
+    const buildDataPath = path.join(__dirname, 'build-data.js');
+    const { execSync } = await import('child_process');
+    execSync(`node "${buildDataPath}"`, { stdio: 'inherit' });
+  } catch (error) {
+    console.error('⚠️  Warning: Failed to run build-data.js:', error.message);
+    console.log('   You may need to run "npm run build:data" manually.');
+  }
 }
+
+// Run main function
+async function run() {
+  try {
+    main();
+    await runBuildData();
+    console.log('\n✨ All done! Your content is ready.\n');
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+    console.error(error.stack);
+    process.exit(1);
+  }
+}
+
+run();

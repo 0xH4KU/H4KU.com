@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import SearchPanel from '../SearchPanel';
-import { SearchProvider, useSearch } from '@/contexts/SearchContext';
+import { SearchProvider, useSearchUI } from '@/contexts/SearchContext';
 import { renderWithProviders } from '@/tests/utils';
 import { screen, waitFor } from '@testing-library/react';
 
 const SearchTrigger = () => {
-  const { openSearch } = useSearch();
+  const { openSearch } = useSearchUI();
   return (
     <button type="button" onClick={openSearch}>
       Open Search

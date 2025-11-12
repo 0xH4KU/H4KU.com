@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
-import { useSearch } from '@/contexts/SearchContext';
+import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { SearchResult } from '@/types';
 import styles from './SearchPanel.module.css';
@@ -12,13 +12,9 @@ const buildPathLabel = (path: string[]): string => {
 };
 
 const SearchPanel: React.FC = () => {
-  const {
-    searchOpen,
-    searchQuery,
-    setSearchQuery,
-    searchResults,
-    closeSearch,
-  } = useSearch();
+  const { searchOpen, searchQuery, setSearchQuery, closeSearch } =
+    useSearchUI();
+  const { searchResults } = useSearchResults();
   const { navigateTo, openLightbox } = useNavigation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);

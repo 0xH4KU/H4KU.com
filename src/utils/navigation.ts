@@ -5,6 +5,48 @@ export interface FlatFolder {
   path: string[];
 }
 
+export interface NavigationMap {
+  /** O(1) lookup: folder ID -> Folder object */
+  byId: Map<string, Folder>;
+  /** O(1) lookup: folder ID -> path array */
+  pathById: Map<string, string[]>;
+  /** O(1) lookup: path string (joined) -> Folder object */
+  byPath: Map<string, Folder>;
+  /** All flattened folders for iteration */
+  flattened: FlatFolder[];
+}
+
+/**
+ * Builds a memoizable navigation map for O(1) lookups.
+ * This eliminates the need for repeated O(n) tree traversals.
+ */
+export const buildNavigationMap = (folders: Folder[]): NavigationMap => {
+  const byId = new Map<string, Folder>();
+  const pathById = new Map<string, string[]>();
+  const byPath = new Map<string, Folder>();
+  const flattened: FlatFolder[] = [];
+
+  const traverse = (folder: Folder, ancestors: string[] = []) => {
+    const currentPath = [...ancestors, folder.id];
+    const pathKey = currentPath.join('/');
+
+    // Store in all maps
+    byId.set(folder.id, folder);
+    pathById.set(folder.id, currentPath);
+    byPath.set(pathKey, folder);
+    flattened.push({ folder, path: currentPath });
+
+    // Recursively traverse children
+    if (folder.children?.length) {
+      folder.children.forEach(child => traverse(child, currentPath));
+    }
+  };
+
+  folders.forEach(folder => traverse(folder));
+
+  return { byId, pathById, byPath, flattened };
+};
+
 export const flattenFolders = (
   folders: Folder[],
   ancestors: string[] = []
@@ -23,14 +65,26 @@ export const flattenFolders = (
   return results;
 };
 
+/**
+ * O(1) lookup using NavigationMap.
+ * Falls back to O(n) tree traversal if map is not provided.
+ */
 export const findFolderByPath = (
   folders: Folder[],
-  path: string[]
+  path: string[],
+  navMap?: NavigationMap
 ): Folder | null => {
   if (!path.length) {
     return null;
   }
 
+  // O(1) lookup if map is provided
+  if (navMap) {
+    const pathKey = path.join('/');
+    return navMap.byPath.get(pathKey) ?? null;
+  }
+
+  // Fallback to O(n) traversal
   let current: Folder | undefined;
   let currentLevel = folders;
 
@@ -45,10 +99,21 @@ export const findFolderByPath = (
   return current ?? null;
 };
 
+/**
+ * O(1) lookup using NavigationMap.
+ * Falls back to O(n) tree traversal if map is not provided.
+ */
 export const findFolderPathById = (
   folders: Folder[],
-  targetId: string
+  targetId: string,
+  navMap?: NavigationMap
 ): string[] | null => {
+  // O(1) lookup if map is provided
+  if (navMap) {
+    return navMap.pathById.get(targetId) ?? null;
+  }
+
+  // Fallback to O(n) traversal
   const stack: Array<{ folder: Folder; path: string[] }> = folders.map(
     folder => ({
       folder,
@@ -74,14 +139,25 @@ export const findFolderPathById = (
   return null;
 };
 
+/**
+ * O(1) lookup using NavigationMap.
+ * Falls back to O(n) tree traversal if map is not provided.
+ */
 export const findFolderById = (
   folders: Folder[],
-  targetId: string
+  targetId: string,
+  navMap?: NavigationMap
 ): Folder | null => {
   if (!targetId) {
     return null;
   }
 
+  // O(1) lookup if map is provided
+  if (navMap) {
+    return navMap.byId.get(targetId) ?? null;
+  }
+
+  // Fallback to O(n) traversal
   const stack = [...folders];
 
   while (stack.length) {

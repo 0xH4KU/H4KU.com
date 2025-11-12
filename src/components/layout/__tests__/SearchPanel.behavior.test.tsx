@@ -35,17 +35,21 @@ const navigationMock = {
   openLightbox: vi.fn(),
 };
 
-const searchState = {
+const searchUIState = {
   searchOpen: true,
   searchQuery: 'doc',
-  searchResults: [] as MockSearchResult[],
   setSearchQuery: vi.fn(),
   openSearch: vi.fn(),
   closeSearch: vi.fn(),
 };
 
+const searchResultsState = {
+  searchResults: [] as MockSearchResult[],
+};
+
 vi.mock('@/contexts/SearchContext', () => ({
-  useSearch: () => searchState,
+  useSearchUI: () => searchUIState,
+  useSearchResults: () => searchResultsState,
 }));
 
 vi.mock('@/contexts/NavigationContext', () => ({
@@ -98,9 +102,9 @@ describe('SearchPanel interactions', () => {
   beforeEach(() => {
     navigationMock.navigateTo.mockClear();
     navigationMock.openLightbox.mockClear();
-    searchState.setSearchQuery.mockClear();
-    searchState.closeSearch.mockClear();
-    searchState.searchResults = [...baseResults];
+    searchUIState.setSearchQuery.mockClear();
+    searchUIState.closeSearch.mockClear();
+    searchResultsState.searchResults = [...baseResults];
   });
 
   it('submits selection via keyboard navigation', async () => {
@@ -114,7 +118,7 @@ describe('SearchPanel interactions', () => {
 
     await userEvent.keyboard('{Enter}');
     expect(navigationMock.navigateTo).toHaveBeenCalledWith(pageResult.page);
-    expect(searchState.closeSearch).toHaveBeenCalled();
+    expect(searchUIState.closeSearch).toHaveBeenCalled();
 
     await userEvent.keyboard('{ArrowUp}');
     expect(folderButton).toHaveClass(styles['search-result--selected']);
@@ -124,7 +128,7 @@ describe('SearchPanel interactions', () => {
     render(<SearchPanel />);
     const input = screen.getByPlaceholderText(/type to search/i);
     await userEvent.type(input, '!');
-    expect(searchState.setSearchQuery).toHaveBeenCalled();
+    expect(searchUIState.setSearchQuery).toHaveBeenCalled();
 
     const folderButton = getResultButtonByLabel('Folder');
     await userEvent.click(folderButton);
@@ -132,7 +136,7 @@ describe('SearchPanel interactions', () => {
       folderResult.folder,
       folderResult.path
     );
-    expect(searchState.closeSearch).toHaveBeenCalled();
+    expect(searchUIState.closeSearch).toHaveBeenCalled();
   });
 
   it('opens lightbox for work results', async () => {
@@ -161,6 +165,6 @@ describe('SearchPanel interactions', () => {
   it('closes the search panel when Escape is pressed', async () => {
     render(<SearchPanel />);
     await userEvent.keyboard('{Escape}');
-    expect(searchState.closeSearch).toHaveBeenCalled();
+    expect(searchUIState.closeSearch).toHaveBeenCalled();
   });
 });

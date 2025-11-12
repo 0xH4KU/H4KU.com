@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
@@ -9,7 +9,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
 import { LazyImage } from '@/components/common/LazyImage';
-import { ContactForm } from '@/components/forms/ContactForm';
+import { IMAGE_CONFIG } from '@/config/constants';
 import {
   getFolderLabel,
   getPageLabel,
@@ -17,6 +17,12 @@ import {
   sortByLabel,
 } from '@/utils/sortHelpers';
 import styles from './ContentView.module.css';
+
+const ContactForm = lazy(() =>
+  import('@/components/forms/ContactForm').then(module => ({
+    default: module.ContactForm,
+  }))
+);
 
 type NavigableItem = Folder | Page;
 
@@ -168,7 +174,11 @@ const ContentView: React.FC = () => {
             }}
           >
             <pre>{currentView.data.content}</pre>
-            {currentView.data.id === 'contact' && <ContactForm />}
+            {currentView.data.id === 'contact' && (
+              <Suspense fallback={null}>
+                <ContactForm />
+              </Suspense>
+            )}
           </motion.div>
         </motion.div>
       );
@@ -309,6 +319,7 @@ const ContentView: React.FC = () => {
                       className={styles['file-thumb']}
                       src={'thumb' in item ? item.thumb : ''}
                       alt={item.filename}
+                      sizes={IMAGE_CONFIG.GRID_SIZES}
                     />
                     <div className={styles['file-name']}>{item.filename}</div>
                   </motion.div>
@@ -331,6 +342,9 @@ const ContentView: React.FC = () => {
       mockData.homeItems,
       sortOrder,
       getWorkItemLabel
+    );
+    const sortedHomeWorkItems = sortedHomeItems.filter(
+      item => item.itemType !== 'page'
     );
     const homeFileBucketSequence =
       typeOrder === 'folders-first'
@@ -357,7 +371,7 @@ const ContentView: React.FC = () => {
                 };
                 navigateTo(page);
               }
-            : () => handleOpenLightbox(item, sortedHomeItems);
+            : () => handleOpenLightbox(item, sortedHomeWorkItems);
 
           return (
             <motion.div
@@ -387,6 +401,7 @@ const ContentView: React.FC = () => {
                   className={styles['work-thumb']}
                   src={'thumb' in item ? item.thumb : ''}
                   alt={item.filename}
+                  sizes={IMAGE_CONFIG.GRID_SIZES}
                 />
               )}
               <div className={styles['work-info']}>{item.filename}</div>

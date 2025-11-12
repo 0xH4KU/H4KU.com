@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run sync && vite build",
+    "build:data": "node scripts/build-data.js",
     "preview": "vite preview",
     "lint": "eslint --ext .ts,.tsx src/",
     "lint:fix": "eslint --ext .ts,.tsx src/ --fix",
@@ -13,6 +14,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "type-check": "tsc --noEmit",
     "cms": "node scripts/cms.js",
+    "sync": "npm run cms",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",

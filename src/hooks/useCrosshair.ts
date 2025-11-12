@@ -85,9 +85,19 @@ export function useCrosshair() {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setShowCrosshair(prev => !prev);
+      if (event.key !== 'Escape' || event.defaultPrevented) {
+        return;
       }
+      const activeElement =
+        typeof document !== 'undefined' ? document.activeElement : null;
+      const shouldToggle =
+        !activeElement ||
+        activeElement === document.body ||
+        activeElement === document.documentElement;
+      if (!shouldToggle) {
+        return;
+      }
+      setShowCrosshair(prev => !prev);
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { IMAGE_CONFIG } from '@/config/constants';
 
 const TRANSPARENT_PLACEHOLDER =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -7,11 +8,68 @@ const TRANSPARENT_PLACEHOLDER =
 const ERROR_PLACEHOLDER =
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5JbWFnZSBmYWlsZWQgdG8gbG9hZDwvdGV4dD48L3N2Zz4=';
 
+type ObserverCallback = () => void;
+
+const observerCallbacks = new Map<Element, ObserverCallback>();
+let sharedObserver: IntersectionObserver | null = null;
+
+const ensureObserver = () => {
+  if (sharedObserver || typeof window === 'undefined') {
+    return sharedObserver;
+  }
+  if (!('IntersectionObserver' in window)) {
+    return null;
+  }
+
+  sharedObserver = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const callback = observerCallbacks.get(entry.target);
+          if (callback) {
+            callback();
+            observerCallbacks.delete(entry.target);
+          }
+          sharedObserver?.unobserve(entry.target);
+        }
+      });
+    },
+    {
+      rootMargin: IMAGE_CONFIG.LAZY_LOAD_ROOT_MARGIN,
+      threshold: IMAGE_CONFIG.LAZY_LOAD_THRESHOLD,
+    }
+  );
+
+  return sharedObserver;
+};
+
+const observeNode = (node: Element, callback: ObserverCallback) => {
+  const observer = ensureObserver();
+  if (!observer) {
+    callback();
+    return;
+  }
+  observerCallbacks.set(node, callback);
+  observer.observe(node);
+};
+
+const unobserveNode = (node: Element) => {
+  if (!observerCallbacks.has(node)) {
+    return;
+  }
+  observerCallbacks.delete(node);
+  sharedObserver?.unobserve(node);
+};
+
 interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
   placeholder?: string;
+  /** Optional srcset for responsive images */
+  srcSet?: string;
+  /** Optional sizes attribute for responsive images */
+  sizes?: string;
 }
 
 export function LazyImage({
@@ -19,78 +77,48 @@ export function LazyImage({
   alt,
   className,
   placeholder,
+  srcSet,
+  sizes,
 }: LazyImageProps) {
-  const [imageSrc, setImageSrc] = useState<string>(
-    placeholder ?? TRANSPARENT_PLACEHOLDER
-  );
+  const resolvedPlaceholder = placeholder ?? TRANSPARENT_PLACEHOLDER;
+  const [imageSrc, setImageSrc] = useState<string>(resolvedPlaceholder);
+  const [imageSrcSet, setImageSrcSet] = useState<string | undefined>(undefined);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
-  const previousSrcRef = useRef<string | undefined>(undefined);
-  const placeholderRef = useRef<string | undefined>(placeholder);
 
   useEffect(() => {
-    placeholderRef.current = placeholder;
-    const resolvedPlaceholder = placeholder ?? TRANSPARENT_PLACEHOLDER;
-
-    if (imageSrc !== src && imageSrc !== resolvedPlaceholder) {
-      setImageSrc(resolvedPlaceholder);
-    }
-  }, [placeholder, imageSrc, src]);
-
-  useEffect(() => {
-    if (previousSrcRef.current === src) {
-      return;
-    }
-    previousSrcRef.current = src;
-
     const node = imgRef.current;
-    const nextPlaceholder = placeholderRef.current ?? TRANSPARENT_PLACEHOLDER;
-
-    setIsLoaded(false);
-    setHasError(false);
-    setImageSrc(nextPlaceholder);
-
     if (!node) {
       return;
     }
 
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
-      setImageSrc(src);
+    setIsLoaded(false);
+    setHasError(false);
+    setImageSrc(resolvedPlaceholder);
+    setImageSrcSet(undefined);
+
+    if (!src) {
       return;
     }
 
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setImageSrc(src);
-            observer.disconnect();
-          }
-        });
-      },
-      {
-        rootMargin: '150px',
-        threshold: 0.01,
+    observeNode(node, () => {
+      setImageSrc(src);
+      if (srcSet) {
+        setImageSrcSet(srcSet);
       }
-    );
-
-    // Use requestAnimationFrame to ensure element is rendered before observing
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        observer.observe(node);
-      });
     });
 
     return () => {
-      observer.disconnect();
+      unobserveNode(node);
     };
-  }, [src]);
+  }, [src, srcSet, resolvedPlaceholder]);
 
   const handleError = () => {
     if (!hasError && imageSrc === src) {
       setHasError(true);
       setImageSrc(ERROR_PLACEHOLDER);
+      setImageSrcSet(undefined);
       setIsLoaded(true);
     }
   };
@@ -105,6 +133,8 @@ export function LazyImage({
     <img
       ref={imgRef}
       src={imageSrc}
+      srcSet={imageSrcSet}
+      sizes={sizes}
       alt={alt}
       className={className}
       loading="lazy"

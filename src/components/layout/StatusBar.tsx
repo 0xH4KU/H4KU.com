@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSortOrder } from '@/contexts/SortContext';
 import { mockData } from '@/data/mockData';
+import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
 
 const StatusBar: React.FC = () => {
@@ -35,16 +36,41 @@ const StatusBar: React.FC = () => {
         className={`${styles['status-section']} ${styles['status-section--socials']}`}
       >
         <div className={styles['status-socials']}>
-          {socials.map(social => (
-            <a
-              key={social.code}
-              href={social.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              [{social.code}]
-            </a>
-          ))}
+          {socials.map(social => {
+            const safeUrl = getSafeUrl(social.url);
+
+            if (!safeUrl) {
+              return (
+                <span
+                  key={social.code}
+                  className={styles['status-social-disabled']}
+                  aria-disabled="true"
+                >
+                  [{social.code}]
+                </span>
+              );
+            }
+
+            const ariaLabelParts = [`Open ${social.name}`];
+            if (safeUrl.isMailto) {
+              ariaLabelParts.push('(opens email client)');
+            }
+            if (safeUrl.isExternal) {
+              ariaLabelParts.push('(opens in new tab)');
+            }
+
+            return (
+              <a
+                key={social.code}
+                href={safeUrl.href}
+                target={safeUrl.isExternal ? '_blank' : undefined}
+                rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
+                aria-label={ariaLabelParts.join(' ')}
+              >
+                [{social.code}]
+              </a>
+            );
+          })}
         </div>
       </div>
       <div

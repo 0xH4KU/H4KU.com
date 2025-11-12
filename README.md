@@ -1,263 +1,96 @@
 # Lum.bio Portfolio
 
-A modern, interactive portfolio website built with React, TypeScript, and Vite. Features a unique file-system inspired navigation interface with dark/light theme support.
+Lum.bio is a single-page, file-system inspired portfolio experience. It combines a tactile desktop metaphor (folders, text files, and galleries) with modern React tooling, accessibility-first design, and a fully static delivery model that runs anywhere a CDN can serve HTML.
 
-## Features
+## Experience Highlights
 
-### Core Features
-- **File System Navigation**: Browse portfolio content through an intuitive folder/file interface
-- **Dark/Light Theme**: Automatic theme detection with manual toggle support
-- **Responsive Design**: Optimized for desktop and mobile viewing
-- **URL Routing**: Deep linking support - all pages and folders have shareable URLs
-- **Resizable Sidebar**: Customizable navigation panel width with persistent preferences
+- **Spatial navigation** – Hierarchical folder tree with persistent width, context-aware breadcrumbs, and keyboard shortcuts for every action.
+- **Unified search** – Debounced, pre-indexed search that surfaces folders, text notes, and artwork in milliseconds without blocking the UI.
+- **Gallery workflow** – Lazy-loaded thumbnails, shared IntersectionObserver, and a lightbox that supports keyboard navigation, counters, and metadata overlays.
+- **Accessibility built in** – Skip links, focus rings, ARIA labeling, reduced-motion fallbacks, and screen-reader-friendly semantics throughout.
+- **Designer tools** – Pixel crosshair overlay, responsive grid, and theme-aware chroming for reviewing artwork in both light and dark environments.
 
-### Image Gallery
-- **Image Lightbox**: Full-screen image viewer with gallery navigation
-- **Keyboard Navigation**: Use arrow keys (←/→) to browse images, ESC to close
-- **Image Counter**: See your position in the gallery (e.g., "3 / 10")
-- **Error Handling**: Graceful fallback for failed image loads
+## Architecture at a Glance
 
-### Search & Discovery
-- **Quick Search**: Fast search across folders, images, and text files
-- **Keyboard Navigation**: Navigate search results with arrow keys, Enter to select
-- **Debounced Input**: Smooth, performant search experience
+| Layer | Description |
+| --- | --- |
+| **Rendering** | React 19 + Vite 7 with CSS Modules for scoped styling |
+| **State** | Context providers for theme, navigation, sorting, search UI/results, and sidebar preferences |
+| **Data** | Static JSON content authored under `src/content/` and aggregated at build time into `src/content/_aggregated.json` via `npm run build:data` |
+| **Navigation** | React Router with deep links for folders (`/folder/...`) and text entries (`/page/...`); O(1) lookup maps keep breadcrumbs/back navigation instant |
+| **Media** | LazyImage wraps the shared IntersectionObserver, optional `srcset` metadata, and graceful error states |
+| **CI/CD** | GitLab CI validates lint, type, and 180 automated tests before Cloudflare Pages builds and deploys |
 
-### Accessibility & UX
-- **WCAG Compliant**: Focus indicators, skip links, and ARIA labels
-- **Reduced Motion Support**: Respects user's motion preferences
-- **Keyboard Friendly**: Full keyboard navigation support
-- **Screen Reader Optimized**: Proper semantic HTML and ARIA attributes
+## Technology Stack
 
-### Developer Tools
-- **Crosshair Tool**: Precise pixel alignment helper for designers
-- **Test Suite**: Comprehensive testing with 95.2% coverage (175 tests)
-- **Type Safety**: Full TypeScript coverage with strict mode enabled
-
-## Tech Stack
-
-- **Framework**: React 19.2.0
-- **Language**: TypeScript 5.4.5
-- **Build Tool**: Vite 7.1.12
-- **Testing**: Vitest 4.0.8 + React Testing Library
-- **Icons**: lucide-react
-- **Styling**: CSS Modules (modular, scoped styles)
-- **Routing**: React Router (client-side routing)
-- **State Management**: React Context API + Custom Hooks
-
-## Project Structure
-
-```
-src/
-├── components/         # React components
-│   ├── layout/        # Layout components (Sidebar, TopBar, StatusBar)
-│   ├── content/       # Content display components
-│   └── overlay/       # Modal/overlay components (Lightbox, Crosshair)
-├── config/            # Application configuration constants
-├── contexts/          # React Context providers
-├── hooks/             # Custom React hooks
-│   └── __tests__/    # Hook unit tests (71 tests, 93.12% coverage)
-├── content/           # Static portfolio content (markdown, JSON)
-│   ├── pages/        # Markdown pages with frontmatter
-│   ├── folders/      # Folder structure definitions
-│   ├── works/        # Portfolio works/projects
-│   └── socials/      # Social media links
-├── data/              # Static portfolio data
-├── styles/            # CSS Modules
-├── tests/             # Test setup and utilities
-│   ├── setup.ts      # Global test configuration
-│   └── utils.tsx     # Test helper functions (renderWithProviders)
-├── types/             # TypeScript type definitions
-├── utils/             # Utility functions
-│   └── __tests__/    # Utils unit tests (73 tests, 97.16% coverage)
-└── assets/            # Static assets (images, fonts)
-```
+| Category | Tooling |
+| --- | --- |
+| UI Framework | React 19.2, React Router 7.9 |
+| Language & Build | TypeScript 5.4 (strict) + Vite 7 |
+| Styling | CSS Modules + global design tokens |
+| Animation | Framer Motion with reduced-motion-aware variants |
+| Testing | Vitest 4 + React Testing Library (180 automated specs) |
+| Email | EmailJS (lazy-loaded to keep the initial bundle lean) |
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+ or later
-- npm or pnpm
-
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone <your-gitlab-repository-url>
+git clone git@gitlab.com:lummuu/lum.bio.git
 cd lum.bio
-```
-
-2. Install dependencies:
-```bash
 npm install
-# or
-pnpm install
+npm run dev         # http://localhost:5173
 ```
 
-3. Start the development server:
-```bash
-npm run dev
-# or
-pnpm dev
-```
+Common scripts:
 
-4. Open your browser and navigate to `http://localhost:5173`
+| Command | Purpose |
+| --- | --- |
+| `npm run build` | Runs `npm run build:data` then produces the production bundle |
+| `npm run build:data` | Aggregates `src/content/**/*` JSON into `src/content/_aggregated.json` |
+| `npm run lint` / `npm run lint:fix` | ESLint + Prettier checks |
+| `npm run type-check` | TypeScript `--noEmit` verification |
+| `npm run test:run` | Executes the full Vitest suite once (used in CI) |
+| `npm run preview` | Serves the built `dist/` bundle locally |
 
-## Available Scripts
+## Data & Content Pipeline
 
-### Development
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build locally
+1. Author or edit JSON entries under `src/content/{folders,works,pages,socials}`. Each file is versioned alongside the code.
+2. Run `npm run build:data` (or simply `npm run build`) to regenerate `src/content/_aggregated.json`. This single artifact replaces four eager `import.meta.glob` calls and keeps the runtime bundle lean.
+3. Static assets (illustrations, gifs, fonts) live under `public/` so Vite can serve them verbatim.
+4. `scripts/cms.js` remains available for bulk imports from `public/content/` if you prefer that workflow, but the repository-first JSON approach is the default.
 
-### Testing
-- `npm test` - Run tests in watch mode
-- `npm run test:run` - Run all tests once
-- `npm run test:ui` - Open Vitest UI for interactive testing
-- `npm run test:coverage` - Run tests with coverage report
-- `npm run test:watch` - Run tests in watch mode (alias)
+## Quality & Testing
 
-### Code Quality
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint errors automatically
-- `npm run format` - Format code with Prettier
-
-## Testing
-
-This project uses **Vitest** and **React Testing Library** for testing. We maintain high test coverage across hooks, utilities, and components.
-
-### Test Coverage
-
-Current test coverage: **95.2%** overall
-
-| Category | Coverage | Tests |
-|----------|----------|-------|
-| Config   | 100%     | Full coverage |
-| Hooks    | 93.12%   | 71 tests |
-| Utils    | 97.16%   | 73 tests |
-
-### Running Tests
+- **180 automated tests** cover hooks, utilities, contexts, and layout behaviors. The suite runs in under 2 seconds on CI.
+- **Tooling**: Vitest + React Testing Library with jsdom, snapshot-free assertions, and helpers in `src/tests/utils.tsx`.
+- **Philosophy**: write behavior-driven tests (Arrange → Act → Assert), mock external services sparingly, and target 80%+ coverage for new modules.
 
 ```bash
-# Run tests in watch mode (interactive)
-npm test
-
-# Run all tests once (CI mode)
-npm run test:run
-
-# Open Vitest UI in browser
-npm run test:ui
-
-# Generate coverage report
+npm test             # watch mode
+npm run test:run     # single CI run
 npm run test:coverage
+npm run test:ui      # interactive dashboard
 ```
-
-### Test Files Location
-
-- **Hook tests**: `src/hooks/__tests__/*.test.ts`
-- **Utils tests**: `src/utils/__tests__/*.test.ts`
-- **Component tests**: `src/components/__tests__/*.test.tsx` (coming soon)
-- **Test setup**: `src/tests/setup.ts` - Global test configuration
-- **Test utils**: `src/tests/utils.tsx` - Helper functions like `renderWithProviders`
-
-### Writing Tests
-
-Tests follow these conventions:
-
-1. **Naming**: Use descriptive test names with `should` statements
-2. **Structure**: Arrange-Act-Assert pattern
-3. **Mocking**: Use Vitest's `vi.mock()` for external dependencies
-4. **Async**: Always use `act()` for state updates in React tests
-5. **Coverage**: Aim for 80%+ coverage for new code
-
-Example test structure:
-
-```typescript
-import { describe, it, expect } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useMyHook } from '../useMyHook';
-
-describe('useMyHook', () => {
-  it('should return initial value', () => {
-    const { result } = renderHook(() => useMyHook());
-    expect(result.current.value).toBe(0);
-  });
-
-  it('should update value when called', () => {
-    const { result } = renderHook(() => useMyHook());
-
-    act(() => {
-      result.current.setValue(5);
-    });
-
-    expect(result.current.value).toBe(5);
-  });
-});
-```
-
-### CI Integration
-
-Tests run automatically on every push via GitLab CI:
-- All tests must pass before merge
-- Coverage reports are generated and tracked
-- Coverage threshold: 70% minimum
-
-## 📝 Content Management
-
-All content lives in the repository so you only need a text editor:
-
-- **Pages**: `src/content/pages/*.md` (supports frontmatter + markdown body)
-- **Folders**: `src/content/folders/*.json`
-- **Works**: `src/content/works/*.json`
-- **Social Links**: `src/content/socials/*.json`
-
-Update these files directly and re-run `npm run dev` to preview changes. No external CMS or admin UI is required.
 
 ## Deployment
 
-This project is configured for deployment on **Cloudflare Pages**.
+| Target | Configuration |
+| --- | --- |
+| **Cloudflare Pages** | Build command `npm run build`, output `dist`, environment vars for EmailJS (`VITE_EMAILJS_*`). `_redirects` ensures SPA routing. |
+| **Manual (Wrangler)** | `npm run build && npx wrangler pages deploy dist` |
 
-### Deploy to Cloudflare Pages
+The GitLab pipeline mirrors the local workflow: lint → type-check → tests → `npm run build:data` → `vite build`. Artifacts are retained for 7 days to aid debugging.
 
-1. Push your code to GitLab
-2. Go to [Cloudflare Pages](https://pages.cloudflare.com/)
-3. Create a new project and connect your GitLab repository
-4. Use the following build settings:
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Root directory**: `/`
-   - **Environment variables**: Set EmailJS variables in Cloudflare Pages settings
+## Documentation Map
 
-The site will automatically deploy on every push to the main branch.
+- **[CHANGELOG.md](./CHANGELOG.md)** – human-readable release notes.
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** – architecture deep dive, context/hook responsibilities, and performance techniques.
+- **[TESTING.md](./TESTING.md)** – detailed guidance for authoring and running tests.
+- **[SETUP.md](./SETUP.md)** – operations playbook for local dev, content editing, EmailJS, and Cloudflare Pages.
+- **[GITLAB_CI_SETUP.md](./GITLAB_CI_SETUP.md)** – CI pipeline stages, variables, and troubleshooting.
+- **[OPTIMIZATION_PROGRESS.md](./OPTIMIZATION_PROGRESS.md)** – performance backlog and resolutions for posterity.
 
-### Manual Deployment
+## License & Contact
 
-You can also deploy manually using Wrangler:
-
-```bash
-npm run build
-npx wrangler pages deploy dist
-```
-
-## Development Guidelines
-
-Please read the following documents for development guidelines:
-
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Code standards and contribution guidelines
-- **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Detailed architecture and development patterns
-- **[TESTING.md](./TESTING.md)** - Comprehensive testing guide and best practices
-- **[agent.md](./agent.md)** - AI collaboration guidelines
-
-## Browser Support
-
-- Chrome/Edge (latest 2 versions)
-- Firefox (latest 2 versions)
-- Safari (latest 2 versions)
-
-## License
-
-All rights reserved.
-
-## Contact
-
-For questions or feedback, please open an issue on GitLab.
+Copyright © Lum.  
+Questions? Open an issue on GitLab or reach out to `hi@lum.bio`.

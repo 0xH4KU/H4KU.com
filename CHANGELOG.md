@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2025-11-12] - Performance & Documentation Refresh
+
+### Added
+- **Navigation map cache** – `buildNavigationMap` now materialises `byId`, `pathById`, and `byPath` maps so every folder lookup (breadcrumbs, sidebar expansion, back navigation) is constant time.
+- **Data aggregation script** – `scripts/build-data.js` consolidates `src/content` into a single `_aggregated.json`, eliminating four eager glob imports and shrinking the initial bundle.
+- **Lazy image responsive metadata** – `LazyImage` accepts `sizes/srcSet` and centralises an IntersectionObserver so all thumbnails share one observer instance.
+- **Documentation suite** – README, Development, Testing, Setup, and CI guides were rewritten for a public audience; redundant contributor/CMS docs were removed.
+
+### Changed
+- **Search context** – split UI state and result data providers, added memoised indices, and prevented unnecessary app-wide renders when typing.
+- **Theme initialisation** – the inline script now sets only `data-theme` pre-hydration while `ThemeContext` updates meta tags, removing duplicate `getComputedStyle` cycles.
+- **Build command** – `npm run build` now runs `npm run build:data && vite build` to guarantee the aggregated dataset is fresh.
+
+### Fixed
+- **Image loading** – caching the observer and using project-wide thresholds prevents the previous per-image observer leaks.
+- **Tests & CI** – suite expanded to 180 specs covering the new data pipeline, nav map utilities, and context behaviour.
+
+### Removed
+- Contributor/agent/CMS markdown guides that were intended for private handoffs have been deleted to keep the public repo focused on architecture and delivery.
+
 ## [Unreleased] - 2025-11-06
 
 ### Added

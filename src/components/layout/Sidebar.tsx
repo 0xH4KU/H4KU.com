@@ -1,14 +1,21 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
 import { Search, X, ChevronsDown, ChevronsUp, Pin } from 'lucide-react';
 import paperIcon from '@/assets/paper.gif';
 import folderIcon from '@/assets/folder.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
-import { useSearch } from '@/contexts/SearchContext';
+import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult } from '@/types';
 import { SIDEBAR_CONFIG } from '@/config/constants';
+import { getSafeUrl } from '@/utils/urlHelpers';
 import { FolderTreeItem } from './FolderTreeItem';
 import { ContextMenu } from './ContextMenu';
 import { Tooltip } from './Tooltip';
@@ -30,7 +37,8 @@ const Sidebar: React.FC = () => {
     sidebarWidth,
     setSidebarWidth,
   } = useSidebarContext();
-  const { searchQuery, setSearchQuery, searchResults } = useSearch();
+  const { searchQuery, setSearchQuery } = useSearchUI();
+  const { searchResults } = useSearchResults();
   const { activePath, navigateTo, openLightbox, resetToHome, allFolders } =
     useNavigation();
   const { width } = useWindowSize();
@@ -38,6 +46,7 @@ const Sidebar: React.FC = () => {
   const isMobile =
     width !== undefined && width < SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
 
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -247,6 +256,14 @@ const Sidebar: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isSidebarOpen) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        sidebarRef.current &&
+        target &&
+        !sidebarRef.current.contains(target)
+      ) {
+        return;
+      }
 
       // If searching, navigate search results
       if (searchQuery.trim() && searchResults.length > 0) {
@@ -318,6 +335,7 @@ const Sidebar: React.FC = () => {
     handleNavigate,
     handleSearchResultSelect,
     setSearchQuery,
+    sidebarRef,
   ]);
 
   const renderItem = (item: SidebarEntry, showPin = false) => {
@@ -348,11 +366,13 @@ const Sidebar: React.FC = () => {
     }
 
     return (
-      <div
+      <button
         key={item.id}
+        type="button"
         className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned && showPin ? styles['sidebar-item--pinned'] : ''}`}
         onClick={() => handleNavigate(item)}
         onContextMenu={e => handleContextMenu(e, item)}
+        aria-current={isActive ? 'page' : undefined}
       >
         <span className={styles['expand-icon-spacer']} />
         <img
@@ -364,7 +384,7 @@ const Sidebar: React.FC = () => {
         {isPinned && showPin && (
           <Pin size={14} className={styles['pin-indicator']} />
         )}
-      </div>
+      </button>
     );
   };
 
@@ -389,20 +409,23 @@ const Sidebar: React.FC = () => {
     }
 
     return (
-      <div
+      <button
         key={`${result.type}-${result.id}`}
+        type="button"
         className={`${styles['search-result']} ${isSelected ? styles['search-result--selected'] : ''}`}
         onClick={() => handleSearchResultSelect(result)}
+        aria-selected={isSelected}
       >
         <div className={styles['search-result-label']}>{label}</div>
         <div className={styles['search-result-meta']}>{meta}</div>
-      </div>
+      </button>
     );
   };
 
   return (
     <div
       id="app-sidebar"
+      ref={sidebarRef}
       className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
       style={{
         width: isMobile ? undefined : sidebarWidth,
@@ -515,12 +538,9 @@ const Sidebar: React.FC = () => {
 
       <div className={styles['sidebar-footer']}>
         {socials.map(social => {
-          const rawUrl = social.url ?? '';
-          const url = rawUrl.trim();
-          const isPlaceholder = url.length === 0 || url === '#';
-          const isExternal = /^https?:\/\//i.test(url);
+          const safeUrl = getSafeUrl(social.url);
 
-          if (isPlaceholder) {
+          if (!safeUrl) {
             return (
               <button
                 key={social.code}
@@ -528,29 +548,28 @@ const Sidebar: React.FC = () => {
                 className={`${styles['social-link']} ${styles['social-link--disabled']}`}
                 disabled
                 aria-disabled="true"
-                aria-label={`${social.name} coming soon`}
+                aria-label={`${social.name} unavailable`}
               >
                 {social.code}
               </button>
             );
           }
 
-          const isMailto = url.startsWith('mailto:');
           const ariaLabelParts = [`Open ${social.name}`];
-          if (isMailto) {
+          if (safeUrl.isMailto) {
             ariaLabelParts.push('(opens email client)');
           }
-          if (isExternal) {
+          if (safeUrl.isExternal) {
             ariaLabelParts.push('(opens in new tab)');
           }
 
           return (
             <a
               key={social.code}
-              href={url}
+              href={safeUrl.href}
               className={styles['social-link']}
-              target={isExternal ? '_blank' : undefined}
-              rel={isExternal ? 'noopener noreferrer' : undefined}
+              target={safeUrl.isExternal ? '_blank' : undefined}
+              rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
               aria-label={ariaLabelParts.join(' ')}
             >
               {social.code}

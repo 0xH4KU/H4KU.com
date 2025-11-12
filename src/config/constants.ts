@@ -71,6 +71,12 @@ export const SIDEBAR_CONFIG = {
 export const IMAGE_CONFIG = {
   LAZY_LOAD_ROOT_MARGIN: '150px',
   LAZY_LOAD_THRESHOLD: 0.01,
+  /** Default sizes attribute for responsive images in grid view */
+  GRID_SIZES: '(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw',
+  /** Thumbnail width for list/grid views (px) */
+  THUMBNAIL_WIDTH: 400,
+  /** Full image max width (px) */
+  FULL_WIDTH: 1920,
 } as const;
 
 /**

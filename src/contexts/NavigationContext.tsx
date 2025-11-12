@@ -14,6 +14,8 @@ import {
   findFolderByPath,
   findFolderPathById,
   flattenFolders,
+  buildNavigationMap,
+  type NavigationMap,
 } from '@/utils/navigation';
 
 interface NavigationContextValue {
@@ -49,7 +51,13 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [lightboxIndex, setLightboxIndex] = useState<number>(0);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const allFolders = useMemo(() => flattenFolders(mockData.folders), []);
+  // Build navigation map once for O(1) lookups
+  const navMap = useMemo<NavigationMap>(
+    () => buildNavigationMap(mockData.folders),
+    []
+  );
+
+  const allFolders = useMemo(() => navMap.flattened, [navMap]);
 
   const breadcrumbSegments = useMemo(
     () =>
@@ -57,7 +65,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         if (index === 0) {
           return { id: segment, label: 'home' };
         }
-        const folder = findFolderById(mockData.folders, segment);
+        // O(1) lookup using navigation map
+        const folder = findFolderById(mockData.folders, segment, navMap);
         if (folder) {
           return { id: segment, label: folder.name };
         }
@@ -67,7 +76,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         }
         return { id: segment, label: segment };
       }),
-    [currentPath]
+    [currentPath, navMap]
   );
 
   const activePath = useMemo(() => currentPath.join('/'), [currentPath]);
@@ -104,7 +113,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     // Check if it's a folder path
     if (segments[0] === 'folder') {
       const folderIds = segments.slice(1);
-      const folder = findFolderByPath(mockData.folders, folderIds);
+      // O(1) lookup using navigation map
+      const folder = findFolderByPath(mockData.folders, folderIds, navMap);
       if (folder) {
         setCurrentPath(['home', ...folderIds]);
         setCurrentView({ type: 'folder', data: folder });
@@ -112,7 +122,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
 
     setIsInitialized(true);
-  }, [location.pathname, isInitialized]);
+  }, [location.pathname, isInitialized, navMap]);
 
   // Sync URL when currentPath changes (after initialization)
   useEffect(() => {
@@ -146,13 +156,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }, [currentPath, navigate, location.pathname, isInitialized]);
 
   const openFolder = (folder: Folder, pathOverride?: string[]) => {
+    // O(1) lookup using navigation map
     const resolvedPath =
-      pathOverride ?? findFolderPathById(mockData.folders, folder.id);
+      pathOverride ?? findFolderPathById(mockData.folders, folder.id, navMap);
     if (!resolvedPath || resolvedPath.length === 0) {
       return;
     }
     const canonicalFolder =
-      findFolderByPath(mockData.folders, resolvedPath) ?? folder;
+      findFolderByPath(mockData.folders, resolvedPath, navMap) ?? folder;
     setCurrentPath(['home', ...resolvedPath]);
     setCurrentView({ type: 'folder', data: canonicalFolder });
   };
@@ -194,7 +205,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
 
     const targetId = nextPath[nextPath.length - 1];
-    const folder = findFolderById(mockData.folders, targetId);
+    // O(1) lookup using navigation map
+    const folder = findFolderById(mockData.folders, targetId, navMap);
     if (folder) {
       openFolder(folder, nextPath.slice(1));
       return;
@@ -223,7 +235,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     const targetPath = currentPath.slice(0, index + 1);
     const targetId = targetPath[targetPath.length - 1];
 
-    const folder = findFolderById(mockData.folders, targetId);
+    // O(1) lookup using navigation map
+    const folder = findFolderById(mockData.folders, targetId, navMap);
     if (folder) {
       openFolder(folder, targetPath.slice(1));
       return;

@@ -30,47 +30,26 @@
     <meta name="twitter:site" content="@lummuu_" />
     <meta name="twitter:creator" content="@lummuu_" />
 
-    <!-- Theme Color -->
-    <meta name="theme-color" id="theme-color-meta" content="#e8e8e8" media="(prefers-color-scheme: light)" />
+    <!-- Theme Color (managed by ThemeContext after hydration) -->
+    <meta name="theme-color" content="#e8e8e8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
 
+    <!--
+      Minimal pre-hydration theme setup to prevent flash.
+      ThemeContext handles all meta tag updates after React mounts.
+    -->
     <script>
       (function () {
-        const storageKey = 'lum.bio.theme';
-        let storedTheme = null;
-
         try {
-          storedTheme = window.localStorage.getItem(storageKey);
-        } catch (error) {
-          // Access to localStorage might fail (private mode, etc.)
-        }
+          const storedTheme = localStorage.getItem('lum.bio.theme');
+          const theme =
+            storedTheme === 'light' || storedTheme === 'dark'
+              ? storedTheme
+              : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        const resolvedTheme =
-          storedTheme === 'light' || storedTheme === 'dark'
-            ? storedTheme
-            : systemPrefersDark.matches
-              ? 'dark'
-              : 'light';
-
-        document.documentElement.setAttribute('data-theme', resolvedTheme);
-        document.documentElement.style.colorScheme = resolvedTheme;
-
-        // Update both theme-color meta tags
-        const metaLight = document.querySelector('meta[name="theme-color"][media*="light"]');
-        const metaDark = document.querySelector('meta[name="theme-color"][media*="dark"]');
-
-        if (metaLight || metaDark) {
-          const fallbackLight = '#e8e8e8';
-          const fallbackDark = '#0f0f0f';
-          const rootStyles = window.getComputedStyle(document.documentElement);
-          const chromeColor = rootStyles.getPropertyValue('--color-chrome').trim();
-
-          const lightColor = chromeColor || fallbackLight;
-          const darkColor = chromeColor || fallbackDark;
-
-          if (metaLight) metaLight.setAttribute('content', lightColor);
-          if (metaDark) metaDark.setAttribute('content', darkColor);
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          // localStorage access may fail in private mode
         }
       })();
     </script>

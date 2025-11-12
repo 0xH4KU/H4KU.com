@@ -6,6 +6,8 @@ export function useLocalStorage<T>(
   key: string,
   initialValue: T
 ): [T, (value: T | ((prev: T) => T)) => void] {
+  const initialValueRef = useRef(initialValue);
+  initialValueRef.current = initialValue;
   const readValue = () => {
     if (!isBrowser()) {
       return initialValue;
@@ -46,11 +48,15 @@ export function useLocalStorage<T>(
     }
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key !== key || !event.newValue) {
+      if (event.key !== key) {
         return;
       }
 
       try {
+        if (event.newValue === null) {
+          setStoredValue(initialValueRef.current);
+          return;
+        }
         setStoredValue(JSON.parse(event.newValue));
       } catch (error) {
         console.error(`Error parsing storage event for key "${key}":`, error);

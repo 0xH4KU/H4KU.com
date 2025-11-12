@@ -47,54 +47,27 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = storedTheme || systemTheme;
   const hasStoredTheme = storedTheme !== null;
 
-  // Apply theme to document and meta tag
+  // Apply theme to document and update meta tags
   useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }
 
+    // Update data-theme attribute (sync with pre-hydration script)
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.style.colorScheme = theme;
     document.body?.setAttribute('data-theme', theme);
 
-    const fallbackForTheme = (mode: Theme) =>
-      mode === 'light' ? THEME_COLORS.LIGHT.SURFACE : THEME_COLORS.DARK.SURFACE;
-
-    const getChromeColorForTheme = (mode: Theme) => {
-      const fallback = fallbackForTheme(mode);
-
-      if (mode === theme) {
-        const rootStyles = window.getComputedStyle(document.documentElement);
-        return rootStyles.getPropertyValue('--color-chrome').trim() || fallback;
-      }
-
-      const probe = document.createElement('div');
-      probe.setAttribute('data-theme', mode);
-      probe.style.position = 'absolute';
-      probe.style.pointerEvents = 'none';
-      probe.style.opacity = '0';
-      probe.style.height = '0';
-      probe.style.width = '0';
-      const parent = document.body ?? document.documentElement;
-      parent.appendChild(probe);
-
-      try {
-        const computed = window
-          .getComputedStyle(probe)
-          .getPropertyValue('--color-chrome')
-          .trim();
-        return computed || fallback;
-      } finally {
-        probe.remove();
-      }
-    };
-
-    const ensureThemeMeta = (mode: Theme) => {
+    // Update theme-color meta tags (create if missing)
+    const updateThemeColorMeta = (mode: Theme) => {
       const selector =
         mode === 'light'
           ? 'meta[name="theme-color"][media*="light"]'
           : 'meta[name="theme-color"][media*="dark"]';
+
       let meta = document.querySelector<HTMLMetaElement>(selector);
+
+      // Create meta tag if it doesn't exist
       if (!meta) {
         meta = document.createElement('meta');
         meta.setAttribute('name', 'theme-color');
@@ -106,22 +79,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         );
         document.head.appendChild(meta);
       }
-      return meta;
+
+      const fallback =
+        mode === 'light'
+          ? THEME_COLORS.LIGHT.SURFACE
+          : THEME_COLORS.DARK.SURFACE;
+
+      const rootStyles = window.getComputedStyle(document.documentElement);
+      const chromeColor = rootStyles.getPropertyValue('--color-chrome').trim();
+      const color = chromeColor || fallback;
+
+      meta.setAttribute('content', color);
     };
 
-    const lightColor = getChromeColorForTheme('light');
-    const darkColor = getChromeColorForTheme('dark');
-
-    const metaLight = ensureThemeMeta('light');
-    const metaDark = ensureThemeMeta('dark');
-
-    metaLight.setAttribute('content', lightColor);
-    const refreshedLight = metaLight.cloneNode(true) as HTMLMetaElement;
-    metaLight.parentNode?.replaceChild(refreshedLight, metaLight);
-
-    metaDark.setAttribute('content', darkColor);
-    const refreshedDark = metaDark.cloneNode(true) as HTMLMetaElement;
-    metaDark.parentNode?.replaceChild(refreshedDark, metaDark);
+    updateThemeColorMeta('light');
+    updateThemeColorMeta('dark');
   }, [theme]);
 
   const toggleTheme = () => {

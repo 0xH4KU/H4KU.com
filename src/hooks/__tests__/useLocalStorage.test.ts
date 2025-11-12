@@ -191,8 +191,13 @@ describe('useLocalStorage', () => {
     expect(result2.current[0]).toBe('updated-value');
   });
 
-  it('should handle storage event with null newValue', () => {
+  it('should reset to initial value when storage entry is removed elsewhere', () => {
     const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
+
+    act(() => {
+      result.current[1]('updated');
+    });
+    expect(result.current[0]).toBe('updated');
 
     act(() => {
       // Storage event with null newValue (item was removed)
@@ -202,7 +207,6 @@ describe('useLocalStorage', () => {
       window.dispatchEvent(storageEvent);
     });
 
-    // Value should remain unchanged (we ignore null newValue)
     expect(result.current[0]).toBe('initial');
   });
 

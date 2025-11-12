@@ -32,7 +32,7 @@ export function ContactForm() {
   // 🛡️ Anti-spam protection (免費防護措施)
   const [honeypot, setHoneypot] = useState(''); // Honeypot 蜜罐欄位
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0); // Rate limiting
-  const [formStartTime] = useState<number>(Date.now()); // 表單開始時間
+  const [formStartTime, setFormStartTime] = useState<number>(() => Date.now()); // 表單開始時間
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -103,7 +103,6 @@ export function ContactForm() {
     }
 
     setStatus({ type: 'loading' });
-    setLastSubmitTime(now); // 記錄提交時間
 
     try {
       // EmailJS credentials from environment variables
@@ -122,7 +121,8 @@ export function ContactForm() {
         type: 'success',
         message: "Message sent successfully! I'll get back to you soon.",
       });
-
+      setLastSubmitTime(now);
+      setFormStartTime(Date.now());
       // Reset form
       setFormData({ name: '', email: '', message: '' });
     } catch (error) {
@@ -132,6 +132,7 @@ export function ContactForm() {
         message:
           'Failed to send message. Please try again or email directly at hi@lum.bio',
       });
+      setFormStartTime(Date.now());
     }
   };
 
