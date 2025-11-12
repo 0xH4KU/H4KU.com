@@ -179,10 +179,7 @@ const SearchResultsProvider = ({
     return results;
   }, [debouncedSearchQuery, folderIndex, standalonePages, homeFolder]);
 
-  const resultsValue = useMemo(
-    () => ({ searchResults }),
-    [searchResults]
-  );
+  const resultsValue = useMemo(() => ({ searchResults }), [searchResults]);
 
   return (
     <SearchResultsContext.Provider value={resultsValue}>
