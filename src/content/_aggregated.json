@@ -24,6 +24,14 @@
   ],
   "works": [
     {
+      "id": "featured-placeholder_file",
+      "filename": "placeholder_file.txt",
+      "content": "",
+      "itemType": "page",
+      "folderId": "featured",
+      "order": 1
+    },
+    {
       "id": "sketches-2025-2025-11-06",
       "filename": "2025-11-06.jpeg",
       "folderId": "sketches-2025",
@@ -62,5 +70,5 @@
       "url": "https://twitter.com/lummuu_"
     }
   ],
-  "_buildTime": "2025-11-12T11:16:55.499Z"
+  "_buildTime": "2025-11-12T11:34:52.416Z"
 }
