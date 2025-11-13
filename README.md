@@ -90,7 +90,13 @@ The GitLab pipeline mirrors the local workflow: lint → type-check → tests �
 - **[GITLAB_CI_SETUP.md](./GITLAB_CI_SETUP.md)** – CI pipeline stages, variables, and troubleshooting.
 - **[OPTIMIZATION_PROGRESS.md](./OPTIMIZATION_PROGRESS.md)** – performance backlog and resolutions for posterity.
 
-## License & Contact
+## Ethical Use & License
 
-Copyright © Lum.  
-Questions? Open an issue on GitLab or reach out to `hi@lum.bio`.
+Lum.bio is intentionally source-available so you can learn from the architecture, not to
+clone the production experience. By using this repository you agree to the
+[Lum.bio Personal Source License](./LICENSE.md), which allows local evaluation and
+reference but forbids redeploying the UI, reusing the artwork/JSON content, or repackaging
+the project in commercial products. For talks, articles, or other uses outside those bounds,
+email `hi@lum.bio`.
+
+Questions? Open an issue on GitLab or reach out directly to `hi@lum.bio`.
