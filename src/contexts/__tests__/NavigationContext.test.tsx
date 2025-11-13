@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import type { FC, ReactNode } from 'react';
 import {
   NavigationProvider,
@@ -47,13 +46,12 @@ describe('NavigationProvider', () => {
     home: mockData.homeItems,
   };
 
-  const createWrapper = (initialEntries: string[] = ['/']) => {
+  const createWrapper = (initialPath = '/') => {
+    window.history.replaceState({}, '', initialPath);
     const NavigationTestWrapper: FC<{ children: ReactNode }> = ({
       children,
     }) => (
-      <MemoryRouter initialEntries={initialEntries}>
-        <NavigationProvider>{children}</NavigationProvider>
-      </MemoryRouter>
+      <NavigationProvider>{children}</NavigationProvider>
     );
     NavigationTestWrapper.displayName = 'NavigationTestWrapper';
     return NavigationTestWrapper;
@@ -156,7 +154,7 @@ describe('NavigationProvider', () => {
     mockData.homeItems = [];
 
     const { result } = renderHook(() => useNavigation(), {
-      wrapper: createWrapper(['/folder/outer/inner']),
+      wrapper: createWrapper('/folder/outer/inner'),
     });
 
     await waitFor(() =>
@@ -173,7 +171,7 @@ describe('NavigationProvider', () => {
     mockData.homeItems = [];
 
     const { result } = renderHook(() => useNavigation(), {
-      wrapper: createWrapper(['/page/about']),
+      wrapper: createWrapper('/page/about'),
     });
 
     await waitFor(() =>
@@ -339,6 +337,23 @@ describe('NavigationProvider', () => {
     });
 
     expect(result.current.lightboxIndex).toBe(0);
+  });
+
+  it('no-ops navigateBack when already at home', () => {
+    mockData.folders = [];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.navigateBack();
+    });
+
+    expect(result.current.currentPath).toEqual(['home']);
+    expect(result.current.currentView).toBeNull();
   });
 });
 

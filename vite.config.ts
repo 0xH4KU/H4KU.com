@@ -54,7 +54,7 @@ export default defineConfig({
         // 手動分包
         manualChunks: {
           // React 相關庫打包在一起
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'react-vendor': ['react', 'react-dom'],
           // 動畫庫單獨打包
           'animation-vendor': ['framer-motion'],
           // Icons 單獨打包

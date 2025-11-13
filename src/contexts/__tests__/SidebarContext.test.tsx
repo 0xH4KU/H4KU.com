@@ -79,3 +79,11 @@ describe('SidebarContext', () => {
     expect(result.current.sidebarWidth).toBe(320);
   });
 });
+
+describe('useSidebarContext guard', () => {
+  it('throws outside of provider scope', () => {
+    expect(() => renderHook(() => useSidebarContext())).toThrow(
+      /within a SidebarProvider/i
+    );
+  });
+});

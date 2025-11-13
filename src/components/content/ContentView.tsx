@@ -25,6 +25,7 @@ const ContactForm = lazy(() =>
 );
 
 type NavigableItem = Folder | Page;
+const PRIORITY_IMAGE_COUNT = 2;
 
 const ContentView: React.FC = () => {
   const { currentView, currentPath, navigateTo, openLightbox, resetToHome } =
@@ -298,32 +299,37 @@ const ContentView: React.FC = () => {
                     </m.div>
                   ));
                 }
-                return workItems.map(item => (
-                  <m.div
-                    key={item.id}
-                    className={styles['file-item']}
-                    variants={itemVariants}
-                    onClick={() => handleOpenLightbox(item, workItems)}
-                    whileHover={
-                      prefersReducedMotion
-                        ? {}
-                        : {
-                            scale: 1.02,
-                            y: -2,
-                            transition: { duration: 0.15 },
-                          }
-                    }
-                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-                  >
-                    <LazyImage
-                      className={styles['file-thumb']}
-                      src={'thumb' in item ? item.thumb : ''}
-                      alt={item.filename}
-                      sizes={IMAGE_CONFIG.GRID_SIZES}
-                    />
-                    <div className={styles['file-name']}>{item.filename}</div>
-                  </m.div>
-                ));
+                return workItems.map((item, workIndex) => {
+                  const shouldPrioritize = workIndex < PRIORITY_IMAGE_COUNT;
+                  return (
+                    <m.div
+                      key={item.id}
+                      className={styles['file-item']}
+                      variants={itemVariants}
+                      onClick={() => handleOpenLightbox(item, workItems)}
+                      whileHover={
+                        prefersReducedMotion
+                          ? {}
+                          : {
+                              scale: 1.02,
+                              y: -2,
+                              transition: { duration: 0.15 },
+                            }
+                      }
+                      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                    >
+                      <LazyImage
+                        className={styles['file-thumb']}
+                        src={'thumb' in item ? item.thumb : ''}
+                        alt={item.filename}
+                        sizes={IMAGE_CONFIG.GRID_SIZES}
+                        priority={shouldPrioritize}
+                        fetchPriority={shouldPrioritize ? 'high' : 'auto'}
+                      />
+                      <div className={styles['file-name']}>{item.filename}</div>
+                    </m.div>
+                  );
+                });
               })}
             </m.div>
           )}
@@ -351,65 +357,75 @@ const ContentView: React.FC = () => {
         ? (['folders', 'pages'] as const)
         : (['pages', 'folders'] as const);
 
-    const renderHomeWorksGrid = () => (
-      <m.div
-        className={styles['works-grid']}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-      >
-        {sortedHomeItems.map(item => {
-          const isTextPage = item.itemType === 'page';
-          const handleClick = isTextPage
-            ? () => {
-                const page: Page = {
-                  id: item.id,
-                  name: item.filename,
-                  type: 'txt',
-                  content: 'content' in item ? item.content : '',
-                };
-                navigateTo(page);
-              }
-            : () => handleOpenLightbox(item, sortedHomeWorkItems);
+    const renderHomeWorksGrid = () => {
+      let prioritizedHomeImages = 0;
+      return (
+        <m.div
+          className={styles['works-grid']}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          {sortedHomeItems.map(item => {
+            const isTextPage = item.itemType === 'page';
+            const shouldPrioritize =
+              !isTextPage && prioritizedHomeImages < PRIORITY_IMAGE_COUNT;
+            if (shouldPrioritize) {
+              prioritizedHomeImages += 1;
+            }
+            const handleClick = isTextPage
+              ? () => {
+                  const page: Page = {
+                    id: item.id,
+                    name: item.filename,
+                    type: 'txt',
+                    content: 'content' in item ? item.content : '',
+                  };
+                  navigateTo(page);
+                }
+              : () => handleOpenLightbox(item, sortedHomeWorkItems);
 
-          return (
-            <m.div
-              key={item.id}
-              className={styles['work-item']}
-              variants={itemVariants}
-              onClick={handleClick}
-              whileHover={
-                prefersReducedMotion
-                  ? {}
-                  : {
-                      scale: 1.02,
-                      y: -3,
-                      transition: { duration: 0.15 },
-                    }
-              }
-              whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-            >
-              {isTextPage ? (
-                <img
-                  className={styles['file-icon']}
-                  src={paperIcon}
-                  alt="Text file icon"
-                />
-              ) : (
-                <LazyImage
-                  className={styles['work-thumb']}
-                  src={'thumb' in item ? item.thumb : ''}
-                  alt={item.filename}
-                  sizes={IMAGE_CONFIG.GRID_SIZES}
-                />
-              )}
-              <div className={styles['work-info']}>{item.filename}</div>
-            </m.div>
-          );
-        })}
-      </m.div>
-    );
+            return (
+              <m.div
+                key={item.id}
+                className={styles['work-item']}
+                variants={itemVariants}
+                onClick={handleClick}
+                whileHover={
+                  prefersReducedMotion
+                    ? {}
+                    : {
+                        scale: 1.02,
+                        y: -3,
+                        transition: { duration: 0.15 },
+                      }
+                }
+                whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+              >
+                {isTextPage ? (
+                  <img
+                    className={styles['file-icon']}
+                    src={paperIcon}
+                    alt="Text file icon"
+                  />
+                ) : (
+                  <LazyImage
+                    className={styles['work-thumb']}
+                    src={'thumb' in item ? item.thumb : ''}
+                    alt={item.filename}
+                    sizes={IMAGE_CONFIG.GRID_SIZES}
+                    priority={shouldPrioritize}
+                    fetchPriority={shouldPrioritize ? 'high' : 'auto'}
+                  />
+                )}
+                <div className={styles['work-info']}>{item.filename}</div>
+              </m.div>
+            );
+          })}
+        </m.div>
+      );
+    };
 
     return (
       <m.div

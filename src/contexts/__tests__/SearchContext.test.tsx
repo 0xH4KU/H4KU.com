@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { SearchProvider, useSearch } from '@/contexts/SearchContext';
+import {
+  SearchProvider,
+  useSearch,
+  useSearchUI,
+  useSearchResults,
+} from '@/contexts/SearchContext';
 import { mockData } from '@/data/mockData';
 import type { Folder, Page, WorkItem } from '@/types';
 
@@ -131,5 +136,42 @@ describe('SearchContext', () => {
       entry => entry.type === 'page'
     );
     expect(pageResult?.page.id).toBe('bio');
+  });
+
+  it('includes home folder work and clears results when query is blank', async () => {
+    const { result } = renderHook(() => useSearch(), { wrapper });
+
+    act(() => {
+      result.current.openSearch();
+      result.current.setSearchQuery('home note');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(
+          entry => entry.type === 'work' && entry.path?.[0] === 'home'
+        )
+      ).toBe(true)
+    );
+
+    act(() => {
+      result.current.setSearchQuery('   ');
+    });
+
+    await waitFor(() => expect(result.current.searchResults.length).toBe(0));
+  });
+});
+
+describe('Search hooks guard rails', () => {
+  it('throws when useSearchUI is called outside the provider', () => {
+    expect(() => renderHook(() => useSearchUI())).toThrow(
+      /within SearchProvider/i
+    );
+  });
+
+  it('throws when useSearchResults is called outside the provider', () => {
+    expect(() => renderHook(() => useSearchResults())).toThrow(
+      /within SearchProvider/i
+    );
   });
 });

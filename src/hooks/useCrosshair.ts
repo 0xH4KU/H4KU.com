@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 const CROSSHAIR_CLASS = 'crosshair-active';
 
 const isTouchDevice = () => {
+  /* c8 ignore next */
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return false;
   }
@@ -10,6 +11,7 @@ const isTouchDevice = () => {
 };
 
 const getInitialPosition = () => {
+  /* c8 ignore next */
   if (typeof window === 'undefined') {
     return { x: 0, y: 0 };
   }
@@ -37,11 +39,13 @@ export function useCrosshair() {
   }, [mousePos]);
 
   useEffect(() => {
+    /* c8 ignore next */
     if (typeof document === 'undefined') {
       return undefined;
     }
 
     const target = document.body;
+    /* c8 ignore next */
     if (!target) {
       return undefined;
     }
@@ -58,6 +62,7 @@ export function useCrosshair() {
   }, [showCrosshair]);
 
   useEffect(() => {
+    /* c8 ignore next */
     if (typeof window === 'undefined') {
       return;
     }

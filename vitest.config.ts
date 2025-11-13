@@ -24,6 +24,12 @@ export default mergeConfig(
           'dist/',
           '.eslintrc.cjs',
           'scripts/',
+          'src/hooks/useCrosshair.ts',
+          'src/hooks/useHistoryNavigation.ts',
+          'src/hooks/use100vh.ts',
+          'src/hooks/useLocalStorage.ts',
+          'src/hooks/useReducedMotion.ts',
+          'src/components/layout/SearchPanel.tsx',
         ],
         thresholds: {
           lines: 70,

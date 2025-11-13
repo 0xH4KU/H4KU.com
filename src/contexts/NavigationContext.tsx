@@ -6,7 +6,6 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, ViewType, WorkItem } from '@/types';
 import {
@@ -17,6 +16,7 @@ import {
   buildNavigationMap,
   type NavigationMap,
 } from '@/utils/navigation';
+import { useHistoryNavigation } from '@/hooks/useHistoryNavigation';
 
 interface NavigationContextValue {
   currentPath: string[];
@@ -42,8 +42,7 @@ const NavigationContext = createContext<NavigationContextValue | undefined>(
 );
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname, navigate: updateHistory } = useHistoryNavigation();
   const [currentPath, setCurrentPath] = useState<string[]>(['home']);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
   const [lightboxImage, setLightboxImage] = useState<WorkItem | null>(null);
@@ -85,7 +84,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isInitialized) return;
 
-    const pathFromUrl = location.pathname;
+    const pathFromUrl = pathname;
     if (pathFromUrl === '/' || pathFromUrl === '') {
       setIsInitialized(true);
       return;
@@ -122,15 +121,15 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
 
     setIsInitialized(true);
-  }, [location.pathname, isInitialized, navMap]);
+  }, [pathname, isInitialized, navMap]);
 
   // Sync URL when currentPath changes (after initialization)
   useEffect(() => {
     if (!isInitialized) return;
 
     if (currentPath.length <= 1) {
-      if (location.pathname !== '/') {
-        navigate('/', { replace: true });
+      if (pathname !== '/') {
+        updateHistory('/', { replace: true });
       }
       return;
     }
@@ -141,8 +140,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     const page = mockData.pages.find(p => p.id === lastSegment);
     if (page) {
       const url = `/page/${page.id}`;
-      if (location.pathname !== url) {
-        navigate(url, { replace: true });
+      if (pathname !== url) {
+        updateHistory(url, { replace: true });
       }
       return;
     }
@@ -150,10 +149,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     // It's a folder
     const folderPath = currentPath.slice(1).join('/');
     const url = `/folder/${folderPath}`;
-    if (location.pathname !== url) {
-      navigate(url, { replace: true });
+    if (pathname !== url) {
+      updateHistory(url, { replace: true });
     }
-  }, [currentPath, navigate, location.pathname, isInitialized]);
+  }, [currentPath, pathname, updateHistory, isInitialized]);
 
   const openFolder = (folder: Folder, pathOverride?: string[]) => {
     // O(1) lookup using navigation map

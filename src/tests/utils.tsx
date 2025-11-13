@@ -1,6 +1,5 @@
 import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
@@ -14,13 +13,11 @@ export function renderWithProviders(
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <BrowserRouter>
-        <ThemeProvider>
-          <NavigationProvider>
-            <SidebarProvider>{children}</SidebarProvider>
-          </NavigationProvider>
-        </ThemeProvider>
-      </BrowserRouter>
+      <ThemeProvider>
+        <NavigationProvider>
+          <SidebarProvider>{children}</SidebarProvider>
+        </NavigationProvider>
+      </ThemeProvider>
     );
   }
 

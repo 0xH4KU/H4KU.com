@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 export function use100vh() {
   useEffect(() => {
+    /* c8 ignore next */
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }

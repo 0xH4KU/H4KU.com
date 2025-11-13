@@ -70,6 +70,10 @@ interface LazyImageProps {
   srcSet?: string;
   /** Optional sizes attribute for responsive images */
   sizes?: string;
+  /** Elevate loading priority for hero / LCP imagery */
+  priority?: boolean;
+  /** Fine-grained control over the fetchpriority hint */
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
 export function LazyImage({
@@ -79,6 +83,8 @@ export function LazyImage({
   placeholder,
   srcSet,
   sizes,
+  priority = false,
+  fetchPriority = 'auto',
 }: LazyImageProps) {
   const resolvedPlaceholder = placeholder ?? TRANSPARENT_PLACEHOLDER;
   const [imageSrc, setImageSrc] = useState<string>(resolvedPlaceholder);
@@ -137,8 +143,9 @@ export function LazyImage({
       sizes={sizes}
       alt={alt}
       className={className}
-      loading="lazy"
-      decoding="async"
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'sync' : 'async'}
+      fetchPriority={priority ? 'high' : fetchPriority}
       onLoad={handleLoad}
       onError={handleError}
       style={{
