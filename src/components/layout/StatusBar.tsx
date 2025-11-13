@@ -51,7 +51,7 @@ const StatusBar: React.FC = () => {
               );
             }
 
-            const ariaLabelParts = [`Open ${social.name}`];
+            const ariaLabelParts = [`[${social.code}], Open ${social.name}`];
             if (safeUrl.isMailto) {
               ariaLabelParts.push('(opens email client)');
             }

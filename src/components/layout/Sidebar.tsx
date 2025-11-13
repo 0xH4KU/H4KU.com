@@ -22,6 +22,17 @@ import { Tooltip } from './Tooltip';
 import styles from './Sidebar.module.css';
 
 type SidebarEntry = Folder | Page;
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const DATASET_KEY = 'sidebarTabindex';
+const DATASET_NONE = '__sidebar_none__';
+
+const hasInertSupport = () => {
+  if (typeof HTMLElement === 'undefined') {
+    return false;
+  }
+  return 'inert' in (HTMLElement.prototype as HTMLElement & { inert?: unknown });
+};
 
 const Sidebar: React.FC = () => {
   const {
@@ -54,6 +65,7 @@ const Sidebar: React.FC = () => {
   } | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isDragging, setIsDragging] = useState(false);
+  const supportsInert = useMemo(() => hasInertSupport(), []);
 
   const activeSegments = useMemo(
     () => activePath.split('/').filter(Boolean),
@@ -191,6 +203,61 @@ const Sidebar: React.FC = () => {
       document.removeEventListener('mouseup', stopDrag);
     };
   }, [isDragging, setSidebarWidth]);
+
+  useEffect(() => {
+    if (supportsInert || !sidebarRef.current) {
+      return;
+    }
+
+    const focusableElements =
+      sidebarRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+
+    focusableElements.forEach(element => {
+      if (!isSidebarOpen) {
+        if (!element.dataset[DATASET_KEY]) {
+          const existing = element.getAttribute('tabindex');
+          element.dataset[DATASET_KEY] = existing ?? DATASET_NONE;
+        }
+        element.setAttribute('tabindex', '-1');
+        element.setAttribute('aria-hidden', 'true');
+      } else {
+        const stored = element.dataset[DATASET_KEY];
+        if (stored) {
+          if (stored !== DATASET_NONE) {
+            element.setAttribute('tabindex', stored);
+          } else {
+            element.removeAttribute('tabindex');
+          }
+          delete element.dataset[DATASET_KEY];
+        } else {
+          element.removeAttribute('tabindex');
+        }
+        element.removeAttribute('aria-hidden');
+      }
+    });
+
+    return () => {
+      focusableElements.forEach(element => {
+        const stored = element.dataset[DATASET_KEY];
+        if (stored) {
+          if (stored !== DATASET_NONE) {
+            element.setAttribute('tabindex', stored);
+          } else {
+            element.removeAttribute('tabindex');
+          }
+          delete element.dataset[DATASET_KEY];
+        }
+        element.removeAttribute('aria-hidden');
+      });
+    };
+  }, [
+    supportsInert,
+    isSidebarOpen,
+    searchQuery,
+    searchResults.length,
+    pinnedFolders.length,
+    pinnedPages.length,
+  ]);
 
   const handleContextMenu = useCallback(
     (event: React.MouseEvent, item: SidebarEntry) => {
@@ -431,6 +498,7 @@ const Sidebar: React.FC = () => {
         width: isMobile ? undefined : sidebarWidth,
       }}
       aria-hidden={!isSidebarOpen}
+      {...(supportsInert && !isSidebarOpen && { inert: true })}
     >
       <div className={styles['sidebar-header']}>
         <button
@@ -441,7 +509,7 @@ const Sidebar: React.FC = () => {
               closeSidebar();
             }
           }}
-          aria-label="Go to home"
+          aria-label="LUM.BIO, Go to home"
         >
           LUM.BIO
         </button>
@@ -555,7 +623,7 @@ const Sidebar: React.FC = () => {
             );
           }
 
-          const ariaLabelParts = [`Open ${social.name}`];
+          const ariaLabelParts = [`${social.code}, Open ${social.name}`];
           if (safeUrl.isMailto) {
             ariaLabelParts.push('(opens email client)');
           }

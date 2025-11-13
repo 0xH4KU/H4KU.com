@@ -34,6 +34,10 @@
     <meta name="theme-color" content="#e8e8e8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
 
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="/fonts/ProFont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/ProFont-Bold.woff2" as="font" type="font/woff2" crossorigin>
+
     <!--
       Minimal pre-hydration theme setup to prevent flash.
       ThemeContext handles all meta tag updates after React mounts.
@@ -53,6 +57,103 @@
         }
       })();
     </script>
+
+    <!-- Critical CSS for faster First Contentful Paint -->
+    <style>
+      /* Font Face - Critical for text rendering */
+      @font-face {
+        font-family: 'ProFont';
+        src: url('/fonts/ProFont.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'ProFont';
+        src: url('/fonts/ProFont-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* CSS Reset */
+      *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* CSS Variables */
+      :root {
+        --font-primary: 'ProFont', ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+        --font-size-base: 16px;
+        --topbar-height: 48px;
+        --statusbar-height: 24px;
+        --transition-fast: 0.2s;
+        --transition-normal: 0.3s;
+        --color-primary: #689696;
+        --color-secondary: #e87722;
+      }
+
+      /* Light Theme */
+      [data-theme='light'] {
+        --color-background: #f5f5f5;
+        --color-foreground: #1a1a1a;
+        --color-border: #d0d0d0;
+        --color-surface: #e8e8e8;
+        --color-text: #1a1a1a;
+        --color-text-muted: #666;
+      }
+
+      /* Dark Theme */
+      [data-theme='dark'] {
+        --color-background: #1a1a1a;
+        --color-foreground: #e8e8e8;
+        --color-border: #333;
+        --color-surface: #0f0f0f;
+        --color-text: #e8e8e8;
+        --color-text-muted: #999;
+      }
+
+      /* Base Styles */
+      html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        font-family: var(--font-primary);
+        font-size: var(--font-size-base);
+        background-color: var(--color-background);
+        color: var(--color-text);
+        overflow-x: hidden;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Skip link for accessibility */
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        z-index: 999;
+        padding: 1em;
+        background-color: var(--color-primary);
+        color: white;
+        text-decoration: none;
+      }
+
+      .skip-link:focus {
+        left: 50%;
+        transform: translateX(-50%);
+        top: 1em;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

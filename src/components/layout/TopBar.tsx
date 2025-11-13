@@ -4,6 +4,7 @@ import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSearchUI } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
+import { SEARCH_PANEL_ID } from '@/config/accessibility';
 import Breadcrumb from './Breadcrumb';
 import styles from './TopBar.module.css';
 
@@ -62,14 +63,23 @@ const TopBar: React.FC = () => {
       <Breadcrumb segments={breadcrumbSegments} onSelect={handleSelectPath} />
 
       <button
+        type="button"
         className={styles['search-btn']}
         onClick={handleToggleSearch}
-        aria-pressed={searchOpen}
+        aria-haspopup="dialog"
+        aria-expanded={searchOpen}
+        aria-controls={SEARCH_PANEL_ID}
+        aria-label="Search artworks"
       >
         <Search size={16} />
       </button>
 
-      <button className={styles['theme-btn']} onClick={handleToggleTheme}>
+      <button
+        type="button"
+        className={styles['theme-btn']}
+        onClick={handleToggleTheme}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
         {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
       </button>
     </div>

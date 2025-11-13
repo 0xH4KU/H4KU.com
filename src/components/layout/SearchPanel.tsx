@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { SearchResult } from '@/types';
+import { SEARCH_PANEL_ID } from '@/config/accessibility';
 import styles from './SearchPanel.module.css';
 
 const buildPathLabel = (path: string[]): string => {
@@ -179,6 +180,7 @@ const SearchPanel: React.FC = () => {
     >
       <div
         className={styles['search-panel']}
+        id={SEARCH_PANEL_ID}
         role="dialog"
         aria-modal="true"
         aria-label="Search panel"

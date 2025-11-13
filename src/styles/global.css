@@ -1,10 +1,7 @@
 /* Font Face Declarations */
 @font-face {
   font-family: 'ProFont';
-  src:
-    url('../assets/fonts/ProFont.woff2') format('woff2'),
-    url('../assets/fonts/ProFont.woff') format('woff'),
-    url('../assets/fonts/ProFont.ttf') format('truetype');
+  src: url('/fonts/ProFont.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -12,10 +9,7 @@
 
 @font-face {
   font-family: 'ProFont';
-  src:
-    url('../assets/fonts/ProFont-Bold.woff2') format('woff2'),
-    url('../assets/fonts/ProFont-Bold.woff') format('woff'),
-    url('../assets/fonts/ProFont-Bold.ttf') format('truetype');
+  src: url('/fonts/ProFont-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -33,7 +27,7 @@
 /* CSS Custom Properties */
 :root {
   /* Typography */
-  --font-primary: 'ProFont', monospace;
+  --font-primary: 'ProFont', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, monospace;
   --font-size-base: 16px;
   --font-size-md: 15px;
   --font-size-sm: 14px;
@@ -102,7 +96,8 @@
 body {
   font-family: var(--font-primary);
   font-size: var(--font-size-base);
-  overflow: hidden;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
 body.crosshair-active,

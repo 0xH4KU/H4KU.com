@@ -1,5 +1,5 @@
 import React, { useMemo, lazy, Suspense } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { m, AnimatePresence, type Variants } from 'framer-motion';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
@@ -128,7 +128,7 @@ const ContentView: React.FC = () => {
   const renderContent = () => {
     if (currentView?.type === 'txt') {
       return (
-        <motion.div
+        <m.div
           className={`${styles['txt-viewer']} ${theme}`}
           variants={pageVariants}
           initial="initial"
@@ -136,7 +136,7 @@ const ContentView: React.FC = () => {
           exit="exit"
           key={`txt-${currentView.data.id}`}
         >
-          <motion.div
+          <m.div
             className={styles['txt-header']}
             initial={{ x: -30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -152,7 +152,7 @@ const ContentView: React.FC = () => {
               alt="Text file icon"
             />
             <span>{currentView.data.name}</span>
-            <motion.button
+            <m.button
               onClick={handleCloseTextView}
               className={styles['close-btn']}
               whileHover={
@@ -161,9 +161,9 @@ const ContentView: React.FC = () => {
               whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
             >
               ×
-            </motion.button>
-          </motion.div>
-          <motion.div
+            </m.button>
+          </m.div>
+          <m.div
             className={styles['txt-content']}
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -179,8 +179,8 @@ const ContentView: React.FC = () => {
                 <ContactForm />
               </Suspense>
             )}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       );
     }
 
@@ -206,7 +206,7 @@ const ContentView: React.FC = () => {
 
       if (!items.length && !children.length) {
         return (
-          <motion.div
+          <m.div
             className={styles['folder-empty']}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -214,12 +214,12 @@ const ContentView: React.FC = () => {
             key={`folder-${currentView.data.id}`}
           >
             No items in this folder yet.
-          </motion.div>
+          </m.div>
         );
       }
 
       return (
-        <motion.div
+        <m.div
           className={styles['folder-content']}
           variants={pageVariants}
           initial="initial"
@@ -228,7 +228,7 @@ const ContentView: React.FC = () => {
           key={`folder-${currentView.data.id}`}
         >
           {hasFileGridContent && (
-            <motion.div
+            <m.div
               className={styles['file-grid']}
               variants={containerVariants}
               initial="hidden"
@@ -238,7 +238,7 @@ const ContentView: React.FC = () => {
               {bucketSequence.flatMap(bucket => {
                 if (bucket === 'folders') {
                   return sortedChildren.map(child => (
-                    <motion.div
+                    <m.div
                       key={child.id}
                       className={styles['file-item']}
                       variants={itemVariants}
@@ -260,12 +260,12 @@ const ContentView: React.FC = () => {
                         alt="Folder icon"
                       />
                       <div className={styles['file-name']}>{child.name}</div>
-                    </motion.div>
+                    </m.div>
                   ));
                 }
                 if (bucket === 'pages') {
                   return textItems.map(item => (
-                    <motion.div
+                    <m.div
                       key={item.id}
                       className={styles['file-item']}
                       variants={itemVariants}
@@ -295,11 +295,11 @@ const ContentView: React.FC = () => {
                         alt="Text file icon"
                       />
                       <div className={styles['file-name']}>{item.filename}</div>
-                    </motion.div>
+                    </m.div>
                   ));
                 }
                 return workItems.map(item => (
-                  <motion.div
+                  <m.div
                     key={item.id}
                     className={styles['file-item']}
                     variants={itemVariants}
@@ -322,12 +322,12 @@ const ContentView: React.FC = () => {
                       sizes={IMAGE_CONFIG.GRID_SIZES}
                     />
                     <div className={styles['file-name']}>{item.filename}</div>
-                  </motion.div>
+                  </m.div>
                 ));
               })}
-            </motion.div>
+            </m.div>
           )}
-        </motion.div>
+        </m.div>
       );
     }
 
@@ -352,7 +352,7 @@ const ContentView: React.FC = () => {
         : (['pages', 'folders'] as const);
 
     const renderHomeWorksGrid = () => (
-      <motion.div
+      <m.div
         className={styles['works-grid']}
         variants={containerVariants}
         initial="hidden"
@@ -374,7 +374,7 @@ const ContentView: React.FC = () => {
             : () => handleOpenLightbox(item, sortedHomeWorkItems);
 
           return (
-            <motion.div
+            <m.div
               key={item.id}
               className={styles['work-item']}
               variants={itemVariants}
@@ -405,14 +405,14 @@ const ContentView: React.FC = () => {
                 />
               )}
               <div className={styles['work-info']}>{item.filename}</div>
-            </motion.div>
+            </m.div>
           );
         })}
-      </motion.div>
+      </m.div>
     );
 
     return (
-      <motion.div
+      <m.div
         className={styles['folder-content']}
         variants={pageVariants}
         initial="initial"
@@ -423,7 +423,7 @@ const ContentView: React.FC = () => {
         {typeOrder === 'images-first' &&
           sortedHomeItems.length > 0 &&
           renderHomeWorksGrid()}
-        <motion.div
+        <m.div
           className={styles['file-grid']}
           variants={containerVariants}
           initial="hidden"
@@ -433,7 +433,7 @@ const ContentView: React.FC = () => {
           {homeFileBucketSequence.flatMap(bucket =>
             bucket === 'folders'
               ? sortedFolders.map(folder => (
-                  <motion.div
+                  <m.div
                     key={folder.id}
                     className={styles['file-item']}
                     variants={itemVariants}
@@ -455,10 +455,10 @@ const ContentView: React.FC = () => {
                       alt="Folder icon"
                     />
                     <div className={styles['file-name']}>{folder.name}</div>
-                  </motion.div>
+                  </m.div>
                 ))
               : sortedPages.map(page => (
-                  <motion.div
+                  <m.div
                     key={page.id}
                     className={styles['file-item']}
                     variants={itemVariants}
@@ -480,14 +480,14 @@ const ContentView: React.FC = () => {
                       alt="Text file icon"
                     />
                     <div className={styles['file-name']}>{page.name}</div>
-                  </motion.div>
+                  </m.div>
                 ))
           )}
-        </motion.div>
+        </m.div>
         {typeOrder === 'folders-first' &&
           sortedHomeItems.length > 0 &&
           renderHomeWorksGrid()}
-      </motion.div>
+      </m.div>
     );
   };
 

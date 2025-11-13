@@ -71,7 +71,7 @@
 
 .status-hint {
   font-size: var(--font-size-xxs);
-  opacity: 0.6;
+  color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -451,10 +451,12 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 2px;
-  margin: 0;
+  padding: 6px;
+  margin: -4px;
   appearance: none;
   border-radius: 3px;
+  min-width: 24px;
+  min-height: 24px;
 }
 
 .expand-icon:hover {
@@ -603,6 +605,10 @@
   .expand-icon {
     width: 16px;
     height: 16px;
+    padding: 7px;
+    margin: -5px;
+    min-width: 26px;
+    min-height: 26px;
   }
 
   .expand-icon-spacer {

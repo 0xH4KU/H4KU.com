@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect } from 'react';
+import { LazyMotion, domAnimation } from 'framer-motion';
 import {
   ContentView,
   Crosshair,
   Sidebar,
   StatusBar,
   TopBar,
-  SearchPanel,
 } from '@/components';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
@@ -17,9 +17,8 @@ import { use100vh } from '@/hooks/use100vh';
 import styles from './App.module.css';
 
 // Lazy load heavy components
-const Lightbox = lazy(() =>
-  import('@/components').then(module => ({ default: module.Lightbox }))
-);
+const Lightbox = lazy(() => import('@/components/overlay/Lightbox'));
+const SearchPanelLazy = lazy(() => import('@/components/layout/SearchPanel'));
 
 const AppContent: React.FC = () => {
   const { isSidebarOpen, closeSidebar, sidebarWidth } = useSidebarContext();
@@ -42,43 +41,45 @@ const AppContent: React.FC = () => {
   }, [showOverlay]);
 
   return (
-    <div className={styles.app}>
-      <a href="#main-content" className="skip-link">
-        Skip to main content
-      </a>
-      <Crosshair />
-      <TopBar />
-      <div
-        className={`${styles['main-layout']} ${
-          showOverlay ? styles['sidebar-open'] : ''
-        }`}
-      >
-        <Sidebar />
-        {showOverlay && (
-          <button
-            type="button"
-            className={styles['sidebar-scrim']}
-            aria-label="Close sidebar"
-            onClick={closeSidebar}
-          />
-        )}
+    <LazyMotion features={domAnimation} strict>
+      <div className={styles.app}>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        <Crosshair />
+        <TopBar />
         <div
-          id="main-content"
-          className={styles['content-area']}
-          role="main"
-          style={{
-            marginLeft: isMobile ? 0 : isSidebarOpen ? sidebarWidth : 0,
-          }}
+          className={`${styles['main-layout']} ${
+            showOverlay ? styles['sidebar-open'] : ''
+          }`}
         >
-          <ContentView />
+          <Sidebar />
+          {showOverlay && (
+            <button
+              type="button"
+              className={styles['sidebar-scrim']}
+              aria-label="Close sidebar"
+              onClick={closeSidebar}
+            />
+          )}
+          <div
+            id="main-content"
+            className={styles['content-area']}
+            role="main"
+            style={{
+              marginLeft: isMobile ? 0 : isSidebarOpen ? sidebarWidth : 0,
+            }}
+          >
+            <ContentView />
+          </div>
         </div>
+        <StatusBar />
+        <Suspense fallback={null}>
+          <Lightbox />
+          <SearchPanelLazy />
+        </Suspense>
       </div>
-      <StatusBar />
-      <Suspense fallback={null}>
-        <Lightbox />
-      </Suspense>
-      <SearchPanel />
-    </div>
+    </LazyMotion>
   );
 };
 
