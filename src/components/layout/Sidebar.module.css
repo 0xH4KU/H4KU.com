@@ -1,11 +1,14 @@
 .sidebar {
-  position: absolute;
+  position: fixed;
   top: 0;
+  bottom: 0;
   left: 0;
-  height: 100%;
+  height: auto;
   border-right: 2px solid var(--color-border);
   display: flex;
   flex-direction: column;
+  padding-top: var(--layout-top-offset);
+  padding-bottom: var(--layout-bottom-offset);
   background: var(--color-surface);
   transition:
     transform var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1),
