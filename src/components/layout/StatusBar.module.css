@@ -8,11 +8,26 @@
   font-size: var(--font-size-sm);
   column-gap: 16px;
   row-gap: 8px;
-  position: relative;
-  z-index: 10;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 30;
   background: var(--color-surface);
   overflow-x: auto;
   overflow-y: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-sizing: border-box;
+}
+
+@supports (padding: max(0px)) {
+  .status-bar {
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
 }
 
 .status-section {

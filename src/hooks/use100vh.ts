@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+type PageShowEvent = Event & { persisted?: boolean };
+
 export function use100vh() {
   useEffect(() => {
     /* c8 ignore next */
@@ -8,13 +10,33 @@ export function use100vh() {
     }
 
     const setVh = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      const viewportHeight =
+        window.visualViewport?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty(
+        '--vh',
+        `${viewportHeight * 0.01}px`
+      );
+    };
+
+    const handlePageShow = (event: PageShowEvent) => {
+      if (event.persisted) {
+        setVh();
+      }
     };
 
     setVh();
     window.addEventListener('resize', setVh);
+    window.addEventListener('orientationchange', setVh);
+    window.addEventListener('pageshow', handlePageShow);
+    window.visualViewport?.addEventListener('resize', setVh);
+    window.visualViewport?.addEventListener('scroll', setVh);
 
-    return () => window.removeEventListener('resize', setVh);
+    return () => {
+      window.removeEventListener('resize', setVh);
+      window.removeEventListener('orientationchange', setVh);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.visualViewport?.removeEventListener('resize', setVh);
+      window.visualViewport?.removeEventListener('scroll', setVh);
+    };
   }, []);
 }
