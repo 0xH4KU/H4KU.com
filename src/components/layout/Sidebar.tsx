@@ -545,21 +545,26 @@ const Sidebar: React.FC = () => {
         <Search size={16} className={styles['search-icon']} />
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="Filter sidebar..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           className={styles['search-input']}
-          aria-label="Search sidebar items"
+          aria-label="Filter sidebar items"
+          aria-describedby="sidebar-filter-help"
         />
         {searchQuery && (
           <button
             className={styles['search-clear']}
             onClick={() => setSearchQuery('')}
-            aria-label="Clear search"
+            aria-label="Clear filter"
           >
             <X size={16} />
           </button>
         )}
+        <span id="sidebar-filter-help" className={styles['sr-only']}>
+          Type to filter sidebar navigation. Use global search (top right) to
+          search all content.
+        </span>
       </div>
 
       <div className={styles['sidebar-content']}>

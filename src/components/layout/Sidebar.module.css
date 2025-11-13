@@ -7,8 +7,8 @@
   border-right: 2px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  padding-top: var(--layout-top-offset);
-  padding-bottom: var(--layout-bottom-offset);
+  padding-top: var(--sidebar-top-offset);
+  padding-bottom: var(--sidebar-bottom-offset);
   background: var(--color-surface);
   transition:
     transform var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1),
@@ -696,4 +696,17 @@
   .sidebar-content::-webkit-scrollbar-thumb {
     background: rgba(104, 150, 150, 0.4);
   }
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

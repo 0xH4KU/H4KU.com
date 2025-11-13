@@ -135,6 +135,8 @@ describe('use100vh', () => {
   });
 
   it('should update when visualViewport triggers events', () => {
+    vi.useFakeTimers();
+
     let resizeCallback: (() => void) | undefined;
     let scrollCallback: (() => void) | undefined;
     const mockVisualViewport = {
@@ -169,7 +171,11 @@ describe('use100vh', () => {
     setPropertySpy.mockClear();
     mockVisualViewport.height = 700;
     scrollCallback?.();
+    // Scroll events are throttled with 100ms delay
+    vi.advanceTimersByTime(100);
     expect(setPropertySpy).toHaveBeenCalledWith('--vh', '7px');
+
+    vi.useRealTimers();
   });
 
   it('should clean up visualViewport listeners on unmount', () => {

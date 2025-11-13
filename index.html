@@ -102,14 +102,18 @@
       :root {
         --font-primary: 'ProFont', ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
         --font-size-base: 16px;
-        --topbar-height: 48px;
-        --statusbar-height: 24px;
+        --topbar-height: 64px;
+        --statusbar-height: 64px;
         --transition-fast: 0.2s;
         --transition-normal: 0.3s;
         --color-primary: #689696;
         --color-secondary: #e87722;
-        --layout-top-offset: calc(64px + env(safe-area-inset-top, 0px));
-        --layout-bottom-offset: calc(64px + env(safe-area-inset-bottom, 0px));
+        --layout-top-offset: env(safe-area-inset-top, 0px);
+        --layout-bottom-offset: env(safe-area-inset-bottom, 0px);
+        --sidebar-top-offset: calc(var(--topbar-height) + env(safe-area-inset-top, 0px));
+        --sidebar-bottom-offset: calc(var(--statusbar-height) + env(safe-area-inset-bottom, 0px));
+        --content-padding-top: calc(var(--topbar-height) + 32px + env(safe-area-inset-top, 0px));
+        --content-padding-bottom: calc(var(--statusbar-height) + 32px + env(safe-area-inset-bottom, 0px));
       }
 
       /* Light Theme */

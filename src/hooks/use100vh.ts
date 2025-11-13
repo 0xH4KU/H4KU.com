@@ -9,6 +9,8 @@ export function use100vh() {
       return;
     }
 
+    let scrollTimeout: number | null = null;
+
     const setVh = () => {
       const viewportHeight =
         window.visualViewport?.height ?? window.innerHeight;
@@ -16,6 +18,17 @@ export function use100vh() {
         '--vh',
         `${viewportHeight * 0.01}px`
       );
+    };
+
+    // Throttled version for scroll events to improve performance
+    const setVhThrottled = () => {
+      if (scrollTimeout !== null) {
+        return;
+      }
+      scrollTimeout = window.setTimeout(() => {
+        setVh();
+        scrollTimeout = null;
+      }, 100);
     };
 
     const handlePageShow = (event: PageShowEvent) => {
@@ -29,14 +42,17 @@ export function use100vh() {
     window.addEventListener('orientationchange', setVh);
     window.addEventListener('pageshow', handlePageShow);
     window.visualViewport?.addEventListener('resize', setVh);
-    window.visualViewport?.addEventListener('scroll', setVh);
+    window.visualViewport?.addEventListener('scroll', setVhThrottled);
 
     return () => {
       window.removeEventListener('resize', setVh);
       window.removeEventListener('orientationchange', setVh);
       window.removeEventListener('pageshow', handlePageShow);
       window.visualViewport?.removeEventListener('resize', setVh);
-      window.visualViewport?.removeEventListener('scroll', setVh);
+      window.visualViewport?.removeEventListener('scroll', setVhThrottled);
+      if (scrollTimeout !== null) {
+        clearTimeout(scrollTimeout);
+      }
     };
   }, []);
 }

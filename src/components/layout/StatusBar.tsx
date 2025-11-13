@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSortOrder } from '@/contexts/SortContext';
 import { mockData } from '@/data/mockData';
@@ -30,55 +30,72 @@ const StatusBar: React.FC = () => {
 
   const currentYear = useMemo(() => new Date().getFullYear(), []);
 
+  const handleToggleSortOrder = useCallback(() => {
+    toggleSortOrder();
+  }, [toggleSortOrder]);
+
+  const handleToggleTypeOrder = useCallback(() => {
+    toggleTypeOrder();
+  }, [toggleTypeOrder]);
+
+  const socialLinks = useMemo(
+    () =>
+      socials.map(social => {
+        const safeUrl = getSafeUrl(social.url);
+
+        if (!safeUrl) {
+          return (
+            <span
+              key={social.code}
+              className={styles['status-social-disabled']}
+              aria-disabled="true"
+            >
+              [{social.code}]
+            </span>
+          );
+        }
+
+        const ariaLabelParts = [`[${social.code}], Open ${social.name}`];
+        if (safeUrl.isMailto) {
+          ariaLabelParts.push('(opens email client)');
+        }
+        if (safeUrl.isExternal) {
+          ariaLabelParts.push('(opens in new tab)');
+        }
+
+        return (
+          <a
+            key={social.code}
+            href={safeUrl.href}
+            target={safeUrl.isExternal ? '_blank' : undefined}
+            rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
+            aria-label={ariaLabelParts.join(' ')}
+          >
+            [{social.code}]
+          </a>
+        );
+      }),
+    [socials]
+  );
+
   return (
     <div className={styles['status-bar']}>
       <div
         className={`${styles['status-section']} ${styles['status-section--socials']}`}
       >
-        <div className={styles['status-socials']}>
-          {socials.map(social => {
-            const safeUrl = getSafeUrl(social.url);
-
-            if (!safeUrl) {
-              return (
-                <span
-                  key={social.code}
-                  className={styles['status-social-disabled']}
-                  aria-disabled="true"
-                >
-                  [{social.code}]
-                </span>
-              );
-            }
-
-            const ariaLabelParts = [`[${social.code}], Open ${social.name}`];
-            if (safeUrl.isMailto) {
-              ariaLabelParts.push('(opens email client)');
-            }
-            if (safeUrl.isExternal) {
-              ariaLabelParts.push('(opens in new tab)');
-            }
-
-            return (
-              <a
-                key={social.code}
-                href={safeUrl.href}
-                target={safeUrl.isExternal ? '_blank' : undefined}
-                rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
-                aria-label={ariaLabelParts.join(' ')}
-              >
-                [{social.code}]
-              </a>
-            );
-          })}
-        </div>
+        <div className={styles['status-socials']}>{socialLinks}</div>
       </div>
       <div
         className={`${styles['status-section']} ${styles['status-section--sort']}`}
       >
         <button
-          onClick={toggleSortOrder}
+          onClick={handleToggleSortOrder}
           className={styles['sort-button']}
+          aria-label={
+            sortOrder === 'desc'
+              ? 'Toggle sort order. Current: A to Z, 9 to 0'
+              : 'Toggle sort order. Current: Z to A, 0 to 9'
+          }
           title={
             sortOrder === 'desc'
               ? '默认排序：文字 A→Z，数字 9→0'
@@ -92,8 +109,13 @@ const StatusBar: React.FC = () => {
         className={`${styles['status-section']} ${styles['status-section--type']}`}
       >
         <button
-          onClick={toggleTypeOrder}
+          onClick={handleToggleTypeOrder}
           className={styles['sort-button']}
+          aria-label={
+            typeOrder === 'folders-first'
+              ? 'Toggle type order. Current: Folders, Pages, Images'
+              : 'Toggle type order. Current: Images, Pages, Folders'
+          }
           title={
             typeOrder === 'folders-first'
               ? '类型排序: Folder > Page > Image'

@@ -22,6 +22,7 @@ const getInitialPosition = () => {
 };
 
 export function useCrosshair() {
+  // Enable crosshair by default on non-touch devices
   const [showCrosshair, setShowCrosshair] = useState(() => !isTouchDevice());
   const [mousePos, setMousePos] = useState(getInitialPosition);
   const latestPointerRef = useRef(mousePos);
@@ -93,6 +94,19 @@ export function useCrosshair() {
       if (event.key !== 'Escape' || event.defaultPrevented) {
         return;
       }
+
+      // Check if any modal/overlay is open (lightbox, search panel, etc.)
+      const hasOpenModal =
+        typeof document !== 'undefined' &&
+        (document.querySelector('[role="dialog"]') ||
+          document.querySelector('[aria-modal="true"]') ||
+          document.querySelector('.lightbox'));
+
+      // Only toggle crosshair if no modals are open and no input is focused
+      if (hasOpenModal) {
+        return;
+      }
+
       const activeElement =
         typeof document !== 'undefined' ? document.activeElement : null;
       const shouldToggle =

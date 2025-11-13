@@ -1,5 +1,5 @@
 import React, { useMemo, lazy, Suspense } from 'react';
-import { m, AnimatePresence, type Variants } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
@@ -10,6 +10,16 @@ import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
 import { LazyImage } from '@/components/common/LazyImage';
 import { IMAGE_CONFIG } from '@/config/constants';
+import {
+  createContainerVariants,
+  createItemVariants,
+  createPageVariants,
+  createHoverAnimation,
+  createTapAnimation,
+  createHeaderAnimation,
+  createCloseButtonAnimation,
+  DEFAULT_EASE,
+} from '@/config/animations';
 import {
   getFolderLabel,
   getPageLabel,
@@ -28,88 +38,35 @@ type NavigableItem = Folder | Page;
 const PRIORITY_IMAGE_COUNT = 2;
 
 const ContentView: React.FC = () => {
-  const { currentView, currentPath, navigateTo, openLightbox, resetToHome } =
+  const { currentView, currentPath, navigateTo, openLightbox, navigateBack } =
     useNavigation();
   const { theme } = useTheme();
   const { sortOrder, typeOrder } = useSortOrder();
   const prefersReducedMotion = useReducedMotion();
 
-  // 動畫變體配置 - 簡潔直接的動畫
-  const defaultEase = useMemo<[number, number, number, number]>(
-    () => [0.25, 0.1, 0.25, 1],
-    []
-  );
-
+  // Use centralized animation configurations
   const containerVariants = useMemo(
-    () =>
-      ({
-        hidden: { opacity: prefersReducedMotion ? 1 : 0 },
-        visible: {
-          opacity: 1,
-          transition: {
-            staggerChildren: prefersReducedMotion ? 0 : 0.03,
-            delayChildren: 0,
-          },
-        },
-        exit: {
-          opacity: prefersReducedMotion ? 1 : 0,
-          transition: {
-            duration: prefersReducedMotion ? 0 : 0.15,
-          },
-        },
-      }) satisfies Variants,
+    () => createContainerVariants(prefersReducedMotion),
     [prefersReducedMotion]
   );
 
   const itemVariants = useMemo(
-    () =>
-      ({
-        hidden: {
-          opacity: prefersReducedMotion ? 1 : 0,
-          y: prefersReducedMotion ? 0 : 10,
-        },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration: prefersReducedMotion ? 0 : 0.25,
-            ease: defaultEase,
-          },
-        },
-        exit: {
-          opacity: prefersReducedMotion ? 1 : 0,
-          y: prefersReducedMotion ? 0 : -5,
-          transition: {
-            duration: prefersReducedMotion ? 0 : 0.15,
-          },
-        },
-      }) satisfies Variants,
-    [prefersReducedMotion, defaultEase]
+    () => createItemVariants(prefersReducedMotion),
+    [prefersReducedMotion]
   );
 
   const pageVariants = useMemo(
-    () =>
-      ({
-        initial: {
-          opacity: prefersReducedMotion ? 1 : 0,
-          y: prefersReducedMotion ? 0 : 10,
-        },
-        animate: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration: prefersReducedMotion ? 0 : 0.2,
-            ease: 'easeOut' as const,
-          },
-        },
-        exit: {
-          opacity: prefersReducedMotion ? 1 : 0,
-          y: prefersReducedMotion ? 0 : -10,
-          transition: {
-            duration: prefersReducedMotion ? 0 : 0.15,
-          },
-        },
-      }) satisfies Variants,
+    () => createPageVariants(prefersReducedMotion),
+    [prefersReducedMotion]
+  );
+
+  const headerAnimation = useMemo(
+    () => createHeaderAnimation(prefersReducedMotion, DEFAULT_EASE),
+    [prefersReducedMotion]
+  );
+
+  const closeButtonAnimation = useMemo(
+    () => createCloseButtonAnimation(prefersReducedMotion),
     [prefersReducedMotion]
   );
 
@@ -122,7 +79,7 @@ const ContentView: React.FC = () => {
   };
 
   const handleCloseTextView = () => {
-    resetToHome();
+    navigateBack();
   };
 
   // 渲染內容的函數
@@ -139,13 +96,9 @@ const ContentView: React.FC = () => {
         >
           <m.div
             className={styles['txt-header']}
-            initial={{ x: -30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{
-              delay: 0.05,
-              duration: 0.3,
-              ease: defaultEase,
-            }}
+            initial={headerAnimation.initial}
+            animate={headerAnimation.animate}
+            transition={headerAnimation.transition}
           >
             <img
               className={styles['txt-icon']}
@@ -156,10 +109,7 @@ const ContentView: React.FC = () => {
             <m.button
               onClick={handleCloseTextView}
               className={styles['close-btn']}
-              whileHover={
-                prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }
-              }
-              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+              {...closeButtonAnimation}
             >
               ×
             </m.button>
@@ -171,7 +121,7 @@ const ContentView: React.FC = () => {
             transition={{
               delay: 0.15,
               duration: 0.3,
-              ease: defaultEase,
+              ease: DEFAULT_EASE,
             }}
           >
             <pre>{currentView.data.content}</pre>
@@ -244,16 +194,8 @@ const ContentView: React.FC = () => {
                       className={styles['file-item']}
                       variants={itemVariants}
                       onClick={() => handleNavigate(child)}
-                      whileHover={
-                        prefersReducedMotion
-                          ? {}
-                          : {
-                              scale: 1.02,
-                              y: -2,
-                              transition: { duration: 0.15 },
-                            }
-                      }
-                      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                      whileHover={createHoverAnimation(prefersReducedMotion)}
+                      whileTap={createTapAnimation(prefersReducedMotion)}
                     >
                       <img
                         className={styles['file-icon']}
@@ -279,16 +221,8 @@ const ContentView: React.FC = () => {
                         };
                         navigateTo(page, currentPath);
                       }}
-                      whileHover={
-                        prefersReducedMotion
-                          ? {}
-                          : {
-                              scale: 1.02,
-                              y: -2,
-                              transition: { duration: 0.15 },
-                            }
-                      }
-                      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                      whileHover={createHoverAnimation(prefersReducedMotion)}
+                      whileTap={createTapAnimation(prefersReducedMotion)}
                     >
                       <img
                         className={styles['file-icon']}
@@ -307,16 +241,8 @@ const ContentView: React.FC = () => {
                       className={styles['file-item']}
                       variants={itemVariants}
                       onClick={() => handleOpenLightbox(item, workItems)}
-                      whileHover={
-                        prefersReducedMotion
-                          ? {}
-                          : {
-                              scale: 1.02,
-                              y: -2,
-                              transition: { duration: 0.15 },
-                            }
-                      }
-                      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                      whileHover={createHoverAnimation(prefersReducedMotion)}
+                      whileTap={createTapAnimation(prefersReducedMotion)}
                     >
                       <LazyImage
                         className={styles['file-thumb']}
@@ -392,16 +318,8 @@ const ContentView: React.FC = () => {
                 className={styles['work-item']}
                 variants={itemVariants}
                 onClick={handleClick}
-                whileHover={
-                  prefersReducedMotion
-                    ? {}
-                    : {
-                        scale: 1.02,
-                        y: -3,
-                        transition: { duration: 0.15 },
-                      }
-                }
-                whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                whileHover={createHoverAnimation(prefersReducedMotion)}
+                whileTap={createTapAnimation(prefersReducedMotion)}
               >
                 {isTextPage ? (
                   <img
@@ -454,16 +372,8 @@ const ContentView: React.FC = () => {
                     className={styles['file-item']}
                     variants={itemVariants}
                     onClick={() => handleNavigate(folder)}
-                    whileHover={
-                      prefersReducedMotion
-                        ? {}
-                        : {
-                            scale: 1.02,
-                            y: -2,
-                            transition: { duration: 0.15 },
-                          }
-                    }
-                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                    whileHover={createHoverAnimation(prefersReducedMotion)}
+                    whileTap={createTapAnimation(prefersReducedMotion)}
                   >
                     <img
                       className={styles['file-icon']}
@@ -479,16 +389,8 @@ const ContentView: React.FC = () => {
                     className={styles['file-item']}
                     variants={itemVariants}
                     onClick={() => handleNavigate(page)}
-                    whileHover={
-                      prefersReducedMotion
-                        ? {}
-                        : {
-                            scale: 1.02,
-                            y: -2,
-                            transition: { duration: 0.15 },
-                          }
-                    }
-                    whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
+                    whileHover={createHoverAnimation(prefersReducedMotion)}
+                    whileTap={createTapAnimation(prefersReducedMotion)}
                   >
                     <img
                       className={styles['file-icon']}

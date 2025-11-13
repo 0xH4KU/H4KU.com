@@ -7,6 +7,7 @@ import {
   StatusBar,
   TopBar,
 } from '@/components';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import { SearchProvider } from '@/contexts/SearchContext';
@@ -47,13 +48,17 @@ const AppContent: React.FC = () => {
           Skip to main content
         </a>
         <Crosshair />
-        <TopBar />
+        <ErrorBoundary>
+          <TopBar />
+        </ErrorBoundary>
         <div
           className={`${styles['main-layout']} ${
             showOverlay ? styles['sidebar-open'] : ''
           }`}
         >
-          <Sidebar />
+          <ErrorBoundary>
+            <Sidebar />
+          </ErrorBoundary>
           {showOverlay && (
             <button
               type="button"
@@ -70,13 +75,21 @@ const AppContent: React.FC = () => {
               marginLeft: isMobile ? 0 : isSidebarOpen ? sidebarWidth : 0,
             }}
           >
-            <ContentView />
+            <ErrorBoundary>
+              <ContentView />
+            </ErrorBoundary>
           </div>
         </div>
-        <StatusBar />
+        <ErrorBoundary>
+          <StatusBar />
+        </ErrorBoundary>
         <Suspense fallback={null}>
-          <Lightbox />
-          <SearchPanelLazy />
+          <ErrorBoundary>
+            <Lightbox />
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <SearchPanelLazy />
+          </ErrorBoundary>
         </Suspense>
       </div>
     </LazyMotion>

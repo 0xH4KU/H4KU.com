@@ -63,9 +63,9 @@ export function ContactForm() {
     }
 
     // 🛡️ Anti-spam Check 3: Time Check（時間檢查）
-    // 表單必須至少花3秒填寫（防止瞬間提交）
+    // 表單必須至少花1秒填寫（防止瞬間提交，減少對真實用戶的干擾）
     const fillTime = now - formStartTime;
-    if (fillTime < 3000) {
+    if (fillTime < 1000) {
       setStatus({
         type: 'error',
         message: 'Please take your time filling out the form',

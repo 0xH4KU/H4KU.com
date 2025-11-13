@@ -149,8 +149,8 @@ export function LazyImage({
       onLoad={handleLoad}
       onError={handleError}
       style={{
-        opacity: isLoaded ? 1 : 0.5,
-        transition: 'opacity 0.3s ease-in-out',
+        opacity: isLoaded || priority ? 1 : 0.5,
+        transition: priority ? 'none' : 'opacity 0.3s ease-in-out',
       }}
     />
   );

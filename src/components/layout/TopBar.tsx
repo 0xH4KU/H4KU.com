@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ChevronLeft, Moon, Sun, Search, Menu } from 'lucide-react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -19,24 +19,27 @@ const TopBar: React.FC = () => {
   const { searchOpen, openSearch } = useSearchUI();
   const { isSidebarOpen, toggleSidebar } = useSidebarContext();
 
-  const canGoBack = currentPath.length > 1;
+  const canGoBack = useMemo(() => currentPath.length > 1, [currentPath.length]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     navigateBack();
-  };
+  }, [navigateBack]);
 
-  const handleToggleSearch = () => {
+  const handleToggleSearch = useCallback(() => {
     openSearch();
-  };
+  }, [openSearch]);
 
-  const handleToggleTheme = () => {
+  const handleToggleTheme = useCallback(() => {
     toggleTheme();
-  };
+  }, [toggleTheme]);
 
-  const handleSelectPath = (index: number) => {
-    const segment = breadcrumbSegments[index];
-    handleBreadcrumbSelect(segment.id, index);
-  };
+  const handleSelectPath = useCallback(
+    (index: number) => {
+      const segment = breadcrumbSegments[index];
+      handleBreadcrumbSelect(segment.id, index);
+    },
+    [breadcrumbSegments, handleBreadcrumbSelect]
+  );
 
   return (
     <div className={styles['top-bar']}>
