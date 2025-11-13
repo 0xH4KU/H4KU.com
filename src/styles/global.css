@@ -27,7 +27,9 @@
 /* CSS Custom Properties */
 :root {
   /* Typography */
-  --font-primary: 'ProFont', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, monospace;
+  --font-primary:
+    'ProFont', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco,
+    Consolas, monospace;
   --font-size-base: 16px;
   --font-size-md: 15px;
   --font-size-sm: 14px;

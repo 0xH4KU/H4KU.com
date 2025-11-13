@@ -50,9 +50,7 @@ describe('NavigationProvider', () => {
     window.history.replaceState({}, '', initialPath);
     const NavigationTestWrapper: FC<{ children: ReactNode }> = ({
       children,
-    }) => (
-      <NavigationProvider>{children}</NavigationProvider>
-    );
+    }) => <NavigationProvider>{children}</NavigationProvider>;
     NavigationTestWrapper.displayName = 'NavigationTestWrapper';
     return NavigationTestWrapper;
   };

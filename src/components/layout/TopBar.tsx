@@ -78,7 +78,9 @@ const TopBar: React.FC = () => {
         type="button"
         className={styles['theme-btn']}
         onClick={handleToggleTheme}
-        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={
+          theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+        }
       >
         {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
       </button>

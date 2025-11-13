@@ -31,7 +31,9 @@ const hasInertSupport = () => {
   if (typeof HTMLElement === 'undefined') {
     return false;
   }
-  return 'inert' in (HTMLElement.prototype as HTMLElement & { inert?: unknown });
+  return (
+    'inert' in (HTMLElement.prototype as HTMLElement & { inert?: unknown })
+  );
 };
 
 const Sidebar: React.FC = () => {
