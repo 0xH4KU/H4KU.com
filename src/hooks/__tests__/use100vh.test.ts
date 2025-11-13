@@ -2,6 +2,10 @@ import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { use100vh } from '../use100vh';
 
+type MutableVisualViewport = {
+  -readonly [K in keyof VisualViewport]: VisualViewport[K];
+};
+
 describe('use100vh', () => {
   beforeEach(() => {
     // Mock window.innerHeight
@@ -13,10 +17,13 @@ describe('use100vh', () => {
 
     // Mock document.documentElement.style.setProperty
     document.documentElement.style.setProperty = vi.fn();
+
+    Reflect.deleteProperty(window, 'visualViewport');
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    Reflect.deleteProperty(window, 'visualViewport');
   });
 
   it('should set --vh CSS variable on mount', () => {
@@ -87,6 +94,151 @@ describe('use100vh', () => {
       'resize',
       expect.any(Function)
     );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'orientationchange',
+      expect.any(Function)
+    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'pageshow',
+      expect.any(Function)
+    );
+  });
+
+  it('should prefer visualViewport height when available', () => {
+    const addEventListenerMock = vi.fn();
+    const mockVisualViewport = {
+      height: 900,
+      addEventListener: addEventListenerMock,
+      removeEventListener: vi.fn(),
+    } as unknown as MutableVisualViewport;
+
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: mockVisualViewport,
+    });
+
+    renderHook(() => use100vh());
+
+    expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
+      '--vh',
+      '9px'
+    );
+
+    expect(addEventListenerMock).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function)
+    );
+    expect(addEventListenerMock).toHaveBeenCalledWith(
+      'scroll',
+      expect.any(Function)
+    );
+  });
+
+  it('should update when visualViewport triggers events', () => {
+    let resizeCallback: (() => void) | undefined;
+    let scrollCallback: (() => void) | undefined;
+    const mockVisualViewport = {
+      height: 900,
+      addEventListener: vi.fn((event: string, cb: () => void) => {
+        if (event === 'resize') {
+          resizeCallback = cb;
+        }
+        if (event === 'scroll') {
+          scrollCallback = cb;
+        }
+      }),
+      removeEventListener: vi.fn(),
+    } as unknown as MutableVisualViewport;
+
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: mockVisualViewport,
+    });
+
+    renderHook(() => use100vh());
+
+    const setPropertySpy = vi.mocked(
+      document.documentElement.style.setProperty
+    );
+    setPropertySpy.mockClear();
+
+    mockVisualViewport.height = 750;
+    resizeCallback?.();
+    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '7.5px');
+
+    setPropertySpy.mockClear();
+    mockVisualViewport.height = 700;
+    scrollCallback?.();
+    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '7px');
+  });
+
+  it('should clean up visualViewport listeners on unmount', () => {
+    const removeEventListenerMock = vi.fn();
+    const mockVisualViewport = {
+      height: 1024,
+      addEventListener: vi.fn(),
+      removeEventListener: removeEventListenerMock,
+    } as unknown as MutableVisualViewport;
+
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: mockVisualViewport,
+    });
+
+    const { unmount } = renderHook(() => use100vh());
+    unmount();
+
+    expect(removeEventListenerMock).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function)
+    );
+    expect(removeEventListenerMock).toHaveBeenCalledWith(
+      'scroll',
+      expect.any(Function)
+    );
+  });
+
+  it('should recalculate on orientation changes', () => {
+    renderHook(() => use100vh());
+
+    const setPropertySpy = vi.mocked(
+      document.documentElement.style.setProperty
+    );
+    setPropertySpy.mockClear();
+
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 720,
+    });
+
+    window.dispatchEvent(new Event('orientationchange'));
+
+    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '7.2px');
+  });
+
+  it('should recalculate when returning from bfcache', () => {
+    renderHook(() => use100vh());
+
+    const setPropertySpy = vi.mocked(
+      document.documentElement.style.setProperty
+    );
+    setPropertySpy.mockClear();
+
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 640,
+    });
+
+    const pageShowEvent = new Event('pageshow') as Event & {
+      persisted?: boolean;
+    };
+    pageShowEvent.persisted = true;
+
+    window.dispatchEvent(pageShowEvent);
+
+    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '6.4px');
   });
 
   it('should calculate vh correctly for different screen sizes', () => {

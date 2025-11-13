@@ -52,6 +52,8 @@
   --statusbar-height: 24px;
   --sidebar-min-width: 180px;
   --sidebar-max-width: 320px;
+  --layout-top-offset: calc(64px + env(safe-area-inset-top, 0px));
+  --layout-bottom-offset: calc(64px + env(safe-area-inset-bottom, 0px));
 
   /* Transitions */
   --transition-fast: 0.2s;
@@ -94,17 +96,40 @@
   --color-chrome: var(--color-surface);
 }
 
+html {
+  height: 100%;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+}
+
 /* Body Styles */
 body {
+  height: 100%;
   font-family: var(--font-primary);
   font-size: var(--font-size-base);
-  overflow-x: hidden;
+  overflow: hidden;
   min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 body.crosshair-active,
 body.crosshair-active * {
   cursor: none !important;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  body,
+  #root {
+    min-height: 100dvh;
+  }
 }
 
 /* Scrollbar Styling */

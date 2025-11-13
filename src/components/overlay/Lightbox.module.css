@@ -88,7 +88,7 @@
 
 .lightbox-image {
   max-width: 100%;
-  max-height: calc(100vh - 160px);
+  max-height: calc((var(--vh, 1vh) * 100) - 160px);
   object-fit: contain;
 }
 
