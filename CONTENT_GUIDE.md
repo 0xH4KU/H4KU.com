@@ -1,62 +1,54 @@
-# 內容管理指南
+# Content Management Guide
 
-> ⚠️ 授權提醒：請依照 [Lum.bio Personal Source License](./LICENSE.md) 使用此內容。
-> 圖片、文案與 JSON 資料僅供個人網站運作與參考，禁止另行公開發佈或商業化。
+> ⚠️ Licensing reminder: all assets fall under the [Lum.bio Personal Source License](./LICENSE.md). Images, copy, and JSON data are for running this site only—do not redistribute or commercialise them.
 
-## 🚀 快速開始
+## 🚀 Quick Start
 
-### 添加新內容的簡單步驟
-
-1. **在文件系統中添加內容**
-   - 圖片：放到 `public/content/homepage/` 或子文件夾
-   - 文本文件：放到 `public/content/homepage/` （.txt 或 .md）
-   - 文件夾：在 `public/content/homepage/` 創建新文件夾
-
-2. **同步到網站**
+1. **Add files to the content tree**
+   - Images → `public/content/homepage/` (or any subfolder)
+   - Text (`.txt`/`.md`) → `public/content/homepage/`
+   - New folders → create them directly under `public/content/homepage/`
+2. **Sync files into structured JSON**
    ```bash
    npm run cms
    ```
-
-3. **完成！** 🎉
-   - 開發環境會自動更新（如果正在運行 `npm run dev`）
-   - 不需要重啟開發服務器
+3. **Done!**  
+   If `npm run dev` is running, Vite will pick up the regenerated data automatically—no server restart required.
 
 ---
 
-## 📁 目錄結構
+## 📁 Directory Layout
 
 ```
 public/content/homepage/
-├── About.txt              # 獨立頁面
-├── Contact.txt            # 獨立頁面
-├── featured/              # 文件夾（會在網站顯示）
-│   ├── metadata.json      # 可選：文件夾設置
-│   └── image1.jpg         # 圖片作品
-└── sketches/              # 另一個文件夾
-    ├── 2025/              # 子文件夾（支持嵌套）
+├── About.txt              # Standalone page
+├── Contact.txt            # Standalone page
+├── featured/              # Folder displayed on the site
+│   ├── metadata.json      # Optional folder configuration
+│   └── image1.jpg         # Artwork file
+└── sketches/
+    ├── 2025/              # Nested folders are supported
     │   └── sketch.png
     └── metadata.json
 ```
 
 ---
 
-## 🎨 使用 metadata.json 配置
+## 🎨 Configuring `metadata.json`
 
-### 文件夾設置
-
-在文件夾中創建 `metadata.json` 來配置：
+Place a `metadata.json` file inside any folder to customise its label and items:
 
 ```json
 {
   "folder": {
-    "name": "精選作品",
-    "description": "我最喜歡的作品集",
+    "name": "Featured Works",
+    "description": "Pieces I’m excited about",
     "order": 1
   },
   "items": {
     "image1.jpg": {
-      "title": "角色設計",
-      "description": "原創角色設計",
+      "title": "Character Design",
+      "description": "Original character exploration",
       "date": "2025-01-15",
       "tags": ["character", "original"],
       "order": 1
@@ -65,136 +57,114 @@ public/content/homepage/
 }
 ```
 
-### 配置選項說明
+### Field reference
 
-**文件夾 (folder)**:
-- `name`: 顯示名稱（預設使用文件夾名）
-- `description`: 描述文字
-- `order`: 排序順序（數字越小越靠前）
+**folder**
+- `name` – Display name (defaults to folder name)
+- `description` – Short blurb shown in the UI
+- `order` – Sorting weight (lower numbers appear first)
 
-**作品項目 (items)**:
-- `title`: 作品標題
-- `description`: 作品描述
-- `date`: 日期（格式：YYYY-MM-DD）
-- `tags`: 標籤數組
-- `order`: 在文件夾內的排序
-
----
-
-## 📝 文件類型
-
-### 支持的圖片格式
-- `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`
-
-### 支持的文本格式
-- `.txt` - 顯示為文本文件圖標
-- `.md` - Markdown 文件（會轉換為純文本）
+**items**
+- `title` – Artwork/page title (defaults to filename)
+- `description` – Optional caption
+- `date` – ISO date (`YYYY-MM-DD`)
+- `tags` – Array of strings
+- `order` – Per-folder ordering weight
 
 ---
 
-## 🔄 常用命令
+## 📝 Supported File Types
 
-| 命令 | 說明 |
-|------|------|
-| `npm run cms` | 同步內容到網站（自動生成 JSON 並聚合數據）|
-| `npm run sync` | 同 `npm run cms` |
-| `npm run dev` | 啟動開發服務器 |
-| `npm run build` | 構建生產版本（會自動同步內容）|
+- Images: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`
+- Text: `.txt` (rendered as text files), `.md` (converted to plain text)
 
 ---
 
-## 💡 提示與技巧
+## 🔄 Frequently Used Commands
 
-### 1. 自動排序
-- 沒有設置 `order` 時：
-  - 文件夾按字母順序倒序（Z-A），新文件夾在前
-  - 圖片按日期倒序，新的在前
-  - 文本按字母順序
-
-### 2. 文件命名建議
-- 使用有意義的文件名（會作為預設標題）
-- 圖片：`2025-01-15-character-design.jpg`
-- 文本：`About.txt`, `Contact.txt`
-
-### 3. 文件夾結構
-- 支持無限層級嵌套
-- 子文件夾會自動被檢測
-- 可以在主頁或任何文件夾中放置內容
-
-### 4. 開發流程
-```bash
-# 1. 啟動開發服務器
-npm run dev
-
-# 2. 在另一個終端添加內容後運行
-npm run cms
-
-# 3. 瀏覽器自動刷新顯示新內容
-```
+| Command | Purpose |
+| --- | --- |
+| `npm run cms` | Scan `public/content/`, rebuild JSON, aggregate data |
+| `npm run sync` | Alias of `npm run cms` |
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Production build (automatically runs the CMS pipeline) |
 
 ---
 
-## 🐛 常見問題
+## 💡 Tips & Best Practices
 
-### Q: 添加文件後網站沒更新？
-A: 運行 `npm run cms` 同步內容
+1. **Automatic sorting**
+   - Folders default to reverse alphabetical order (Z→A) so newer folders appear first.
+   - Images default to newest-first based on `date`.
+   - Text items fall back to alphabetical order.
 
-### Q: 圖片沒有顯示？
-A: 確認：
-1. 圖片在 `public/content/homepage/` 內
-2. 文件格式正確（.jpg, .png 等）
-3. 已運行 `npm run cms`
+2. **Meaningful filenames**
+   - Filenames become fallback titles. Prefer descriptive names like `2025-01-15-character-design.jpg` or `About.txt`.
 
-### Q: 如何刪除內容？
-A:
-1. 刪除 `public/content/homepage/` 中的文件/文件夾
-2. 運行 `npm run cms` 重新同步
+3. **Flexible hierarchy**
+   - Nest folders as deeply as you need. Every level will be indexed automatically.
+   - You can mix folders, text files, and images at any depth.
 
-### Q: 可以在開發時熱更新嗎？
-A: 當前需要手動運行 `npm run cms`，但開發服務器會自動檢測 `_aggregated.json` 的變化
+4. **Dev workflow**
+   ```bash
+   npm run dev         # Start Vite
+   # Add or edit files under public/content/homepage
+   npm run cms         # Regenerate JSON + aggregated data
+   # Browser reloads with the new content
+   ```
 
 ---
 
-## 📦 技術細節
+## 🐛 Troubleshooting
 
-### 數據流程
+| Symptom | Fix |
+| --- | --- |
+| Content not showing up | Run `npm run cms` after adding files. |
+| Image missing | Ensure it lives under `public/content/homepage/`, uses a supported extension, and rerun `npm run cms`. |
+| Removing content | Delete the file/folder from `public/content/homepage/` **and** rerun `npm run cms`. |
+| Live reload not updating | Manual `npm run cms` is still required, but Vite watches `_aggregated.json` so the browser refreshes once it changes. |
+
+---
+
+## 📦 How the Pipeline Works
+
 ```
 public/content/homepage/
     ↓ npm run cms
-src/content/*.json (生成的 JSON 配置)
-    ↓ 自動執行
-src/content/_aggregated.json (聚合數據)
-    ↓ Vite 導入
-React 應用顯示內容
+src/content/folders|pages|images/*.json   (generated)
+    ↓ automatic step
+src/content/_aggregated.json              (single payload)
+    ↓ Vite import
+React UI renders the data
 ```
 
-### 生成的文件
-- `src/content/folders/*.json` - 文件夾定義
-- `src/content/images/*.json` - 圖片作品
-- `src/content/pages/*.json` - 文本頁面
-- `src/content/_aggregated.json` - 聚合的所有數據（用於生產環境）
+Generated files:
+- `src/content/folders/*.json` – Folder metadata
+- `src/content/images/*.json` – Image/work entries
+- `src/content/pages/*.json` – Standalone text pages
+- `src/content/_aggregated.json` – Combined dataset used at runtime
 
 ---
 
-## 🎯 示例：添加新作品集
+## 🎯 Example: Add a new commission folder
 
 ```bash
-# 1. 創建新文件夾
-mkdir public/content/homepage/commissions-2025
+# 1. Create a folder
+mkdir -p public/content/homepage/commissions-2025
 
-# 2. 添加圖片
+# 2. Drop in artwork
 cp ~/Downloads/artwork1.jpg public/content/homepage/commissions-2025/
 
-# 3. （可選）創建配置
-cat > public/content/homepage/commissions-2025/metadata.json << 'EOF'
+# 3. (Optional) add metadata
+cat > public/content/homepage/commissions-2025/metadata.json <<'EOF'
 {
   "folder": {
-    "name": "2025 委託作品",
+    "name": "2025 Commissions",
     "order": 1
   },
   "items": {
     "artwork1.jpg": {
-      "title": "角色委託",
+      "title": "Character Commission",
       "date": "2025-01-10",
       "tags": ["commission", "character"]
     }
@@ -202,12 +172,10 @@ cat > public/content/homepage/commissions-2025/metadata.json << 'EOF'
 }
 EOF
 
-# 4. 同步
+# 4. Regenerate structured data
 npm run cms
-
-# 完成！訪問 http://localhost:5173 查看
 ```
 
----
+Open `http://localhost:5173` and the new folder will appear immediately.
 
-需要更多幫助？查看 `/scripts/cms.js` 的源代碼或參考現有內容結構。
+Need more details? Check the implementation in [`scripts/cms.js`](./scripts/cms.js) or inspect the existing JSON under `src/content/`.
