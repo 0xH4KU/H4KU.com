@@ -33,10 +33,12 @@ updates:
     # Allow security updates
     allow:
       - dependency-type: "all"
-    # Uncomment to ignore specific packages:
-    # ignore:
-    #   - dependency-name: "react"
-    #     update-types: ["version-update:semver-major"]
+    # Ignore major updates for eslint packages (can upgrade manually when needed)
+    ignore:
+      - dependency-name: "@typescript-eslint/eslint-plugin"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-plugin-react-hooks"
+        update-types: ["version-update:semver-major"]
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
