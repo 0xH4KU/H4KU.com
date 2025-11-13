@@ -7,21 +7,18 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-    # Limit number of open PRs
-    open-pull-requests-limit: 5
+    # Limit number of open PRs (reduce to 3 if too many)
+    open-pull-requests-limit: 3
     # Group updates by type
     groups:
-      # Group all development dependencies
-      development-dependencies:
-        dependency-type: "development"
+      # Group ALL non-major updates together (fewer PRs)
+      all-dependencies:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
-      # Group production dependencies
-      production-dependencies:
-        dependency-type: "production"
-        update-types:
-          - "patch"
+      # Major updates stay separate (breaking changes need review)
     # Auto-approve and merge patch updates
     labels:
       - "dependencies"
