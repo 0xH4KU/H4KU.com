@@ -1,90 +1,84 @@
-# GitLab CI/CD 配置说明
+# GitLab CI/CD Guide
 
-本项目已配置 GitLab CI/CD 进行代码质量检查和构建验证。
+Lum.bio ships with a lightweight GitLab pipeline that keeps code quality high and guarantees reproducible builds for Cloudflare Pages.
 
-## CI/CD Pipeline 结构
+## Pipeline Overview
 
-Pipeline 分为两个主要阶段：
+```
+Quality Gate ─► Build & Artifact
+```
 
 ### 1. Quality Gate
 - `npm run lint`
 - `npm run type-check`
 - `npm run test:run`
-- 失败会立即阻断后续步骤
+
+Any failure in this stage stops the pipeline.
 
 ### 2. Build & Artifact
-- `npm run build:data`（保证 `_aggregated.json` 是最新的）
+- `npm run build:data` – refreshes `src/content/_aggregated.json`
 - `vite build`
-- 上传 `dist/` 产物（保留 7 天，供 Cloudflare Pages 拉取）
+- Upload `dist/` as an artifact (retained for 7 days) so Cloudflare Pages can fetch a known-good bundle.
 
-## 环境变量设置
+## Required Environment Variables
 
-在 **Settings → CI/CD → Variables** 中添加：
+Configure them under **Settings → CI/CD → Variables**:
 
-| 变量 | 说明 |
+| Variable | Purpose |
 | --- | --- |
-| `VITE_EMAILJS_SERVICE_ID` | EmailJS 服务 ID |
-| `VITE_EMAILJS_TEMPLATE_ID` | 模板 ID |
-| `VITE_EMAILJS_PUBLIC_KEY` | 公钥 |
+| `VITE_EMAILJS_SERVICE_ID` | EmailJS service ID |
+| `VITE_EMAILJS_TEMPLATE_ID` | Template ID |
+| `VITE_EMAILJS_PUBLIC_KEY` | Public key |
 
-建议全部勾选 **Masked**，必要时设置为 **Protected**。
+Mark them as **Masked** and **Protected** if your repo uses protected branches.
 
-## 触发 Pipeline
+## When Pipelines Run
 
-Pipeline 会在以下情况自动触发：
-- 推送到 `main` 分支
-- 推送到 `develop` 分支
-- 创建 Merge Request
+Pipelines trigger automatically when:
+- pushing to `main`
+- pushing to `develop`
+- opening or updating a Merge Request
 
-## 手动触发
+## Manual Execution
 
-如需手动触发 pipeline：
-1. 进入 **Build** → **Pipelines**
-2. 点击 **Run pipeline**
-3. 选择目标分支
-4. 点击 **Run pipeline**
+1. Navigate to **Build → Pipelines**.
+2. Click **Run pipeline**.
+3. Choose the target branch and confirm.
 
-## Cloudflare Pages 部署
+## Cloudflare Pages Deployment
 
-Cloudflare Pages 监听 `main` 分支的构建产物。保持以下配置：
+Cloudflare Pages listens to the `main` branch artifacts. Use the following settings:
 
-| 项目 | 值 |
+| Setting | Value |
 | --- | --- |
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Environment | 同 CI 变量（EmailJS） |
+| Environment variables | same EmailJS variables as GitLab |
 
-## 查看 Pipeline 状态
+## Monitoring Pipeline Status
 
-- **Pipelines** 页面：查看所有 pipeline 运行记录
-- **Jobs** 页面：查看单个任务的详细日志
-- Merge Request 中会显示 CI 状态
+- **Pipelines** tab → full history
+- **Jobs** tab → per-job logs
+- Merge Requests → badge showing pass/fail status
 
-## 故障排查
+## Troubleshooting
 
-| 问题 | 处理 |
+| Issue | Resolution |
 | --- | --- |
-| Pipeline 未触发 | 确认 `.gitlab-ci.yml` 在仓库根目录、CI 功能已开启、推送的分支匹配触发规则。 |
-| `build:data` 失败 | 检查 `src/content/` 中是否有无效 JSON；本地运行 `npm run build:data` 以复现。 |
-| 缺少 EmailJS 凭证 | 确认变量在 GitLab 和 Cloudflare Pages 中均已设置。 |
-| Cloudflare 404 | 确保 `public/_redirects` 被包含在 `dist/` 中。 |
+| Pipeline doesn’t start | Ensure `.gitlab-ci.yml` exists at the repo root, CI is enabled, and the branch matches the trigger rules. |
+| `build:data` fails | Check for invalid JSON under `src/content/`. Re-run `npm run build:data` locally for details. |
+| Missing EmailJS config | Confirm variables exist in both GitLab and Cloudflare Pages. |
+| Cloudflare deploy returns 404 | Make sure `public/_redirects` is included in the final `dist/`. |
 
-## 本地测试
+## Pre-push Checklist
 
-在推送前本地运行 CI 检查：
+Run the same commands locally before pushing:
 
 ```bash
-# 运行 linter
 npm run lint
-
-# 运行类型检查
 npm run type-check
-
-# 运行格式检查
 npm run format:check
-
-# 运行构建
 npm run build
 ```
 
-确保上述命令全部通过后再推送代码，以保持 CI 绿色状态。
+Keeping these green locally ensures CI stays green too.
