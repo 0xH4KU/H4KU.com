@@ -19,7 +19,14 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "size": "size-limit",
+    "size:analyze": "size-limit --why",
+    "ci": "bash scripts/ci/run-all-checks.sh",
+    "ci:quality": "bash scripts/ci/check-quality.sh",
+    "ci:coverage": "bash scripts/ci/report-coverage.sh",
+    "ci:security": "bash scripts/ci/security-scan.sh",
+    "ci:bundle": "bash scripts/ci/check-bundle-size.sh"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -29,6 +36,8 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@size-limit/file": "^11.2.0",
+    "@size-limit/preset-app": "^11.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -45,6 +54,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "jsdom": "^27.1.0",
     "prettier": "^3.3.2",
+    "size-limit": "^11.2.0",
     "tsx": "^4.15.2",
     "typescript": "^5.4.5",
     "vite": "^7.1.12",

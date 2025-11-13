@@ -178,7 +178,16 @@ Development server runs at `http://localhost:5173`
 | `npm run test:ui` | Open Vitest UI dashboard |
 | `npm run lint` | Check code style |
 | `npm run lint:fix` | Fix auto-fixable lint issues |
+| `npm run format` | Format code with Prettier |
+| `npm run format:check` | Check code formatting |
 | `npm run type-check` | Verify TypeScript types |
+| `npm run size` | Check bundle size against limits |
+| `npm run size:analyze` | Detailed bundle analysis |
+| `npm run ci` | Run all CI checks locally |
+| `npm run ci:quality` | Run quality checks (lint, format, types) |
+| `npm run ci:coverage` | Run tests with coverage reporting |
+| `npm run ci:security` | Run security scans |
+| `npm run ci:bundle` | Build and check bundle size |
 
 ### Content Management
 
@@ -238,7 +247,10 @@ Build artifacts retained for 7 days.
 - **[CHANGELOG.md](./CHANGELOG.md)** – Release history
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)** – Architecture deep dive
 - **[TESTING.md](./TESTING.md)** – Testing guidelines
-- **[GITLAB_CI_SETUP.md](./GITLAB_CI_SETUP.md)** – CI/CD configuration
+- **[docs/CI_CD_GUIDE.md](./docs/CI_CD_GUIDE.md)** – Comprehensive CI/CD guide
+- **[docs/CI_BADGES.md](./docs/CI_BADGES.md)** – CI badge setup instructions
+- **[docs/CI_IMPROVEMENTS_SUMMARY.md](./docs/CI_IMPROVEMENTS_SUMMARY.md)** – CI enhancement summary
+- **[GITLAB_CI_SETUP.md](./GITLAB_CI_SETUP.md)** – GitLab CI configuration (legacy)
 - **[CONTENT_GUIDE.md](./CONTENT_GUIDE.md)** – Content authoring guide
 
 ## License

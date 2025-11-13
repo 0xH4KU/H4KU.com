@@ -1,30 +1,76 @@
 # GitLab CI/CD Configuration for Lum.bio Portfolio
+# Mirrors GitHub Actions workflow for consistency
 
 # Define stages
 stages:
-  - lint-test
+  - quality
+  - security
   - build
 
 # Use Node.js 20 Docker image
 image: node:20
 
-# Cache node_modules for faster builds
+# Global cache configuration for faster builds
 cache:
   key:
     files:
       - package-lock.json
   paths:
     - node_modules/
+  policy: pull
 
-# Lint and Test Job
-lint-and-test:
-  stage: lint-test
-  script:
+# Shared installation template
+.install-deps:
+  before_script:
     - npm ci
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+    policy: pull-push
+
+# Quality check jobs run in parallel
+lint:
+  extends: .install-deps
+  stage: quality
+  script:
     - npm run lint
-    - npm run type-check
+  only:
+    - main
+    - develop
+    - merge_requests
+
+format-check:
+  extends: .install-deps
+  stage: quality
+  script:
     - npm run format:check
-    - npm run test:run
+  only:
+    - main
+    - develop
+    - merge_requests
+
+type-check:
+  extends: .install-deps
+  stage: quality
+  script:
+    - npm run type-check
+  only:
+    - main
+    - develop
+    - merge_requests
+
+test:
+  extends: .install-deps
+  stage: quality
+  variables:
+    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
+    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
+    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
+  script:
+    - npm run test:coverage
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
     reports:
@@ -33,35 +79,49 @@ lint-and-test:
         path: coverage/cobertura-coverage.xml
     paths:
       - coverage/
-  # Environment variables from GitLab CI/CD settings
-  variables:
-    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
-    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
-    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
+    expire_in: 7 days
+    when: always
   only:
     - main
     - develop
     - merge_requests
 
-# Build Job
-build:
-  stage: build
+# Security scanning
+security-scan:
+  extends: .install-deps
+  stage: security
   script:
-    - npm ci
-    - npm run build
-  # Environment variables from GitLab CI/CD settings
-  variables:
-    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
-    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
-    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
-  # Save build artifacts
-  artifacts:
-    paths:
-      - dist/
-    expire_in: 7 days
+    - npm run ci:security
   only:
     - main
     - develop
     - merge_requests
+
+# Build job runs after all checks pass
+build:
+  extends: .install-deps
+  stage: build
+  variables:
+    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
+    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
+    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
+  script:
+    - npm run build
+    - echo "## Build Size Report"
+    - du -sh dist/
+    - echo "Largest JS files:"
+    - find dist/ -type f -name "*.js" -exec du -h {} \; | sort -rh | head -10
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 7 days
   needs:
-    - lint-and-test
+    - lint
+    - format-check
+    - type-check
+    - test
+    - security-scan
+  only:
+    - main
+    - develop
+    - merge_requests

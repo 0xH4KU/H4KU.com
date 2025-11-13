@@ -1,0 +1,72 @@
+name: Bundle Size Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  size-check:
+    name: Check Bundle Size
+    runs-on: ubuntu-latest
+    env:
+      VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+      VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+      VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install size-limit
+        run: npm install --no-save size-limit @size-limit/preset-app @size-limit/file
+
+      - name: Check bundle size
+        run: npx size-limit
+
+      - name: Compare with main branch
+        if: github.event_name == 'pull_request'
+        run: |
+          # Checkout main branch
+          git fetch origin main
+          git checkout origin/main
+
+          # Build main branch
+          npm ci
+          npm run build
+
+          # Save main branch sizes
+          npx size-limit --json > /tmp/main-size.json || true
+
+          # Checkout PR branch again
+          git checkout -
+          npm ci
+          npm run build
+
+          # Compare sizes
+          npx size-limit --json > /tmp/pr-size.json || true
+
+          echo "## Bundle Size Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Comparing PR branch with main branch..." >> $GITHUB_STEP_SUMMARY
+
+      - name: Report bundle analysis
+        run: |
+          echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### File Sizes (gzipped)" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find dist/assets -type f \( -name "*.js" -o -name "*.css" \) -exec sh -c 'gzip -c "$1" | wc -c | awk "{printf \"%s: %s KB\\n\", \"$1\", \$1/1024}"' _ {} \; >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

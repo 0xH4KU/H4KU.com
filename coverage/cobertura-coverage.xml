@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage lines-valid="506" lines-covered="485" line-rate="0.9584" branches-valid="240" branches-covered="214" branch-rate="0.8916" timestamp="1763024433175" complexity="0" version="0.1">
+<coverage lines-valid="506" lines-covered="485" line-rate="0.9584" branches-valid="240" branches-covered="214" branch-rate="0.8916" timestamp="1763028257214" complexity="0" version="0.1">
   <sources>
     <source>/Users/cervantes/git/lum.bio</source>
   </sources>
@@ -348,9 +348,9 @@
                 <line number="93" hits="6"/>
               </lines>
             </method>
-            <method name="(anonymous_7)" hits="16" signature="()V">
+            <method name="(anonymous_7)" hits="17" signature="()V">
               <lines>
-                <line number="105" hits="16"/>
+                <line number="105" hits="17"/>
               </lines>
             </method>
             <method name="(anonymous_8)" hits="6" signature="()V">
@@ -465,11 +465,11 @@
             <line number="95" hits="2" branch="false"/>
             <line number="97" hits="4" branch="false"/>
             <line number="105" hits="2" branch="false"/>
-            <line number="112" hits="16" branch="false"/>
-            <line number="113" hits="16" branch="false"/>
-            <line number="114" hits="16" branch="false"/>
-            <line number="115" hits="16" branch="false"/>
-            <line number="117" hits="16" branch="false"/>
+            <line number="112" hits="17" branch="false"/>
+            <line number="113" hits="17" branch="false"/>
+            <line number="114" hits="17" branch="false"/>
+            <line number="115" hits="17" branch="false"/>
+            <line number="117" hits="17" branch="false"/>
             <line number="118" hits="12" branch="true" condition-coverage="100% (2/2)"/>
             <line number="119" hits="8" branch="false"/>
             <line number="122" hits="4" branch="false"/>
@@ -488,8 +488,8 @@
             <line number="166" hits="4" branch="true" condition-coverage="100% (2/2)"/>
             <line number="167" hits="1" branch="false"/>
             <line number="179" hits="4" branch="false"/>
-            <line number="182" hits="16" branch="false"/>
-            <line number="184" hits="16" branch="false"/>
+            <line number="182" hits="17" branch="false"/>
+            <line number="184" hits="17" branch="false"/>
             <line number="192" hits="19" branch="false"/>
             <line number="193" hits="19" branch="false"/>
             <line number="195" hits="19" branch="false"/>
@@ -791,9 +791,9 @@
       <classes>
         <class name="useDebounce.ts" filename="src/hooks/useDebounce.ts" line-rate="1" branch-rate="1">
           <methods>
-            <method name="useDebounce" hits="24" signature="()V">
+            <method name="useDebounce" hits="25" signature="()V">
               <lines>
-                <line number="3" hits="24"/>
+                <line number="3" hits="25"/>
               </lines>
             </method>
             <method name="(anonymous_1)" hits="16" signature="()V">
@@ -801,9 +801,9 @@
                 <line number="6" hits="16"/>
               </lines>
             </method>
-            <method name="(anonymous_2)" hits="5" signature="()V">
+            <method name="(anonymous_2)" hits="6" signature="()V">
               <lines>
-                <line number="7" hits="5"/>
+                <line number="7" hits="6"/>
               </lines>
             </method>
             <method name="(anonymous_3)" hits="16" signature="()V">
@@ -813,13 +813,13 @@
             </method>
           </methods>
           <lines>
-            <line number="4" hits="24" branch="false"/>
-            <line number="6" hits="24" branch="false"/>
+            <line number="4" hits="25" branch="false"/>
+            <line number="6" hits="25" branch="false"/>
             <line number="7" hits="16" branch="false"/>
-            <line number="8" hits="5" branch="false"/>
+            <line number="8" hits="6" branch="false"/>
             <line number="11" hits="16" branch="false"/>
             <line number="12" hits="16" branch="false"/>
-            <line number="16" hits="24" branch="false"/>
+            <line number="16" hits="25" branch="false"/>
           </lines>
         </class>
         <class name="useSidebar.ts" filename="src/hooks/useSidebar.ts" line-rate="1" branch-rate="1">

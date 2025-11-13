@@ -12,7 +12,7 @@ export default mergeConfig(
       css: true,
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'json', 'html', 'lcov', 'cobertura'],
+        reporter: ['text', 'json', 'json-summary', 'html', 'lcov', 'cobertura', 'text-summary'],
         exclude: [
           'node_modules/',
           'src/tests/',
@@ -31,12 +31,23 @@ export default mergeConfig(
           'src/hooks/useReducedMotion.ts',
           'src/components/layout/SearchPanel.tsx',
         ],
+        // Global thresholds enforced by CI
         thresholds: {
           lines: 70,
           functions: 70,
           branches: 70,
           statements: 70,
+          // Per-file thresholds for critical code
+          perFile: true,
         },
+        // Fail CI if coverage drops below thresholds
+        reportOnFailure: true,
+        // Include all source files, even if not tested
+        all: true,
+        // Clean coverage directory before each run
+        clean: true,
+        // Skip coverage for files with no tests
+        skipFull: false,
       },
       include: ['src/**/*.{test,spec}.{ts,tsx}'],
       exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],

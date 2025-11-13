@@ -1,0 +1,70 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "schedule": [
+    "before 10am on monday"
+  ],
+  "timezone": "America/Los_Angeles",
+  "labels": ["dependencies", "automated"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "description": "Group all patch updates together",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "all patch dependencies",
+      "groupSlug": "all-patch"
+    },
+    {
+      "description": "Group all minor updates together",
+      "matchUpdateTypes": ["minor"],
+      "groupName": "all minor dependencies",
+      "groupSlug": "all-minor"
+    },
+    {
+      "description": "Auto-merge patch updates for dev dependencies",
+      "matchUpdateTypes": ["patch"],
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Separate major updates",
+      "matchUpdateTypes": ["major"],
+      "labels": ["major-update"],
+      "automerge": false
+    },
+    {
+      "description": "React ecosystem updates",
+      "matchPackagePatterns": ["^react", "^@types/react"],
+      "groupName": "React ecosystem",
+      "automerge": false
+    },
+    {
+      "description": "Testing updates",
+      "matchPackagePatterns": ["vitest", "@vitest", "testing-library"],
+      "groupName": "Testing tools"
+    },
+    {
+      "description": "Build tools",
+      "matchPackagePatterns": ["vite", "typescript", "eslint", "prettier"],
+      "groupName": "Build tools"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": false,
+    "schedule": ["at any time"]
+  },
+  "commitMessagePrefix": "deps:",
+  "commitMessageAction": "update",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 10am on the first day of the month"]
+  },
+  "rangeStrategy": "bump",
+  "separateMajorMinor": true,
+  "separateMinorPatch": false
+}
