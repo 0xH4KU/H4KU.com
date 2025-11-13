@@ -1,102 +1,261 @@
-# Lum.bio Portfolio
+# Lum.bio
 
-Lum.bio is a single-page, file-system inspired portfolio experience. It combines a tactile desktop metaphor (folders, text files, and galleries) with modern React tooling, accessibility-first design, and a fully static delivery model that runs anywhere a CDN can serve HTML.
+A file-system inspired portfolio built with React 19, TypeScript, and modern web standards. This repository demonstrates architectural patterns for building accessible, performant single-page applications with static data management.
 
-## Experience Highlights
+## Project Structure
 
-- **Spatial navigation** – Hierarchical folder tree with persistent width, context-aware breadcrumbs, and keyboard shortcuts for every action.
-- **Unified search** – Debounced, pre-indexed search that surfaces folders, text notes, and artwork in milliseconds without blocking the UI.
-- **Gallery workflow** – Lazy-loaded thumbnails, shared IntersectionObserver, and a lightbox that supports keyboard navigation, counters, and metadata overlays.
-- **Accessibility built in** – Skip links, focus rings, ARIA labeling, reduced-motion fallbacks, and screen-reader-friendly semantics throughout.
-- **Designer tools** – Pixel crosshair overlay, responsive grid, and theme-aware chroming for reviewing artwork in both light and dark environments.
+```
+lum.bio/
+├── src/
+│   ├── components/
+│   │   ├── common/          # Reusable UI primitives
+│   │   │   └── LazyImage.tsx
+│   │   ├── content/         # Content rendering logic
+│   │   │   └── ContentView.tsx
+│   │   ├── forms/           # Form components
+│   │   │   └── ContactForm.tsx
+│   │   ├── layout/          # Core layout components
+│   │   │   ├── Breadcrumb.tsx
+│   │   │   ├── ContextMenu.tsx
+│   │   │   ├── FolderTreeItem.tsx
+│   │   │   ├── SearchPanel.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── StatusBar.tsx
+│   │   │   ├── TopBar.tsx
+│   │   │   └── Tooltip.tsx
+│   │   └── overlay/         # Full-screen overlays
+│   │       ├── Crosshair.tsx
+│   │       └── Lightbox.tsx
+│   ├── contexts/            # React Context providers
+│   │   ├── NavigationContext.tsx
+│   │   ├── SearchContext.tsx
+│   │   ├── SidebarContext.tsx
+│   │   ├── SortContext.tsx
+│   │   └── ThemeContext.tsx
+│   ├── hooks/               # Custom React hooks
+│   │   ├── use100vh.ts
+│   │   ├── useCrosshair.ts
+│   │   ├── useDebounce.ts
+│   │   ├── useLocalStorage.ts
+│   │   ├── useReducedMotion.ts
+│   │   ├── useSidebar.ts
+│   │   └── useWindowSize.ts
+│   ├── utils/               # Pure utility functions
+│   │   ├── frontmatter.ts   # Markdown parsing
+│   │   ├── navigation.ts    # Navigation helpers
+│   │   ├── sortHelpers.ts   # Sorting logic
+│   │   └── urlHelpers.ts    # URL manipulation
+│   ├── content/             # Static content data
+│   │   ├── folders/         # Folder structure JSON
+│   │   ├── pages/           # Page content JSON
+│   │   ├── socials/         # Social links JSON
+│   │   ├── images/          # Image metadata
+│   │   └── _aggregated.json # Build-time aggregated data
+│   ├── config/              # Application configuration
+│   │   ├── constants.ts
+│   │   └── emailjs.ts
+│   ├── types/               # TypeScript definitions
+│   │   └── index.ts
+│   ├── tests/               # Test utilities
+│   │   ├── setup.ts
+│   │   └── utils.tsx
+│   ├── styles/              # Global styles
+│   │   └── global.css
+│   ├── App.tsx              # Root component
+│   └── main.tsx             # Entry point
+├── scripts/
+│   ├── build-data.js        # Content aggregation script
+│   └── cms.js               # Legacy CMS importer
+├── public/                  # Static assets
+│   ├── fonts/
+│   ├── content/             # Original content source
+│   ├── _redirects           # SPA routing config
+│   ├── robots.txt
+│   └── sitemap.xml
+├── .gitlab-ci.yml           # GitLab CI/CD pipeline
+├── vite.config.ts           # Vite build configuration
+├── vitest.config.ts         # Vitest test configuration
+└── tsconfig.json            # TypeScript compiler config
+```
 
-## Architecture at a Glance
+## Architecture
 
-| Layer | Description |
-| --- | --- |
-| **Rendering** | React 19 + Vite 7 with CSS Modules for scoped styling |
-| **State** | Context providers for theme, navigation, sorting, search UI/results, and sidebar preferences |
-| **Data** | Static JSON content authored under `src/content/` and aggregated at build time into `src/content/_aggregated.json` via `npm run build:data` |
-| **Navigation** | React Router with deep links for folders (`/folder/...`) and text entries (`/page/...`); O(1) lookup maps keep breadcrumbs/back navigation instant |
-| **Media** | LazyImage wraps the shared IntersectionObserver, optional `srcset` metadata, and graceful error states |
-| **CI/CD** | GitLab CI validates lint, type, and 180 automated tests before Cloudflare Pages builds and deploys |
+### State Management
+
+Context-based architecture with specialized providers:
+
+- **NavigationContext** – Folder tree, current path, breadcrumbs with O(1) lookups
+- **SearchContext** – Debounced search with pre-indexed content
+- **ThemeContext** – Light/dark mode with system preference detection
+- **SidebarContext** – Collapsible sidebar with persistence
+- **SortContext** – Multi-criteria sorting (name, date, type)
+
+### Data Pipeline
+
+```
+JSON files (src/content/*/)
+  ↓
+npm run build:data
+  ↓
+_aggregated.json
+  ↓
+Runtime import (no dynamic imports)
+  ↓
+Context providers
+```
+
+Build-time aggregation eliminates runtime glob imports and reduces bundle size.
+
+### Navigation
+
+- React Router 7 with file-path routing patterns
+- Deep links: `/folder/path/to/item` and `/page/page-id`
+- O(1) path lookups via Map-based indexing
+- Persistent navigation state across route changes
+
+### Performance Optimizations
+
+- **Lazy image loading** – Shared IntersectionObserver across all images
+- **Debounced search** – 300ms delay with abort controller
+- **CSS Modules** – Scoped styles, tree-shakeable
+- **Reduced motion support** – Respects `prefers-reduced-motion`
+- **Font loading strategy** – `font-display: swap` with fallback stack
+
+### Accessibility Features
+
+- WCAG 2.1 AA compliant
+- Semantic HTML with ARIA labels
+- Keyboard navigation for all interactive elements
+- Skip links for main content
+- Focus management in modal contexts
+- Screen reader optimized markup
 
 ## Technology Stack
 
-| Category | Tooling |
-| --- | --- |
-| UI Framework | React 19.2, React Router 7.9 |
-| Language & Build | TypeScript 5.4 (strict) + Vite 7 |
-| Styling | CSS Modules + global design tokens |
-| Animation | Framer Motion with reduced-motion-aware variants |
-| Testing | Vitest 4 + React Testing Library (180 automated specs) |
-| Email | EmailJS (lazy-loaded to keep the initial bundle lean) |
+| Layer | Technology |
+|-------|------------|
+| **Framework** | React 19.2 |
+| **Routing** | React Router 7.9 |
+| **Language** | TypeScript 5.4 (strict mode) |
+| **Build Tool** | Vite 7 |
+| **Styling** | CSS Modules + global tokens |
+| **Animation** | Framer Motion (reduced-motion aware) |
+| **Testing** | Vitest 4 + React Testing Library |
+| **Linting** | ESLint + Prettier |
+| **CI/CD** | GitLab CI + Cloudflare Pages |
+| **Email** | EmailJS (lazy-loaded) |
 
-## Getting Started
+## Development
+
+### Prerequisites
+
+- Node.js 18+
+- npm 9+
+
+### Setup
 
 ```bash
-git clone git@gitlab.com:lummuu/lum.bio.git
+git clone https://github.com/cwlum/lum.bio.git
 cd lum.bio
 npm install
-npm run dev         # http://localhost:5173
+cp .env.example .env  # Configure EmailJS credentials
+npm run dev
 ```
 
-Common scripts:
+Development server runs at `http://localhost:5173`
 
-| Command | Purpose |
-| --- | --- |
-| `npm run build` | Runs `npm run build:data` then produces the production bundle |
-| `npm run build:data` | Aggregates `src/content/**/*` JSON into `src/content/_aggregated.json` |
-| `npm run lint` / `npm run lint:fix` | ESLint + Prettier checks |
-| `npm run type-check` | TypeScript `--noEmit` verification |
-| `npm run test:run` | Executes the full Vitest suite once (used in CI) |
-| `npm run preview` | Serves the built `dist/` bundle locally |
+### Available Scripts
 
-## Data & Content Pipeline
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server with HMR |
+| `npm run build` | Build for production (includes data aggregation) |
+| `npm run build:data` | Aggregate content JSON into `_aggregated.json` |
+| `npm run preview` | Preview production build locally |
+| `npm test` | Run tests in watch mode |
+| `npm run test:run` | Run tests once (CI mode) |
+| `npm run test:coverage` | Generate coverage report |
+| `npm run test:ui` | Open Vitest UI dashboard |
+| `npm run lint` | Check code style |
+| `npm run lint:fix` | Fix auto-fixable lint issues |
+| `npm run type-check` | Verify TypeScript types |
 
-1. Author or edit JSON entries under `src/content/{folders,works,pages,socials}`. Each file is versioned alongside the code.
-2. Run `npm run build:data` (or simply `npm run build`) to regenerate `src/content/_aggregated.json`. This single artifact replaces four eager `import.meta.glob` calls and keeps the runtime bundle lean.
-3. Static assets (illustrations, gifs, fonts) live under `public/` so Vite can serve them verbatim.
-4. `scripts/cms.js` remains available for bulk imports from `public/content/` if you prefer that workflow, but the repository-first JSON approach is the default.
+### Content Management
 
-## Quality & Testing
+Content is stored as JSON files in `src/content/`:
 
-- **180 automated tests** cover hooks, utilities, contexts, and layout behaviors. The suite runs in under 2 seconds on CI.
-- **Tooling**: Vitest + React Testing Library with jsdom, snapshot-free assertions, and helpers in `src/tests/utils.tsx`.
-- **Philosophy**: write behavior-driven tests (Arrange → Act → Assert), mock external services sparingly, and target 80%+ coverage for new modules.
+- `folders/*.json` – Folder hierarchy and metadata
+- `pages/*.json` – Text content with markdown support
+- `images/*.json` – Image metadata and captions
+- `socials/*.json` – Social media links
 
-```bash
-npm test             # watch mode
-npm run test:run     # single CI run
-npm run test:coverage
-npm run test:ui      # interactive dashboard
-```
+After editing, run `npm run build:data` to regenerate `_aggregated.json`.
+
+## Testing
+
+180+ automated tests covering:
+
+- Context providers (state management)
+- Custom hooks (side effects, localStorage)
+- Utility functions (sorting, navigation, parsing)
+- Component behaviors (search, sidebar, layout)
+
+**Testing philosophy:**
+- Behavior-driven tests (not implementation details)
+- Minimal mocking (test real integrations where possible)
+- Fast execution (< 2 seconds for full suite on CI)
+- No snapshot tests (explicit assertions only)
 
 ## Deployment
 
-| Target | Configuration |
-| --- | --- |
-| **Cloudflare Pages** | Build command `npm run build`, output `dist`, environment vars for EmailJS (`VITE_EMAILJS_*`). `_redirects` ensures SPA routing. |
-| **Manual (Wrangler)** | `npm run build && npx wrangler pages deploy dist` |
+### Cloudflare Pages
 
-The GitLab pipeline mirrors the local workflow: lint → type-check → tests → `npm run build:data` → `vite build`. Artifacts are retained for 7 days to aid debugging.
+```bash
+npm run build
+npx wrangler pages deploy dist
+```
 
-## Documentation Map
+**Required environment variables:**
+- `VITE_EMAILJS_SERVICE_ID`
+- `VITE_EMAILJS_TEMPLATE_ID`
+- `VITE_EMAILJS_PUBLIC_KEY`
 
-- **[CHANGELOG.md](./CHANGELOG.md)** – human-readable release notes.
-- **[DEVELOPMENT.md](./DEVELOPMENT.md)** – architecture deep dive, context/hook responsibilities, and performance techniques.
-- **[TESTING.md](./TESTING.md)** – detailed guidance for authoring and running tests.
-- **[SETUP.md](./SETUP.md)** – operations playbook for local dev, content editing, EmailJS, and Cloudflare Pages.
-- **[GITLAB_CI_SETUP.md](./GITLAB_CI_SETUP.md)** – CI pipeline stages, variables, and troubleshooting.
-- **[OPTIMIZATION_PROGRESS.md](./OPTIMIZATION_PROGRESS.md)** – performance backlog and resolutions for posterity.
+### CI/CD Pipeline
 
-## Ethical Use & License
+GitLab CI automatically runs on every push:
 
-Lum.bio is intentionally source-available so you can learn from the architecture, not to
-clone the production experience. By using this repository you agree to the
-[Lum.bio Personal Source License](./LICENSE.md), which allows local evaluation and
-reference but forbids redeploying the UI, reusing the artwork/JSON content, or repackaging
-the project in commercial products. For talks, articles, or other uses outside those bounds,
-email `hi@lum.bio`.
+1. **Lint** – ESLint + Prettier
+2. **Type Check** – TypeScript compilation
+3. **Tests** – Full Vitest suite
+4. **Build Data** – Aggregate content
+5. **Build** – Production bundle
+6. **Deploy** – Cloudflare Pages (main branch only)
 
-Questions? Open an issue on GitLab or reach out directly to `hi@lum.bio`.
+Build artifacts retained for 7 days.
+
+## Documentation
+
+- **[CHANGELOG.md](./CHANGELOG.md)** – Release history
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** – Architecture deep dive
+- **[TESTING.md](./TESTING.md)** – Testing guidelines
+- **[GITLAB_CI_SETUP.md](./GITLAB_CI_SETUP.md)** – CI/CD configuration
+- **[CONTENT_GUIDE.md](./CONTENT_GUIDE.md)** – Content authoring guide
+
+## License
+
+This project is licensed under the **Lum.bio Personal Source License (LPSL-1.0)**.
+
+**Summary:** Source code is available for learning and reference. Deployment, redistribution, and commercial use are prohibited. Content and artwork remain exclusive to the author.
+
+See [LICENSE.md](./LICENSE.md) for full terms.
+
+## Contact
+
+For questions, collaboration, or licensing inquiries:
+
+- **Email:** hi@lum.bio
+- **Issues:** [GitHub](https://github.com/cwlum/lum.bio/issues) / [GitLab](https://gitlab.com/lummuu/lum.bio/-/issues)
+
+---
+
+**Note:** This is a personal portfolio project. The architecture and implementation patterns are shared for educational purposes, not as a template for cloning.

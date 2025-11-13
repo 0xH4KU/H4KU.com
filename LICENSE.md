@@ -1,6 +1,6 @@
 # Lum.bio Personal Source License (LPSL-1.0)
 
-Copyright © 2024 Lum. All rights reserved.
+Copyright © 2025 Lum. All rights reserved.
 
 ## Purpose
 
