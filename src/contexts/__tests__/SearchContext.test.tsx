@@ -22,6 +22,9 @@ const folderWork: WorkItem = {
   itemType: 'work',
   id: 'sketch-1',
   filename: 'Sketch Study',
+  title: 'Color Theory Notes',
+  description: 'Detailed figure study reference',
+  tags: ['vibrant', 'portfolio'],
   thumb: '/thumb.jpg',
   full: '/full.jpg',
 };
@@ -37,7 +40,7 @@ const homeNote: WorkItem = {
   itemType: 'page',
   id: 'note-1',
   filename: 'Home Note',
-  content: 'home note content',
+  content: 'home note secret body content',
 };
 
 const rootFolder: Folder = {
@@ -156,6 +159,73 @@ describe('SearchContext', () => {
 
     act(() => {
       result.current.setSearchQuery('   ');
+    });
+
+    await waitFor(() => expect(result.current.searchResults.length).toBe(0));
+  });
+
+  it('matches work items by title, description, tags, and text content', async () => {
+    const { result } = renderHook(() => useSearch(), { wrapper });
+
+    act(() => {
+      result.current.openSearch();
+      result.current.setSearchQuery('color theory');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(
+          entry => entry.type === 'work' && entry.work?.title?.includes('Color')
+        )
+      ).toBe(true)
+    );
+
+    act(() => {
+      result.current.setSearchQuery('figure study');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(entry =>
+          entry.type === 'work'
+            ? entry.work?.description?.includes('figure')
+            : false
+        )
+      ).toBe(true)
+    );
+
+    act(() => {
+      result.current.setSearchQuery('vibrant');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(entry =>
+          entry.type === 'work' ? entry.work?.tags?.includes('vibrant') : false
+        )
+      ).toBe(true)
+    );
+
+    act(() => {
+      result.current.setSearchQuery('secret body');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(
+          entry => entry.type === 'work' && entry.path?.[0] === 'home'
+        )
+      ).toBe(true)
+    );
+  });
+
+  it('skips home folder search when there are no home items', async () => {
+    mockData.homeItems = [];
+    const { result } = renderHook(() => useSearch(), { wrapper });
+
+    act(() => {
+      result.current.openSearch();
+      result.current.setSearchQuery('secret body');
     });
 
     await waitFor(() => expect(result.current.searchResults.length).toBe(0));
