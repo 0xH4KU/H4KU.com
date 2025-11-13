@@ -353,6 +353,167 @@ describe('NavigationProvider', () => {
     expect(result.current.currentPath).toEqual(['home']);
     expect(result.current.currentView).toBeNull();
   });
+
+  it('ignores missing page ids when initializing from page URLs', async () => {
+    mockData.folders = [];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper('/page/missing-id'),
+    });
+
+    await waitFor(() => expect(result.current.currentPath).toEqual(['home']));
+    expect(result.current.currentView).toBeNull();
+  });
+
+  it('ignores unknown route prefixes', async () => {
+    mockData.folders = [];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper('/unsupported/segment'),
+    });
+
+    await waitFor(() => expect(result.current.currentPath).toEqual(['home']));
+  });
+
+  it('ignores unresolved folder paths during initialization', async () => {
+    mockData.folders = [];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper('/folder/missing/path'),
+    });
+
+    await waitFor(() => expect(result.current.currentPath).toEqual(['home']));
+  });
+
+  it('falls back to supplied folder when nav map cannot resolve override paths', () => {
+    const folder = createFolder('outer', []);
+    mockData.folders = [folder];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.navigateTo(folder, ['ghost', 'path']);
+    });
+
+    expect(result.current.currentPath).toEqual(['home', 'ghost', 'path']);
+    expect(result.current.currentView?.data).toEqual(folder);
+  });
+
+  it('normalizes missing path overrides when opening standalone pages', () => {
+    const page = createPage('notes', { name: 'Notes' });
+    mockData.folders = [];
+    mockData.pages = [page];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.navigateTo(page);
+    });
+
+    expect(result.current.currentPath).toEqual(['home', 'notes']);
+    expect(result.current.currentView?.type).toBe('txt');
+  });
+
+  it('resets to home when navigating back from a single nested level', () => {
+    const folder = createFolder('outer', []);
+    mockData.folders = [folder];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.navigateTo(folder);
+    });
+
+    act(() => result.current.navigateBack());
+
+    expect(result.current.currentPath).toEqual(['home']);
+  });
+
+  it('falls back to page lookup when navigating back and no folder matches', () => {
+    const ghostPage = createPage('ghost-parent', { name: 'Ghost Parent' });
+    const detailPage = createPage('detail', { name: 'Detail' });
+    mockData.folders = [];
+    mockData.pages = [ghostPage, detailPage];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.navigateTo(detailPage, ['ghost-parent']);
+    });
+
+    expect(result.current.currentPath).toEqual([
+      'home',
+      'ghost-parent',
+      'detail',
+    ]);
+
+    act(() => result.current.navigateBack());
+
+    expect(result.current.currentPath).toEqual(['home', 'ghost-parent']);
+    expect(result.current.currentView?.type).toBe('txt');
+    expect(result.current.currentView?.data.id).toBe('ghost-parent');
+  });
+
+  it('ignores breadcrumb selections that do not resolve to folders or pages', () => {
+    const folder = createFolder('outer', []);
+    mockData.folders = [folder];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.navigateTo(folder, ['mystery']);
+    });
+
+    act(() => {
+      result.current.handleBreadcrumbSelect('mystery', 1);
+    });
+
+    expect(result.current.currentPath).toEqual(['home', 'mystery']);
+  });
+
+  it('defaults lightbox index to zero when the image is not in the gallery', () => {
+    const outsider = createWorkItem('img-out');
+    const gallery = [createWorkItem('img-1'), createWorkItem('img-2')];
+    mockData.folders = [];
+    mockData.pages = [];
+    mockData.homeItems = [];
+
+    const { result } = renderHook(() => useNavigation(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.openLightbox(outsider, gallery);
+    });
+
+    expect(result.current.lightboxIndex).toBe(0);
+    expect(result.current.lightboxGallery).toEqual(gallery);
+    expect(result.current.lightboxImage?.id).toBe('img-out');
+  });
 });
 
 describe('useNavigation', () => {

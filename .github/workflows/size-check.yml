@@ -36,9 +36,23 @@ jobs:
       - name: Check bundle size
         run: npx size-limit
 
+      - name: Save PR branch sizes
+        if: github.event_name == 'pull_request'
+        run: |
+          # Save PR branch sizes
+          npx size-limit --json > /tmp/pr-size.json || true
+
+          # Save PR dist sizes for comparison
+          du -sh dist/ > /tmp/pr-dist-size.txt
+          find dist/assets -type f -name "*.js" -exec du -h {} \; | sort -rh > /tmp/pr-js-sizes.txt
+
       - name: Compare with main branch
         if: github.event_name == 'pull_request'
         run: |
+          # Reset any local changes (including generated files)
+          git reset --hard HEAD
+          git clean -fdx
+
           # Checkout main branch
           git fetch origin main
           git checkout origin/main
@@ -49,18 +63,19 @@ jobs:
 
           # Save main branch sizes
           npx size-limit --json > /tmp/main-size.json || true
-
-          # Checkout PR branch again
-          git checkout -
-          npm ci
-          npm run build
-
-          # Compare sizes
-          npx size-limit --json > /tmp/pr-size.json || true
+          du -sh dist/ > /tmp/main-dist-size.txt
+          find dist/assets -type f -name "*.js" -exec du -h {} \; | sort -rh > /tmp/main-js-sizes.txt
 
           echo "## Bundle Size Comparison" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Comparing PR branch with main branch..." >> $GITHUB_STEP_SUMMARY
+          echo "### PR Branch vs Main Branch" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "PR Branch:" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/pr-dist-size.txt >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Main Branch:" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/main-dist-size.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Report bundle analysis
         run: |
