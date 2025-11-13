@@ -36,11 +36,10 @@ updates:
     # Allow security updates
     allow:
       - dependency-type: "all"
-    # Ignore specific packages if needed
-    ignore:
-      # Example: ignore major version updates for stability
-      # - dependency-name: "react"
-      #   update-types: ["version-update:semver-major"]
+    # Uncomment to ignore specific packages:
+    # ignore:
+    #   - dependency-name: "react"
+    #     update-types: ["version-update:semver-major"]
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
