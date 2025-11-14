@@ -1,6 +1,6 @@
 # Integrity Verification Guide
 
-The lum.bio build pipeline signs `src/content/_aggregated.json` with a deterministic checksum so we can detect tampering or accidental edits before publishing. This document describes how to verify that signature locally and what to do when the UI reports a mismatch.
+_How to verify `src/content/_aggregated.json` checksums and respond to tamper warnings._
 
 ## Status Bar Indicator
 

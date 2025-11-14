@@ -135,6 +135,10 @@ body.crosshair-active * {
   cursor: none !important;
 }
 
+body.domain-locked {
+  overflow: hidden;
+}
+
 #root {
   min-height: 100vh;
   min-height: calc(var(--vh, 1vh) * 100);
@@ -218,5 +222,28 @@ select:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Invisible fingerprint carrier */
+body::after {
+  content: attr(data-fingerprint);
+  position: fixed;
+  bottom: 2px;
+  right: 2px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  animation: fingerprintPulse var(--fp-anim-duration, 3200ms) ease-in-out
+    var(--fp-anim-delay, 0ms) infinite alternate;
+}
+
+@keyframes fingerprintPulse {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 1px, 0);
   }
 }

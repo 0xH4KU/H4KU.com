@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computeIntegrityHash, verifyIntegrity } from '../integrity';
+import {
+  computeIntegrityHash,
+  computeSHA256HashSync,
+  verifyIntegrity,
+  verifyIntegritySHA256,
+  verifyIntegrityDual,
+} from '../integrity';
 
 describe('integrity utilities', () => {
   it('computes deterministic hashes', () => {
@@ -31,5 +37,41 @@ describe('integrity utilities', () => {
     expect(result.expected).toBeNull();
     expect(result.isValid).toBe(false);
     expect(result.actual).toBe(computeIntegrityHash(payload));
+  });
+
+  it('computes SHA-256 hashes deterministically', () => {
+    const payload = { foo: 'secure' };
+    const hashA = computeSHA256HashSync(payload);
+    const hashB = computeSHA256HashSync(payload);
+    expect(hashA).toHaveLength(64);
+    expect(hashA).toBe(hashB);
+  });
+
+  it('verifies SHA-256 payloads', () => {
+    const payload = { foo: 'secure' };
+    const checksum = computeSHA256HashSync(payload);
+    const result = verifyIntegritySHA256(payload, checksum);
+    expect(result.algorithm).toBe('sha256');
+    expect(result.isValid).toBe(true);
+  });
+
+  it('reports invalid SHA-256 payloads', () => {
+    const payload = { foo: 'secure' };
+    const checksum = computeSHA256HashSync(payload);
+    const tampered = verifyIntegritySHA256({ foo: 'tampered' }, checksum);
+    expect(tampered.isValid).toBe(false);
+    expect(tampered.algorithm).toBe('sha256');
+  });
+
+  it('combines both algorithms in dual verification', () => {
+    const payload = { value: 'dual' };
+    const dual = verifyIntegrityDual(
+      payload,
+      computeIntegrityHash(payload),
+      computeSHA256HashSync(payload)
+    );
+    expect(dual.isFullyValid).toBe(true);
+    expect(dual.fnv1a.isValid).toBe(true);
+    expect(dual.sha256.isValid).toBe(true);
   });
 });

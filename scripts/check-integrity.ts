@@ -3,7 +3,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { computeIntegrityHash } from '../src/utils/integrity';
+import {
+  verifyIntegrityDual,
+  computeIntegrityHash,
+  computeSHA256HashSync,
+} from '../src/utils/integrity';
 
 type CliArgs = {
   file: string;
@@ -60,27 +64,39 @@ function main() {
     socials: aggregated.socials ?? [],
   };
 
-  const expected = typeof aggregated._integrity === 'string'
-    ? (aggregated._integrity as string)
-    : null;
-  const actual = computeIntegrityHash(payload);
+  const expectedFnv =
+    typeof aggregated._integrity === 'string'
+      ? (aggregated._integrity as string)
+      : null;
+  const expectedSha =
+    typeof aggregated._integritySHA256 === 'string'
+      ? (aggregated._integritySHA256 as string)
+      : null;
+
+  const result = verifyIntegrityDual(payload, expectedFnv, expectedSha);
 
   log(`Checking ${path.relative(process.cwd(), file)}`);
-  log(`Current checksum: ${expected ?? 'missing'}`);
-  log(`Computed checksum: ${actual}`);
+  log(`Legacy checksum (FNV-1a): ${expectedFnv ?? 'missing'} -> ${result.fnv1a.actual}`);
+  log(`SHA-256 checksum: ${expectedSha ?? 'missing'} -> ${result.sha256.actual}`);
 
-  if (expected === actual) {
+  if (result.isFullyValid) {
     log('✅ Integrity verified – no action needed.');
     return;
   }
 
   if (!write) {
-    log('❌ Integrity mismatch detected. Re-run with --write to update.');
+    log(
+      '❌ Integrity mismatch detected. Re-run with --write to update both hashes.'
+    );
     process.exit(2);
   }
 
   log('⚠️ Updating checksum...');
-  const updated = { ...aggregated, _integrity: actual };
+  const updated = {
+    ...aggregated,
+    _integrity: computeIntegrityHash(payload),
+    _integritySHA256: computeSHA256HashSync(payload),
+  };
   fs.writeFileSync(file, `${JSON.stringify(updated, null, 2)}\n`, 'utf-8');
   log('✅ Checksum updated.');
 }

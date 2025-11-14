@@ -1,7 +1,10 @@
 import { MockData, Folder, Page, Social, WorkItem } from '@/types';
 // Import aggregated data (built at build time by scripts/build-data.js)
 import aggregatedData from '@/content/_aggregated.json';
-import { verifyIntegrity } from '@/utils/integrity';
+import {
+  verifyIntegrityDual,
+  type DualIntegrityCheckResult,
+} from '@/utils/integrity';
 
 /**
  * Load content from aggregated JSON file instead of glob imports.
@@ -52,6 +55,7 @@ interface AggregatedContent {
   socials?: Social[];
   _buildTime?: string;
   _integrity?: string;
+  _integritySHA256?: string;
 }
 
 const rawAggregatedData = aggregatedData as AggregatedContent;
@@ -63,16 +67,39 @@ const integrityPayload = {
   socials: rawAggregatedData.socials ?? [],
 };
 
-export const dataIntegrity = verifyIntegrity(
+const integrityResults = verifyIntegrityDual(
   integrityPayload,
-  rawAggregatedData._integrity
+  rawAggregatedData._integrity,
+  rawAggregatedData._integritySHA256
 );
 
-if (!dataIntegrity.isValid) {
+const preferredIntegrity = integrityResults.sha256.expected
+  ? integrityResults.sha256
+  : integrityResults.fnv1a;
+
+type RuntimeIntegritySummary = {
+  expected: string | null;
+  actual: string;
+  algorithm: 'fnv1a' | 'sha256';
+  isValid: boolean;
+  details: DualIntegrityCheckResult;
+};
+
+export const dataIntegrity: RuntimeIntegritySummary = {
+  expected: preferredIntegrity.expected,
+  actual: preferredIntegrity.actual,
+  algorithm: preferredIntegrity.algorithm,
+  isValid: integrityResults.isFullyValid,
+  details: integrityResults,
+};
+
+if (!integrityResults.isFullyValid) {
   console.warn(
-    '[lum.bio] Content integrity verification failed. Expected %s but calculated %s.',
-    dataIntegrity.expected ?? 'missing',
-    dataIntegrity.actual
+    '[lum.bio] Content integrity verification failed.\n  • FNV-1a expected %s / actual %s\n  • SHA-256 expected %s / actual %s',
+    integrityResults.fnv1a.expected ?? 'missing',
+    integrityResults.fnv1a.actual,
+    integrityResults.sha256.expected ?? 'missing',
+    integrityResults.sha256.actual
   );
 }
 

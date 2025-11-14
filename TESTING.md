@@ -1,6 +1,6 @@
 # Testing Guide
 
-This guide explains how we test Lum.bio, the tooling we rely on, and the expectations for future contributions.
+_Testing philosophy, tooling, and expectations for Lum.bio._
 
 ## 1. Overview
 
@@ -131,4 +131,4 @@ describe('buildNavigationMap', () => {
 | DOM not updating | Wrap state updates in `act()` when manually triggering hook callbacks. |
 | Coverage drop | Run `npm run test:coverage` and inspect `coverage/coverage-summary.json` for culprits. |
 
-For deeper architectural context or CI details, refer to `DEVELOPMENT.md` and `GITLAB_CI_SETUP.md`.
+For deeper architectural context or CI details, refer to `DEVELOPMENT.md` and `docs/CI_GUIDE.md`.

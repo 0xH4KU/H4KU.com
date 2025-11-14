@@ -12,6 +12,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const FNV_OFFSET = 0x811c9dc5;
@@ -24,6 +25,9 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const CONTENT_DIR = path.join(ROOT_DIR, 'src', 'content');
 const OUTPUT_FILE = path.join(CONTENT_DIR, '_aggregated.json');
 
+/**
+ * FNV-1a hash (legacy, kept for backward compatibility)
+ */
 function computeIntegrityHash(payload) {
   const input = JSON.stringify(payload ?? null);
   let hash = FNV_OFFSET;
@@ -34,6 +38,17 @@ function computeIntegrityHash(payload) {
   }
 
   return hash.toString(16).padStart(8, '0');
+}
+
+/**
+ * SHA-256 hash (enhanced security)
+ * Uses Node.js crypto module for secure hashing
+ */
+function computeSHA256Hash(payload) {
+  const input = JSON.stringify(payload ?? null);
+  const hash = crypto.createHash('sha256');
+  hash.update(input);
+  return hash.digest('hex');
 }
 
 // Read all JSON files from a directory
@@ -251,10 +266,15 @@ function main() {
     process.exit(1);
   }
 
+  // Generate both FNV-1a and SHA-256 hashes for dual verification
+  const fnv1aHash = computeIntegrityHash(payload);
+  const sha256Hash = computeSHA256Hash(payload);
+
   const aggregated = {
     ...payload,
     _buildTime: new Date().toISOString(),
-    _integrity: computeIntegrityHash(payload),
+    _integrity: fnv1aHash, // Legacy FNV-1a hash (backward compatible)
+    _integritySHA256: sha256Hash, // Enhanced SHA-256 hash
   };
 
   // Write aggregated file
@@ -269,7 +289,8 @@ function main() {
   console.log(`   Images: ${images.length}`);
   console.log(`   Pages: ${pages.length}`);
   console.log(`   Socials: ${socials.length}`);
-  console.log(`   Integrity: ${aggregated._integrity}`);
+  console.log(`   Integrity (FNV-1a): ${fnv1aHash}`);
+  console.log(`   Integrity (SHA-256): ${sha256Hash.substring(0, 16)}...`);
   console.log(`\n✅ Built: ${OUTPUT_FILE}`);
   console.log(
     `   Size: ${(fs.statSync(OUTPUT_FILE).size / 1024).toFixed(2)} KB\n`

@@ -1,8 +1,10 @@
 # Content Management Guide
 
-> ⚠️ Licensing reminder: all assets fall under the [Lum.bio Personal Source License](./LICENSE.md). Images, copy, and JSON data are for running this site only—do not redistribute or commercialise them.
+_How to add or update assets under `public/content` without breaking licensing or integrity._
 
-## 🚀 Quick Start
+> Licensing reminder: all assets fall under the [Lum.bio Personal Source License](./LICENSE.md). Images, copy, and JSON data are for running this site only—do not redistribute or commercialise them.
+
+## Quick Start
 
 1. **Add files to the content tree**
    - Images → `public/content/homepage/` (or any subfolder)
@@ -15,9 +17,7 @@
 3. **Done!**  
    If `npm run dev` is running, Vite will pick up the regenerated data automatically—no server restart required.
 
----
-
-## 📁 Directory Layout
+## Directory Layout
 
 ```
 public/content/homepage/
@@ -32,9 +32,7 @@ public/content/homepage/
     └── metadata.json
 ```
 
----
-
-## 🎨 Configuring `metadata.json`
+## Configuring `metadata.json`
 
 Place a `metadata.json` file inside any folder to customise its label and items:
 
@@ -71,16 +69,12 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 - `tags` – Array of strings
 - `order` – Per-folder ordering weight
 
----
-
-## 📝 Supported File Types
+## Supported File Types
 
 - Images: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`
 - Text: `.txt` (rendered as text files), `.md` (converted to plain text)
 
----
-
-## 🔄 Frequently Used Commands
+## Frequently Used Commands
 
 | Command | Purpose |
 | --- | --- |
@@ -89,18 +83,14 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 | `npm run dev` | Start the Vite dev server |
 | `npm run build` | Production build (automatically runs the CMS pipeline) |
 
----
-
-## 🔐 Integrity Tag
+## Integrity Tag
 
 - The CMS pipeline now writes an `_integrity` field (FNV-1a checksum) into `src/content/_aggregated.json` every time `npm run cms` or `npm run build:data` runs.
 - `mockData` recomputes that checksum at runtime and the UI exposes the verification result, so avoid editing `_aggregated.json` by hand.
 - If you ever edit raw JSON under `src/content/`, re-run `npm run build:data` (preferred) or `npm run integrity:check -- --write` to refresh both `_buildTime` and `_integrity`.
 - `npm run integrity:check` is also the quickest way to verify a downloaded build or CI artifact. See [`docs/INTEGRITY.md`](docs/INTEGRITY.md) for the full workflow.
 
----
-
-## 💡 Tips & Best Practices
+## Tips and Best Practices
 
 1. **Automatic sorting**
    - Folders default to reverse alphabetical order (Z→A) so newer folders appear first.
@@ -122,9 +112,7 @@ Place a `metadata.json` file inside any folder to customise its label and items:
    # Browser reloads with the new content
    ```
 
----
-
-## 🐛 Troubleshooting
+## Troubleshooting
 
 | Symptom | Fix |
 | --- | --- |
@@ -133,9 +121,7 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 | Removing content | Delete the file/folder from `public/content/homepage/` **and** rerun `npm run cms`. |
 | Live reload not updating | Manual `npm run cms` is still required, but Vite watches `_aggregated.json` so the browser refreshes once it changes. |
 
----
-
-## 📦 How the Pipeline Works
+## How the Pipeline Works
 
 ```
 public/content/homepage/
@@ -153,9 +139,7 @@ Generated files:
 - `src/content/pages/*.json` – Standalone text pages
 - `src/content/_aggregated.json` – Combined dataset used at runtime
 
----
-
-## 🎯 Example: Add a new commission folder
+## Example: Add a New Commission Folder
 
 ```bash
 # 1. Create a folder

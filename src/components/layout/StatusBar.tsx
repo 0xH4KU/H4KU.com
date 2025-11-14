@@ -8,6 +8,8 @@ import styles from './StatusBar.module.css';
 const INTEGRITY_DOC_URL =
   'https://gitlab.com/lummuu/lum.bio/-/blob/main/docs/INTEGRITY.md';
 
+const LICENSE_URL = 'https://gitlab.com/lummuu/lum.bio/-/blob/main/LICENSE.md';
+
 const StatusBar: React.FC = () => {
   const { currentView } = useNavigation();
   const { sortOrder, toggleSortOrder, typeOrder, toggleTypeOrder } =
@@ -81,6 +83,23 @@ const StatusBar: React.FC = () => {
     [socials]
   );
 
+  const integrityAlgorithmLabel =
+    dataIntegrity.algorithm === 'sha256' ? 'SHA-256' : 'FNV-1a';
+
+  const integrityTitle = dataIntegrity.isValid
+    ? `Content integrity verified (${integrityAlgorithmLabel}: ${dataIntegrity.actual})`
+    : `${integrityAlgorithmLabel} mismatch (expected ${
+        dataIntegrity.expected ?? 'unknown'
+      }, actual ${dataIntegrity.actual})`;
+
+  const mismatchSummary = !dataIntegrity.isValid
+    ? `FNV-1a expected ${dataIntegrity.details.fnv1a.expected ?? 'missing'} vs ${
+        dataIntegrity.details.fnv1a.actual
+      } | SHA-256 expected ${
+        dataIntegrity.details.sha256.expected ?? 'missing'
+      } vs ${dataIntegrity.details.sha256.actual}`
+    : '';
+
   return (
     <div className={styles['status-bar']}>
       <div
@@ -151,20 +170,14 @@ const StatusBar: React.FC = () => {
           }`}
           role="status"
           aria-live={dataIntegrity.isValid ? 'polite' : 'assertive'}
-          title={
-            dataIntegrity.isValid
-              ? `Content integrity verified (${dataIntegrity.actual})`
-              : `Content integrity mismatch (expected ${
-                  dataIntegrity.expected ?? 'unknown'
-                }, actual ${dataIntegrity.actual})`
-          }
+          title={integrityTitle}
         >
           [{dataIntegrity.isValid ? 'verified' : 'tamper detected'}]
         </span>
         {!dataIntegrity.isValid && (
           <span className={styles['integrity-warning']} role="alert">
-            Checksum mismatch detected. Run <code>npm run integrity:check</code>{' '}
-            or read the{' '}
+            Integrity mismatch detected. {mismatchSummary} Run{' '}
+            <code>npm run integrity:check</code> or read the{' '}
             <a
               href={INTEGRITY_DOC_URL}
               target="_blank"
@@ -175,6 +188,20 @@ const StatusBar: React.FC = () => {
             .
           </span>
         )}
+      </div>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--license']}`}
+      >
+        <a
+          href={LICENSE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles['license-link']}
+          aria-label="View license information (LPSL-1.0)"
+          title="Limited Personal Source License - Click to view terms"
+        >
+          [LPSL-1.0]
+        </a>
       </div>
       <div
         className={`${styles['status-section']} ${styles['status-section--meta']}`}

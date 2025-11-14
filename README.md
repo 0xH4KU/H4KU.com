@@ -1,6 +1,6 @@
 # Lum.bio
 
-A file-system inspired portfolio built with React 19, TypeScript, and modern web standards. This repository demonstrates architectural patterns for building accessible, performant single-page applications with static data management.
+_A file-system inspired portfolio built with React 19, TypeScript, and static content aggregation._
 
 ## Project Structure
 
@@ -265,11 +265,10 @@ Build artifacts retained for 7 days.
 - **[CHANGELOG.md](./CHANGELOG.md)** – Release history
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)** – Architecture deep dive
 - **[TESTING.md](./TESTING.md)** – Testing guidelines
-- **[docs/CI_CD_GUIDE.md](./docs/CI_CD_GUIDE.md)** – Comprehensive CI/CD guide
-- **[docs/CI_BADGES.md](./docs/CI_BADGES.md)** – CI badge setup instructions
-- **[docs/CI_IMPROVEMENTS_SUMMARY.md](./docs/CI_IMPROVEMENTS_SUMMARY.md)** – CI enhancement summary
-- **[GITLAB_CI_SETUP.md](./GITLAB_CI_SETUP.md)** – GitLab CI configuration (legacy)
 - **[CONTENT_GUIDE.md](./CONTENT_GUIDE.md)** – Content authoring guide
+- **[docs/INTEGRITY.md](./docs/INTEGRITY.md)** – Checksum workflow
+- **[docs/ANTI_THEFT_PROTECTION.md](./docs/ANTI_THEFT_PROTECTION.md)** – Anti-tamper layers
+- **[docs/CI_GUIDE.md](./docs/CI_GUIDE.md)** – Combined CI/CD workflow and badge reference
 
 ## License
 

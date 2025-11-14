@@ -157,8 +157,34 @@ const getDynamicRoutes = (): string[] => {
   return Array.from(routes);
 };
 
+const chunkAliasMap: Record<string, string> = {
+  index: 'main',
+  'react-vendor': 'rv',
+  'animation-vendor': 'anim',
+  'icons-vendor': 'icons',
+};
+
+const getChunkAlias = (name?: string): string | null => {
+  if (!name) {
+    return null;
+  }
+  return chunkAliasMap[name] ?? null;
+};
+
 const dynamicRoutes = getDynamicRoutes();
 const isVitest = process.env.VITEST === 'true';
+const buildVersion =
+  process.env.VITE_APP_VERSION ||
+  process.env['npm_package_version'] ||
+  '1.0.0';
+const buildFingerprintMeta = {
+  buildId: process.env.VITE_BUILD_ID || 'dev-local',
+  timestamp: Number(process.env.VITE_BUILD_TIMESTAMP || Date.now()),
+  signature: process.env.VITE_BUILD_SIGNATURE || '',
+  version: buildVersion,
+  environment:
+    process.env.NODE_ENV === 'production' ? 'production' : 'development',
+};
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -208,12 +234,51 @@ export default defineConfig({
           // Split icon library
           'icons-vendor': ['lucide-react'],
         },
+        chunkFileNames: chunkInfo => {
+          if (process.env.NODE_ENV !== 'production') {
+            return 'assets/[name]-[hash].js';
+          }
+          const alias = getChunkAlias(chunkInfo.name);
+          return alias ? `assets/${alias}-[hash].js` : 'assets/chunk-[hash].js';
+        },
+        entryFileNames: chunkInfo => {
+          if (process.env.NODE_ENV !== 'production') {
+            return 'assets/[name]-[hash].js';
+          }
+          const alias = getChunkAlias(chunkInfo.name);
+          return alias ? `assets/${alias}-[hash].js` : 'assets/entry-[hash].js';
+        },
+        assetFileNames:
+          process.env.NODE_ENV === 'production'
+            ? 'assets/[hash][extname]'
+            : 'assets/[name]-[hash][extname]',
       },
     },
     // Configure chunk size warning threshold
     chunkSizeWarningLimit: 500,
-    // Enable source map (optional for production)
-    sourcemap: false,
+    sourcemap: process.env.NODE_ENV !== 'production',
+    minify: 'terser',
+    terserOptions: {
+      mangle: {
+        toplevel: true,
+      },
+      compress: {
+        passes: 3,
+        drop_console: false,
+        drop_debugger: true,
+      },
+      format: {
+        comments: false,
+      },
+    },
+    target: 'es2020',
+  },
+  // Define global constants (fingerprint will be injected here)
+  define: {
+    __BUILD_ID__: JSON.stringify(buildFingerprintMeta.buildId),
+    __BUILD_TIMESTAMP__: JSON.stringify(buildFingerprintMeta.timestamp),
+    __BUILD_SIGNATURE__: JSON.stringify(buildFingerprintMeta.signature),
+    __BUILD_FINGERPRINT__: JSON.stringify(buildFingerprintMeta),
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {

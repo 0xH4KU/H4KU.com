@@ -1,25 +1,25 @@
 export default [
   {
     name: 'Main Bundle',
-    path: 'dist/assets/index-*.js',
+    path: 'dist/assets/main-*.js',
     limit: '150 KB',
     gzip: true,
   },
   {
     name: 'React Vendor',
-    path: 'dist/assets/react-vendor-*.js',
+    path: 'dist/assets/rv-*.js',
     limit: '140 KB',
     gzip: true,
   },
   {
     name: 'Animation Vendor',
-    path: 'dist/assets/animation-vendor-*.js',
+    path: 'dist/assets/anim-*.js',
     limit: '80 KB',
     gzip: true,
   },
   {
     name: 'Icons Vendor',
-    path: 'dist/assets/icons-vendor-*.js',
+    path: 'dist/assets/icons-*.js',
     limit: '60 KB',
     gzip: true,
   },

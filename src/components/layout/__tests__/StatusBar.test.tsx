@@ -6,6 +6,19 @@ type IntegrityStub = {
   isValid: boolean;
   expected: string | null;
   actual: string;
+  algorithm?: 'fnv1a' | 'sha256';
+  details?: {
+    fnv1a: IntegrityStubResult;
+    sha256: IntegrityStubResult;
+    isFullyValid: boolean;
+  };
+};
+
+type IntegrityStubResult = {
+  expected: string | null;
+  actual: string;
+  isValid: boolean;
+  algorithm: 'fnv1a' | 'sha256';
 };
 
 type RenderOptions = {
@@ -46,6 +59,22 @@ const renderStatusBar = async (options: RenderOptions = {}) => {
   vi.doMock('@/contexts/SortContext', () => ({
     useSortOrder: () => sortMocks,
   }));
+  const stubDetails = integrity.details ?? {
+    fnv1a: {
+      expected: integrity.expected,
+      actual: integrity.actual,
+      isValid: integrity.isValid,
+      algorithm: 'fnv1a',
+    },
+    sha256: {
+      expected: integrity.expected,
+      actual: integrity.actual,
+      isValid: integrity.isValid,
+      algorithm: 'sha256',
+    },
+    isFullyValid: integrity.isValid,
+  };
+
   vi.doMock('@/data/mockData', () => ({
     mockData: {
       socials: options.socials ?? [
@@ -55,7 +84,11 @@ const renderStatusBar = async (options: RenderOptions = {}) => {
       pages: [],
       homeItems: [],
     },
-    dataIntegrity: integrity,
+    dataIntegrity: {
+      ...integrity,
+      algorithm: integrity.algorithm ?? 'sha256',
+      details: stubDetails,
+    },
   }));
   vi.doMock('@/utils/urlHelpers', () => ({
     getSafeUrl:
@@ -95,7 +128,7 @@ describe('StatusBar integrity indicator', () => {
     });
     expect(screen.getByText(/\[tamper detected]/i)).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent(
-      /checksum mismatch detected/i
+      /integrity mismatch detected/i
     );
   });
 

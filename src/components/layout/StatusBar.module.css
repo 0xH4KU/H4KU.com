@@ -146,6 +146,23 @@
   color: var(--color-secondary);
 }
 
+.license-link {
+  font-size: var(--font-size-xxs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  color: var(--color-primary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.license-link:hover,
+.license-link:focus-visible {
+  text-decoration: underline;
+}
+
 .integrity-warning {
   font-size: var(--font-size-xxs);
   margin-left: 8px;

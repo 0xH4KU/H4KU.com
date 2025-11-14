@@ -1,6 +1,6 @@
 # Development Guide
 
-This document explains how Lum.bio is put together under the hood. It is intended for engineers who want to reason about the architecture, understand the trade-offs we made, and extend the codebase without breaking the site’s core experience.
+_Architecture reference for contributors extending Lum.bio without regressing the core experience._
 
 ## 1. System Overview
 
@@ -95,4 +95,4 @@ When profiling, pay close attention to `NavigationContext` (URL synchronisation)
 3. **Add animations** – Provide reduced-motion variants and keep transitions short (<300 ms) to match the existing interaction style.
 4. **Add routing** – Update `NavigationContext` so new sections remain in sync with URLs and breadcrumbs; remember to update `_redirects` if you add top-level routes.
 
-For deeper testing details or CI instructions, see `TESTING.md` and `GITLAB_CI_SETUP.md`.
+For deeper testing guidance or CI instructions, see `TESTING.md` and `docs/CI_GUIDE.md`.
