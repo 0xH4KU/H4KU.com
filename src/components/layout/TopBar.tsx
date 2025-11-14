@@ -72,7 +72,7 @@ const TopBar: React.FC = () => {
         aria-haspopup="dialog"
         aria-expanded={searchOpen}
         aria-controls={SEARCH_PANEL_ID}
-        aria-label="Search artworks"
+        aria-label="Search images"
       >
         <Search size={16} />
       </button>

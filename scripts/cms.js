@@ -196,20 +196,18 @@ function scanDirectory(dirPath, currentPath = [], parentId = null) {
         page.title = itemMeta.title;
       }
 
+      const orderValue =
+        itemMeta.order !== undefined ? itemMeta.order : index + 1;
+
       if (parentId) {
-        // Text file inside a folder - treat as work item
-        page.itemType = 'page';
+        // Text file inside a folder - treat as a folder-scoped page
         page.folderId = parentId;
-        if (itemMeta.order !== undefined) {
-          page.order = itemMeta.order;
-        } else {
-          page.order = index + 1;
-        }
-        works.push(page);
-      } else {
-        // Text file at homepage level - treat as standalone page
-        pages.push(page);
+        page.order = orderValue;
       }
+
+      // Persist all text files under the pages collection so the aggregator
+      // can attach them to folders later.
+      pages.push(page);
     }
   });
 

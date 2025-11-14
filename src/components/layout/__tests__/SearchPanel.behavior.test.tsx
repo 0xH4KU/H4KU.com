@@ -59,7 +59,7 @@ vi.mock('@/contexts/NavigationContext', () => ({
 const folderResult: FolderResult = {
   type: 'folder',
   id: 'folder-1',
-  label: 'Folder',
+  label: 'Folder One',
   path: ['folder-1'],
   folder: { id: 'folder-1', name: 'Folder One', type: 'folder' },
 };
@@ -67,14 +67,14 @@ const folderResult: FolderResult = {
 const pageResult: PageResult = {
   type: 'page',
   id: 'page-1',
-  label: 'Text File',
+  label: 'Doc',
   page: { id: 'page-1', name: 'Doc', type: 'txt', content: 'Body' },
 };
 
 const workResult: WorkResult = {
   type: 'work',
   id: 'work-1',
-  label: 'Work',
+  label: 'work',
   path: ['folder-1'],
   folder: { id: 'folder-1', name: 'Folder One', type: 'folder' },
   work: { id: 'work-1', filename: 'work.png', itemType: 'work' },
@@ -109,11 +109,11 @@ describe('SearchPanel interactions', () => {
 
   it('submits selection via keyboard navigation', async () => {
     render(<SearchPanel />);
-    const folderButton = getResultButtonByLabel('Folder');
+    const folderButton = getResultButtonByLabel('Folder One');
     expect(folderButton).toHaveClass(styles['search-result--selected']);
 
     await userEvent.keyboard('{ArrowDown}');
-    const pageButton = getResultButtonByLabel('Text File');
+    const pageButton = getResultButtonByLabel('Doc');
     expect(pageButton).toHaveClass(styles['search-result--selected']);
 
     await userEvent.keyboard('{Enter}');
@@ -130,7 +130,7 @@ describe('SearchPanel interactions', () => {
     await userEvent.type(input, '!');
     expect(searchUIState.setSearchQuery).toHaveBeenCalled();
 
-    const folderButton = getResultButtonByLabel('Folder');
+    const folderButton = getResultButtonByLabel('Folder One');
     await userEvent.click(folderButton);
     expect(navigationMock.navigateTo).toHaveBeenCalledWith(
       folderResult.folder,
@@ -141,7 +141,7 @@ describe('SearchPanel interactions', () => {
 
   it('opens lightbox for work results', async () => {
     render(<SearchPanel />);
-    const workButton = getResultButtonByLabel('Work');
+    const workButton = getResultButtonByLabel('work');
     await userEvent.click(workButton);
     expect(navigationMock.openLightbox).toHaveBeenCalledWith(
       workResult.work,

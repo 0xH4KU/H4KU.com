@@ -55,7 +55,7 @@ function main() {
   const aggregated = JSON.parse(raw) as Record<string, unknown>;
   const payload = {
     folders: aggregated.folders ?? [],
-    works: aggregated.works ?? [],
+    images: aggregated.images ?? [],
     pages: aggregated.pages ?? [],
     socials: aggregated.socials ?? [],
   };

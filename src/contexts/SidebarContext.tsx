@@ -42,7 +42,7 @@ const clampSidebarWidthValue = (value: number) => {
 };
 
 const getInitialSidebarState = () => {
-  /* c8 ignore next */
+  /* istanbul ignore next */
   if (typeof window === 'undefined') {
     return true;
   }
@@ -98,7 +98,7 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   useEffect(() => {
-    /* c8 ignore next */
+    /* istanbul ignore next */
     if (typeof window === 'undefined') {
       return;
     }

@@ -6,6 +6,7 @@ import {
   useSearch,
   useSearchUI,
   useSearchResults,
+  useSearchExecutor,
 } from '@/contexts/SearchContext';
 import { mockData } from '@/data/mockData';
 import type { Folder, Page, WorkItem } from '@/types';
@@ -230,6 +231,13 @@ describe('SearchContext', () => {
 
     await waitFor(() => expect(result.current.searchResults.length).toBe(0));
   });
+
+  it('allows consumers to run ad-hoc searches via executor hook', () => {
+    const { result } = renderHook(() => useSearchExecutor(), { wrapper });
+    const { runSearch } = result.current;
+    const results = runSearch('portfolio');
+    expect(results.some(entry => entry.type === 'folder')).toBe(true);
+  });
 });
 
 describe('Search hooks guard rails', () => {
@@ -241,6 +249,12 @@ describe('Search hooks guard rails', () => {
 
   it('throws when useSearchResults is called outside the provider', () => {
     expect(() => renderHook(() => useSearchResults())).toThrow(
+      /within SearchProvider/i
+    );
+  });
+
+  it('throws when useSearchExecutor is called outside the provider', () => {
+    expect(() => renderHook(() => useSearchExecutor())).toThrow(
       /within SearchProvider/i
     );
   });

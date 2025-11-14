@@ -67,7 +67,7 @@ const isPlainObject = value =>
 const isNonEmptyString = value =>
   typeof value === 'string' && value.trim().length > 0;
 
-const VALID_WORK_TYPES = new Set(['work', 'page']);
+const VALID_IMAGE_TYPES = new Set(['work', 'page']);
 
 function validateAggregatedPayload(payload) {
   const errors = [];
@@ -81,7 +81,7 @@ function validateAggregatedPayload(payload) {
   };
 
   const folders = ensureArray('folders', payload.folders);
-  const works = ensureArray('works', payload.works);
+  const images = ensureArray('images', payload.images);
   const pages = ensureArray('pages', payload.pages);
   const socials = ensureArray('socials', payload.socials);
 
@@ -127,16 +127,16 @@ function validateAggregatedPayload(payload) {
     }
   });
 
-  works.forEach((work, index) => {
+  images.forEach((work, index) => {
     if (!isPlainObject(work)) {
-      errors.push(`[works][${index}] must be an object`);
+      errors.push(`[images][${index}] must be an object`);
       return;
     }
     if (!isNonEmptyString(work.id)) {
-      errors.push(`[works][${index}].id must be a non-empty string`);
+      errors.push(`[images][${index}].id must be a non-empty string`);
     }
     if (!isNonEmptyString(work.filename)) {
-      errors.push(`[works][${index}].filename must be a non-empty string`);
+      errors.push(`[images][${index}].filename must be a non-empty string`);
     }
     if (
       work.folderId !== undefined &&
@@ -144,16 +144,16 @@ function validateAggregatedPayload(payload) {
       typeof work.folderId !== 'string'
     ) {
       errors.push(
-        `[works][${index}].folderId must be a string or null when provided`
+        `[images][${index}].folderId must be a string or null when provided`
       );
     }
     if (
       work.itemType !== undefined &&
       work.itemType !== null &&
-      !VALID_WORK_TYPES.has(work.itemType)
+      !VALID_IMAGE_TYPES.has(work.itemType)
     ) {
       errors.push(
-        `[works][${index}].itemType must be "work" or "page" when provided`
+        `[images][${index}].itemType must be "work" or "page" when provided`
       );
     }
   });
@@ -234,7 +234,7 @@ function main() {
 
   const payload = {
     folders,
-    works: images,
+    images,
     pages,
     socials,
   };
@@ -266,7 +266,7 @@ function main() {
 
   console.log(`📊 Aggregated data stats:`);
   console.log(`   Folders: ${folders.length}`);
-  console.log(`   Works: ${images.length}`);
+  console.log(`   Images: ${images.length}`);
   console.log(`   Pages: ${pages.length}`);
   console.log(`   Socials: ${socials.length}`);
   console.log(`   Integrity: ${aggregated._integrity}`);
