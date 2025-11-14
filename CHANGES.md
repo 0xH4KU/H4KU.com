@@ -142,7 +142,7 @@ All scripts in `scripts/ci/` directory:
 
 ### Configuration Files (3 files)
 
-#### `.size-limit.json`
+#### `.size-limit.js`
 Bundle size limits configuration:
 - Main Bundle: 150 KB (gzipped)
 - React Vendor: 140 KB (gzipped)
@@ -211,7 +211,7 @@ Quick reference guide (new):
 | GitHub Workflows | 3 | ci.yml, codeql.yml, size-check.yml |
 | GitLab Config | 1 | .gitlab-ci.yml |
 | Shell Scripts | 5 | check-quality.sh, run-all-checks.sh |
-| Config Files | 4 | .size-limit.json, renovate.json, dependabot.yml |
+| Config Files | 4 | .size-limit.js, renovate.json, dependabot.yml |
 | Documentation | 4 | CI_CD_GUIDE.md, CI_BADGES.md, etc. |
 | Package Files | 2 | package.json, vitest.config.ts |
 | Other | 2 | README.md, CHANGES.md |
@@ -381,7 +381,7 @@ CHANGES.md                     # This file
 **For Advanced Users:**
 1. Review `docs/CI_CD_GUIDE.md` for architecture
 2. Customize `.github/workflows/` for your needs
-3. Adjust thresholds in `vitest.config.ts` and `.size-limit.json`
+3. Adjust thresholds in `vitest.config.ts` and `.size-limit.js`
 
 **For DevOps:**
 1. Study `docs/CI_IMPROVEMENTS_SUMMARY.md` for migration

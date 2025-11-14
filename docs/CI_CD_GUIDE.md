@@ -222,7 +222,7 @@ coverage: {
 
 ### Bundle Size Limits
 
-Defined in `.size-limit.json`:
+Defined in `.size-limit.js`:
 
 | Bundle | Limit (gzipped) |
 |--------|-----------------|

@@ -53,7 +53,7 @@ The CI/CD infrastructure has been comprehensively enhanced to provide robust, co
 - ✅ Fail CI on coverage drops
 - ✅ Include all source files in coverage
 
-**Bundle Size Limits (`.size-limit.json`)**
+**Bundle Size Limits (`.size-limit.js`)**
 - ✅ Size budgets for each bundle chunk
 - ✅ Main Bundle: 150 KB (gzipped)
 - ✅ React Vendor: 140 KB (gzipped)
@@ -297,7 +297,7 @@ npm run ci
 
 2. **Bundle Size Limits**
    - New size limits may fail if current bundles exceed limits
-   - Action: Review `.size-limit.json` and adjust limits if needed
+   - Action: Review `.size-limit.js` and adjust limits if needed
 
 3. **Security Scanning**
    - May flag existing vulnerabilities
