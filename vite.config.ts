@@ -158,6 +158,7 @@ const getDynamicRoutes = (): string[] => {
 };
 
 const dynamicRoutes = getDynamicRoutes();
+const isVitest = process.env.VITEST === 'true';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -177,13 +178,17 @@ export default defineConfig({
     //     quality: 85,
     //   },
     // }),
-    sitemap({
-      hostname: 'https://lum.bio',
-      dynamicRoutes,
-      readable: true,
-      // CF Pages serves robots.txt from /public so avoid clobbering it here.
-      generateRobotsTxt: false,
-    }),
+    ...(isVitest
+      ? []
+      : [
+          sitemap({
+            hostname: 'https://lum.bio',
+            dynamicRoutes,
+            readable: true,
+            // CF Pages serves robots.txt from /public so avoid clobbering it here.
+            generateRobotsTxt: false,
+          }),
+        ]),
   ],
   resolve: {
     alias: {
