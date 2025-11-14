@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
-import { SIDEBAR_CONFIG } from '@/config/constants';
+import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
 import type { ReactNode } from 'react';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
@@ -77,6 +77,53 @@ describe('SidebarContext', () => {
 
     act(() => result.current.setSidebarWidth(320));
     expect(result.current.sidebarWidth).toBe(320);
+  });
+
+  it('normalizes stored sidebar width values and syncs storage', async () => {
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_WIDTH, JSON.stringify(9999));
+    const { result } = renderHook(() => useSidebarContext(), { wrapper });
+
+    expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.MAX_WIDTH);
+    await waitFor(() =>
+      expect(localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH)).toBe(
+        JSON.stringify(SIDEBAR_CONFIG.MAX_WIDTH)
+      )
+    );
+  });
+
+  it('clamps width updates to configured bounds', () => {
+    const { result } = renderHook(() => useSidebarContext(), { wrapper });
+
+    act(() => result.current.setSidebarWidth(SIDEBAR_CONFIG.MAX_WIDTH + 100));
+    expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.MAX_WIDTH);
+
+    act(() => result.current.setSidebarWidth(SIDEBAR_CONFIG.MIN_WIDTH - 50));
+    expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.MIN_WIDTH);
+  });
+
+  it('reacts to media query breakpoint changes', () => {
+    let listener: ((event: MediaQueryListEvent) => void) | undefined;
+    window.matchMedia = vi.fn().mockImplementation(query => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn((_, cb) => {
+        listener = cb;
+      }),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    const { result } = renderHook(() => useSidebarContext(), { wrapper });
+    expect(result.current.isSidebarOpen).toBe(true);
+
+    act(() => {
+      listener?.({ matches: false } as MediaQueryListEvent);
+    });
+
+    expect(result.current.isSidebarOpen).toBe(false);
   });
 });
 

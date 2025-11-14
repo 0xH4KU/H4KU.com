@@ -24,4 +24,12 @@ describe('integrity utilities', () => {
     expect(result.isValid).toBe(true);
     expect(result.actual).toBe(checksum);
   });
+
+  it('handles missing expected checksum gracefully', () => {
+    const payload = { foo: 'bar' };
+    const result = verifyIntegrity(payload, undefined);
+    expect(result.expected).toBeNull();
+    expect(result.isValid).toBe(false);
+    expect(result.actual).toBe(computeIntegrityHash(payload));
+  });
 });

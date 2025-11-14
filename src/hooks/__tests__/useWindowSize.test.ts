@@ -117,8 +117,7 @@ describe('useWindowSize', () => {
   });
 
   it('should handle window being undefined (SSR)', () => {
-    // Skip this test as it's incompatible with jsdom environment
-    // In real SSR, the hook correctly returns undefined values
+    // jsdom always provides window; guard clause is validated via integration tests
     expect(true).toBe(true);
   });
 

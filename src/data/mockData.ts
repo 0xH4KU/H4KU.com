@@ -30,7 +30,7 @@ interface PageFile {
   order?: number | string;
 }
 
-interface WorkFile {
+interface ImageFile {
   folderId?: string | null;
   itemType?: 'work' | 'page';
   id: string;
@@ -47,7 +47,7 @@ interface WorkFile {
 
 interface AggregatedContent {
   folders?: FolderFile[];
-  works?: WorkFile[];
+  images?: ImageFile[];
   pages?: PageFile[];
   socials?: Social[];
   _buildTime?: string;
@@ -58,7 +58,7 @@ const rawAggregatedData = aggregatedData as AggregatedContent;
 
 const integrityPayload = {
   folders: rawAggregatedData.folders ?? [],
-  works: rawAggregatedData.works ?? [],
+  images: rawAggregatedData.images ?? [],
   pages: rawAggregatedData.pages ?? [],
   socials: rawAggregatedData.socials ?? [],
 };
@@ -82,7 +82,7 @@ if (!dataIntegrity.isValid) {
  * bundling all JSON files separately at build time.
  */
 const foldersData = (integrityPayload.folders ?? []) as FolderFile[];
-const worksData = (integrityPayload.works ?? []) as WorkFile[];
+const imagesData = (integrityPayload.images ?? []) as ImageFile[];
 const pagesData = (integrityPayload.pages ?? []) as PageFile[];
 const socialsData = (integrityPayload.socials ?? []) as Social[];
 
@@ -199,8 +199,8 @@ const standalonePages = parsedPages
   .sort(comparePages);
 const folderPages = parsedPages.filter(page => page.folderId);
 
-// Load works and attach to folders
-const works: WorkFile[] = worksData;
+// Load images and attach to folders
+const images: ImageFile[] = imagesData;
 const homeItems: WorkItem[] = [];
 
 const pushItemToFolder = (folderId: string | null, item: WorkItem) => {
@@ -215,7 +215,7 @@ const pushItemToFolder = (folderId: string | null, item: WorkItem) => {
   homeItems.push(item);
 };
 
-works.forEach(work => {
+images.forEach(work => {
   const folderId = normalizeId(work.folderId);
   const type = work.itemType || (work.thumb && work.full ? 'work' : 'page');
 

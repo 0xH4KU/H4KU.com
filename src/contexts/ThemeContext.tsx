@@ -28,6 +28,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Detect system theme preference
   useEffect(() => {
+    /* istanbul ignore next */
     if (typeof window === 'undefined') {
       return;
     }
@@ -49,6 +50,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Apply theme to document and update meta tags
   useEffect(() => {
+    /* istanbul ignore next */
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }

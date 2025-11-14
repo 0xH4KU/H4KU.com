@@ -16,7 +16,7 @@ Run the integrity checker whenever you pull new content or before pushing a rele
 npm run integrity:check
 ```
 
-The script recomputes the checksum across `folders`, `works`, `pages`, and `socials` inside `_aggregated.json` and compares it with the persisted `_integrity` field. It exits with a non-zero status when the numbers do not match so CI pipelines can fail fast.
+The script recomputes the checksum across `folders`, `images`, `pages`, and `socials` inside `_aggregated.json` and compares it with the persisted `_integrity` field. It exits with a non-zero status when the numbers do not match so CI pipelines can fail fast.
 
 ### Updating the Checksum
 
