@@ -14,6 +14,22 @@ This document lists all files created and modified as part of the comprehensive 
 - Wired both GitHub Actions and GitLab CI security jobs to `npm run ci:security`, ensuring the warning-only behavior documented for the security stage matches reality.
 - Declared `size-limit`, `@size-limit/preset-app`, and `@size-limit/file` as `devDependencies`, allowing `npm run size*` and `ci:bundle` scripts (and the bundle-size workflow) to run without ad-hoc installs.
 
+## 🔐 Integrity Verification Update (2025-11-14)
+
+- `scripts/build-data.js` now calculates an FNV-1a checksum for the aggregated content payload and stores it in `_integrity`, alongside `_buildTime`.
+- `src/data/mockData.ts` consumes the checksum, exports a `dataIntegrity` helper, and warns in the console when the payload has been modified.
+- `src/components/layout/StatusBar.tsx` displays the verification state so visitors can confirm they are browsing an authentic build.
+- `src/utils/integrity.ts` plus the accompanying Vitest suite formalise the hashing logic for both runtime and CI use.
+
+## 🛡️ Monitoring & Anti-Tamper Tooling (2025-11-16)
+
+- Added `@sentry/browser` plus `src/services/monitoring.ts` so crashes report through Sentry when `VITE_SENTRY_DSN` is configured.
+- Enhanced `ErrorBoundary` with a friendlier fallback, recovery steps, copy-to-clipboard crash reports, and reference IDs that match the telemetry tags.
+- Surfaced checksum failures more prominently inside `StatusBar`, including guidance to run `npm run integrity:check` and a link to the new Integrity Guide.
+- Shipped `scripts/check-integrity.ts` (`npm run integrity:check`) to recompute or update `_aggregated.json` hashes locally.
+- Added `docs/INTEGRITY.md` plus README/DEVELOPMENT/TESTING updates so contributors know how to validate builds and interpret tamper warnings.
+- Introduced `src/components/layout/__tests__/StatusBar.test.tsx`, ensuring tamper states stay covered by automated tests.
+
 ## 🔄 Modified Files
 
 ### 1. `.github/workflows/ci.yml`
@@ -277,15 +293,11 @@ Quick reference guide (new):
 ### Repository Setup
 
 - [ ] Configure GitHub Secrets
-  - [ ] `VITE_EMAILJS_SERVICE_ID`
-  - [ ] `VITE_EMAILJS_TEMPLATE_ID`
-  - [ ] `VITE_EMAILJS_PUBLIC_KEY`
+  - [ ] `VITE_CONTACT_ENDPOINT`
   - [ ] `CODECOV_TOKEN` (optional)
 
 - [ ] Configure GitLab Variables
-  - [ ] `VITE_EMAILJS_SERVICE_ID`
-  - [ ] `VITE_EMAILJS_TEMPLATE_ID`
-  - [ ] `VITE_EMAILJS_PUBLIC_KEY`
+  - [ ] `VITE_CONTACT_ENDPOINT`
 
 - [ ] Enable Dependabot (GitHub)
   - [ ] Dependabot alerts

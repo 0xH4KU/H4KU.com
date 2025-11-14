@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useCallback } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
-export type SortOrder = 'desc' | 'asc'; // desc = 默认(文字 A→Z / 数字 大→小), asc = 反转
-export type TypeOrder = 'folders-first' | 'images-first'; // folders-first = Folder > Page > Image, images-first = 反转
+export type SortOrder = 'desc' | 'asc'; // desc = default (text A-Z / numbers high-low), asc = inverse
+export type TypeOrder = 'folders-first' | 'images-first'; // folders-first = Folder > Page > Image, images-first = inverse
 
 interface SortContextType {
   sortOrder: SortOrder;
@@ -16,7 +16,7 @@ const SortContext = createContext<SortContextType | undefined>(undefined);
 export const SortProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // 默认: 文字 A→Z，数字大→小
+  // Default sorting: text A-Z, numbers high-low
   const [sortOrder, setSortOrder] = useLocalStorage<SortOrder>(
     'sort-order',
     'desc'

@@ -42,6 +42,7 @@ The aggregation step keeps the runtime bundle small and guarantees deterministic
 
 ### Sidebar Context (`src/contexts/SidebarContext.tsx`)
 - Stores width, expanded folders, and pinned items in localStorage.
+- Clamps the persisted width between `SIDEBAR_CONFIG.MIN/MAX_WIDTH` so corrupted storage (or manual edits) never break the layout.
 - Handles media queries for the responsive breakpoint and exposes open/close helpers for the layout shell.
 
 ### Theme Context (`src/contexts/ThemeContext.tsx`)
@@ -56,6 +57,18 @@ The aggregation step keeps the runtime bundle small and guarantees deterministic
 ### Data Parser (`src/data/mockData.ts`)
 - Reads from `_aggregated.json`, normalises folder relationships, attaches works/pages, and sorts everything with deterministic rules.
 - `buildNavigationMap` consumes the resulting folder tree for O(1) lookups elsewhere.
+
+### Integrity Verification Pipeline
+- `scripts/build-data.js` appends an `_integrity` FNV-1a checksum alongside `_buildTime` every time the aggregated file is regenerated.
+- `scripts/check-integrity.ts` powers `npm run integrity:check`, allowing collaborators (and CI) to recompute the checksum or fix it with `--write` without rebuilding everything.
+- `src/data/mockData.ts` exports a `dataIntegrity` helper that recomputes the checksum at runtime and warns if the payload was tampered with.
+- `StatusBar` consumes `dataIntegrity`, prints `[verified]` / `[tamper detected]`, and a new tamper warning links to the Integrity Guide plus the CLI command.
+- `src/components/layout/__tests__/StatusBar.test.tsx` simulates tampering to prove the UI updates and messaging behave as expected.
+
+### Monitoring & Error Handling
+- `src/services/monitoring.ts` wraps Sentry initialisation; set `VITE_SENTRY_DSN` to enable crash reporting (the app gracefully no-ops when it’s missing).
+- `src/components/common/ErrorBoundary.tsx` reports every error via the monitoring service, shows a friendlier fallback with recovery steps, and exposes a copy-to-clipboard crash report that includes the reference code.
+- Each reference code is sent as a Sentry tag so the support address (`hi@lum.bio`) can correlate user reports with telemetry.
 
 ## 3. Performance Notes
 
@@ -73,7 +86,7 @@ When profiling, pay close attention to `NavigationContext` (URL synchronisation)
 
 - **Local build** – `npm run build` runs the data aggregator then `vite build`.
 - **CI** – GitLab pipeline runs lint → type-check → tests → build. Artifacts are uploaded so Cloudflare Pages can deploy from a known-good bundle.
-- **Cloudflare Pages** – SPA redirect handled by `public/_redirects`; EmailJS keys provided via environment variables.
+- **Cloudflare Pages** – SPA redirect handled by `public/_redirects`; contact form endpoint configured via `VITE_CONTACT_ENDPOINT`.
 
 ## 5. Extending the Project
 

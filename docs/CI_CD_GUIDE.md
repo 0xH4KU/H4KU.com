@@ -21,6 +21,7 @@ This project uses dual CI/CD pipelines on both GitHub Actions and GitLab CI to e
 - ✅ **Test coverage** with automated testing and coverage thresholds
 - ✅ **Security** via dependency scanning and vulnerability checks
 - ✅ **Performance** through bundle size monitoring
+- ✅ **Integrity** via `_aggregated.json` checksums and runtime verification
 - ✅ **Build verification** to catch integration issues early
 
 Both pipelines are designed to be:
@@ -49,7 +50,7 @@ Both pipelines are designed to be:
 ┌─────────────────────────────────────────────────────────────┐
 │                     Build Stage                              │
 ├─────────────────────────────────────────────────────────────┤
-│  Build Application  │  Bundle Size Check  │  Artifacts      │
+│  Build Data+App     │  Bundle Size Check  │  Artifacts      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -57,7 +58,7 @@ Both pipelines are designed to be:
 
 1. **Quality checks run in parallel** for speed
 2. **Security scan** runs independently (warnings don't block)
-3. **Build only runs** if all quality checks pass
+3. **Build only runs** if all quality checks pass (and always starts with `npm run build:data`, which regenerates the `_integrity` checksum)
 4. **Artifacts** are saved for 7 days
 
 ## GitHub Actions Workflows

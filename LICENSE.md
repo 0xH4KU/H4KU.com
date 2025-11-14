@@ -44,6 +44,10 @@ for any reason by providing written notice (for example, via repository issues o
 Lum.bio is provided “as is,” without warranties of any kind. Lum is not liable for any
 damages arising from viewing, running, or relying on this source.
 
+## Integrity Notice
+
+Open-source builds now include an `_integrity` checksum (see `src/content/_aggregated.json`) and a `[verified]` footer indicator so viewers can distinguish official deployments from modified forks. Do not remove or falsify this indicator when sharing demos; doing so is considered misrepresentation under the restrictions above.
+
 ## Contact
 
 For uses outside the permissions listed here (educational demos, talks, publications,

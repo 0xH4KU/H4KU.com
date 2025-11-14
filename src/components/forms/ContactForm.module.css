@@ -22,7 +22,7 @@
     'Droid Sans Mono', monospace;
   font-size: 14px;
   line-height: 1.4;
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .input,
@@ -32,17 +32,17 @@
     'Droid Sans Mono', monospace;
   font-size: 14px;
   padding: 8px 12px;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-primary);
-  color: var(--text-primary);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
   outline: none;
   transition: all 0.2s ease;
 }
 
 .input:focus,
 .textarea:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px var(--accent-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(104, 150, 150, 0.35);
 }
 
 .input:disabled,
@@ -62,17 +62,17 @@
     'Droid Sans Mono', monospace;
   font-size: 14px;
   padding: 12px 24px;
-  background: var(--accent-primary);
-  color: var(--bg-primary);
-  border: 2px solid var(--accent-primary);
+  background: var(--color-primary);
+  color: var(--color-background);
+  border: 2px solid var(--color-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: bold;
 }
 
 .button:hover:not(:disabled) {
-  background: var(--bg-primary);
-  color: var(--accent-primary);
+  background: var(--color-background);
+  color: var(--color-primary);
 }
 
 .button:disabled {
@@ -81,7 +81,7 @@
 }
 
 .button:focus {
-  outline: 2px solid var(--accent-primary);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -96,19 +96,19 @@
 }
 
 .success {
-  background: rgba(0, 255, 0, 0.1);
-  border-color: #00ff00;
-  color: var(--text-primary);
+  background: rgba(104, 150, 150, 0.15);
+  border-color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .error {
-  background: rgba(255, 0, 0, 0.1);
-  border-color: #ff0000;
-  color: var(--text-primary);
+  background: rgba(232, 119, 34, 0.12);
+  border-color: var(--color-secondary);
+  color: var(--color-text);
 }
 
 /* Dark mode adjustments */
 [data-theme='dark'] .input,
 [data-theme='dark'] .textarea {
-  background: var(--bg-secondary);
+  background: var(--color-surface-hover);
 }

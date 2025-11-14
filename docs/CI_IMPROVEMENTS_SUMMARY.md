@@ -225,9 +225,7 @@ Added convenient npm scripts for CI operations:
 ### For Repository Administrators
 
 1. **Configure GitHub Secrets:**
-   - `VITE_EMAILJS_SERVICE_ID`
-   - `VITE_EMAILJS_TEMPLATE_ID`
-   - `VITE_EMAILJS_PUBLIC_KEY`
+   - `VITE_CONTACT_ENDPOINT`
    - `CODECOV_TOKEN` (optional, for coverage tracking)
 
 2. **Configure GitLab CI/CD Variables:**
@@ -390,6 +388,12 @@ For issues or questions:
 3. Consult with team leads
 4. Create detailed issue with logs
 
+### 6. Integrity Verification
+
+- Added `_integrity` checksum generation to `scripts/build-data.js` and committed `src/content/_aggregated.json` to include the signature.
+- Runtime now verifies the checksum (`dataIntegrity`) and surfaces the result in the Status Bar so tampered builds are obvious.
+- Documentation (README, TODO, and this summary) includes guidance on regenerating the checksum during releases.
+
 ## Conclusion
 
 The CI/CD infrastructure is now:
@@ -406,5 +410,5 @@ All checks are now automated, consistent, and enforced across both platforms. Th
 ---
 
 **Created**: 2025-11-13
-**Last Updated**: 2025-11-13
+**Last Updated**: 2025-11-14
 **Version**: 1.0.0

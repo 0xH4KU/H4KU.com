@@ -1,9 +1,12 @@
 import React, { useMemo, useCallback } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSortOrder } from '@/contexts/SortContext';
-import { mockData } from '@/data/mockData';
+import { mockData, dataIntegrity } from '@/data/mockData';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
+
+const INTEGRITY_DOC_URL =
+  'https://gitlab.com/lummuu/lum.bio/-/blob/main/docs/INTEGRITY.md';
 
 const StatusBar: React.FC = () => {
   const { currentView } = useNavigation();
@@ -98,11 +101,11 @@ const StatusBar: React.FC = () => {
           }
           title={
             sortOrder === 'desc'
-              ? '默认排序：文字 A→Z，数字 9→0'
-              : '反转排序：文字 Z→A，数字 0→9'
+              ? 'Default sort: text A-Z, numbers 9-0'
+              : 'Reversed sort: text Z-A, numbers 0-9'
           }
         >
-          [{sortOrder === 'desc' ? 'A→Z|9→0' : 'Z→A|0→9'}]
+          [{sortOrder === 'desc' ? 'A-Z|9-0' : 'Z-A|0-9'}]
         </button>
       </div>
       <div
@@ -118,8 +121,8 @@ const StatusBar: React.FC = () => {
           }
           title={
             typeOrder === 'folders-first'
-              ? '类型排序: Folder > Page > Image'
-              : '类型排序: Image > Page > Folder'
+              ? 'Type order: Folder > Page > Image'
+              : 'Type order: Image > Page > Folder'
           }
         >
           [{typeOrder === 'folders-first' ? 'F>P>Img' : 'Img>P>F'}]
@@ -136,6 +139,42 @@ const StatusBar: React.FC = () => {
         <span className={styles['status-hint']}>
           Press ESC to toggle crosshair
         </span>
+      </div>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--integrity']}`}
+      >
+        <span
+          className={`${styles['integrity-indicator']} ${
+            dataIntegrity.isValid
+              ? styles['integrity-indicator--valid']
+              : styles['integrity-indicator--invalid']
+          }`}
+          role="status"
+          aria-live={dataIntegrity.isValid ? 'polite' : 'assertive'}
+          title={
+            dataIntegrity.isValid
+              ? `Content integrity verified (${dataIntegrity.actual})`
+              : `Content integrity mismatch (expected ${
+                  dataIntegrity.expected ?? 'unknown'
+                }, actual ${dataIntegrity.actual})`
+          }
+        >
+          [{dataIntegrity.isValid ? 'verified' : 'tamper detected'}]
+        </span>
+        {!dataIntegrity.isValid && (
+          <span className={styles['integrity-warning']} role="alert">
+            Checksum mismatch detected. Run <code>npm run integrity:check</code>{' '}
+            or read the{' '}
+            <a
+              href={INTEGRITY_DOC_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Integrity Guide
+            </a>
+            .
+          </span>
+        )}
       </div>
       <div
         className={`${styles['status-section']} ${styles['status-section--meta']}`}

@@ -1,7 +1,7 @@
 {
   "id": "featured-placeholder_file",
   "filename": "placeholder_file.txt",
-  "content": "",
+  "content": "Placeholder File",
   "itemType": "page",
   "folderId": "featured",
   "order": 1

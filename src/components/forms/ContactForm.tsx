@@ -1,13 +1,9 @@
-import { useState, FormEvent } from 'react';
-import emailjs from '@emailjs/browser';
-import { EMAILJS_CONFIG } from '@/config/emailjs';
+import { useState, useEffect, useRef, useId, FormEvent } from 'react';
+import {
+  submitContactRequest,
+  ContactSubmissionError,
+} from '@/services/contact';
 import styles from './ContactForm.module.css';
-
-const EMAILJS_IS_CONFIGURED = Boolean(
-  EMAILJS_CONFIG.SERVICE_ID &&
-    EMAILJS_CONFIG.TEMPLATE_ID &&
-    EMAILJS_CONFIG.PUBLIC_KEY
-);
 
 interface FormData {
   name: string;
@@ -21,6 +17,7 @@ interface FormStatus {
 }
 
 export function ContactForm() {
+  const statusMessageId = useId();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -28,20 +25,34 @@ export function ContactForm() {
   });
 
   const [status, setStatus] = useState<FormStatus>({ type: 'idle' });
+  const statusMessageRef = useRef<HTMLDivElement | null>(null);
+  const activeRequestRef = useRef<AbortController | null>(null);
 
-  // 🛡️ Anti-spam protection (免費防護措施)
-  const [honeypot, setHoneypot] = useState(''); // Honeypot 蜜罐欄位
+  // 🛡️ Anti-spam protection (free safeguards)
+  const [honeypot, setHoneypot] = useState(''); // Honeypot field
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0); // Rate limiting
-  const [formStartTime, setFormStartTime] = useState<number>(() => Date.now()); // 表單開始時間
+  const [formStartTime, setFormStartTime] = useState<number>(() => Date.now()); // Form start timestamp
+
+  useEffect(() => {
+    return () => {
+      activeRequestRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (status.message && statusMessageRef.current) {
+      statusMessageRef.current.focus();
+    }
+  }, [status]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 🛡️ Anti-spam Check 1: Honeypot（蜜罐檢查）
-    // 如果隱藏欄位被填寫，說明是機器人
+    // 🛡️ Anti-spam Check 1: Honeypot validation
+    // Hidden field filled in means a bot submission
     if (honeypot) {
       console.warn('🤖 Bot detected via honeypot');
-      // 假裝成功，但不實際發送
+      // Pretend success but avoid sending anything
       setStatus({
         type: 'success',
         message: "Message sent successfully! I'll get back to you soon.",
@@ -50,8 +61,8 @@ export function ContactForm() {
       return;
     }
 
-    // 🛡️ Anti-spam Check 2: Rate Limiting（頻率限制）
-    // 60秒內只能提交一次
+    // 🛡️ Anti-spam Check 2: Rate limiting
+    // Only allow one submission per 60 seconds
     const now = Date.now();
     if (now - lastSubmitTime < 60000) {
       setStatus({
@@ -62,8 +73,8 @@ export function ContactForm() {
       return;
     }
 
-    // 🛡️ Anti-spam Check 3: Time Check（時間檢查）
-    // 表單必須至少花1秒填寫（防止瞬間提交，減少對真實用戶的干擾）
+    // 🛡️ Anti-spam Check 3: Minimum fill time
+    // Require at least one second before submission to deter instant bot posts
     const fillTime = now - formStartTime;
     if (fillTime < 1000) {
       setStatus({
@@ -92,45 +103,45 @@ export function ContactForm() {
       return;
     }
 
-    // Check if EmailJS is configured
-    if (!EMAILJS_IS_CONFIGURED) {
-      setStatus({
-        type: 'error',
-        message:
-          'Email service is not configured. Please contact me directly at hi@lum.bio',
-      });
-      return;
-    }
+    activeRequestRef.current?.abort();
+    const controller = new AbortController();
+    activeRequestRef.current = controller;
 
     setStatus({ type: 'loading' });
 
     try {
-      // EmailJS credentials from environment variables
-      await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID,
+      const result = await submitContactRequest(
         {
-          from_name: formData.name,
-          from_email: formData.email,
+          name: formData.name,
+          email: formData.email,
           message: formData.message,
         },
-        EMAILJS_CONFIG.PUBLIC_KEY
+        controller.signal
       );
 
+      const reference = result?.referenceId
+        ? ` (reference: ${result.referenceId})`
+        : '';
       setStatus({
         type: 'success',
-        message: "Message sent successfully! I'll get back to you soon.",
+        message: `Message sent successfully! I'll get back to you soon.${reference}`,
       });
       setLastSubmitTime(now);
       setFormStartTime(Date.now());
       // Reset form
       setFormData({ name: '', email: '', message: '' });
     } catch (error) {
-      console.error('EmailJS Error:', error);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+      const fallbackMessage =
+        error instanceof ContactSubmissionError
+          ? error.message
+          : 'Failed to send message. Please try again or email directly at hi@lum.bio';
+      console.error('Contact submission error:', error);
       setStatus({
         type: 'error',
-        message:
-          'Failed to send message. Please try again or email directly at hi@lum.bio',
+        message: fallbackMessage,
       });
       setFormStartTime(Date.now());
     }
@@ -147,7 +158,12 @@ export function ContactForm() {
 
   return (
     <div className={styles.contactForm}>
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form
+        onSubmit={handleSubmit}
+        className={styles.form}
+        aria-busy={status.type === 'loading'}
+        aria-describedby={status.message ? statusMessageId : undefined}
+      >
         <div className={styles.field}>
           <label htmlFor="name" className={styles.label}>
             Name:
@@ -161,6 +177,8 @@ export function ContactForm() {
             disabled={status.type === 'loading'}
             className={styles.input}
             required
+            aria-required="true"
+            aria-invalid={status.type === 'error' ? 'true' : 'false'}
           />
         </div>
 
@@ -177,6 +195,8 @@ export function ContactForm() {
             disabled={status.type === 'loading'}
             className={styles.input}
             required
+            aria-required="true"
+            aria-invalid={status.type === 'error' ? 'true' : 'false'}
           />
         </div>
 
@@ -193,10 +213,12 @@ export function ContactForm() {
             className={styles.textarea}
             rows={6}
             required
+            aria-required="true"
+            aria-invalid={status.type === 'error' ? 'true' : 'false'}
           />
         </div>
 
-        {/* 🍯 Honeypot Field - 機器人陷阱（人類看不到） */}
+        {/* 🍯 Honeypot Field - Invisible bot trap */}
         <div
           style={{
             position: 'absolute',
@@ -231,9 +253,14 @@ export function ContactForm() {
 
         {status.message && (
           <div
+            id={statusMessageId}
+            ref={statusMessageRef}
             className={`${styles.message} ${
               status.type === 'success' ? styles.success : styles.error
             }`}
+            role="status"
+            aria-live={status.type === 'error' ? 'assertive' : 'polite'}
+            tabIndex={-1}
           >
             {status.message}
           </div>

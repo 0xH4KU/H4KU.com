@@ -53,7 +53,7 @@ lum.bio/
 │   │   └── _aggregated.json # Build-time aggregated data
 │   ├── config/              # Application configuration
 │   │   ├── constants.ts
-│   │   └── emailjs.ts
+│   │   └── contact.ts
 │   ├── types/               # TypeScript definitions
 │   │   └── index.ts
 │   ├── tests/               # Test utilities
@@ -70,8 +70,7 @@ lum.bio/
 │   ├── fonts/
 │   ├── content/             # Original content source
 │   ├── _redirects           # SPA routing config
-│   ├── robots.txt
-│   └── sitemap.xml
+│   └── robots.txt
 ├── .gitlab-ci.yml           # GitLab CI/CD pipeline
 ├── vite.config.ts           # Vite build configuration
 ├── vitest.config.ts         # Vitest test configuration
@@ -121,6 +120,14 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 - **Reduced motion support** – Respects `prefers-reduced-motion`
 - **Font loading strategy** – `font-display: swap` with fallback stack
 
+## Integrity Verification
+
+- `scripts/build-data.js` generates an `_integrity` checksum (FNV-1a) for the aggregated content payload.
+- `npm run integrity:check` re-computes the checksum locally so collaborators can verify releases or update the signature (pass `-- --write`).
+- `src/data/mockData.ts` re-computes the checksum at runtime and surfaces a `[verified]` / `[tamper detected]` indicator inside the Status Bar so visitors know whether the bundle was tampered with.
+- Re-run `node scripts/build-data.js` (or `npm run build:data`) after touching anything inside `src/content/` to regenerate `_aggregated.json` and refresh the checksum before committing.
+- See [`docs/INTEGRITY.md`](docs/INTEGRITY.md) for the full anti-tamper workflow.
+
 ### Accessibility Features
 
 - WCAG 2.1 AA compliant
@@ -143,7 +150,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 | **Testing** | Vitest 4 + React Testing Library |
 | **Linting** | ESLint + Prettier |
 | **CI/CD** | GitLab CI + Cloudflare Pages |
-| **Email** | EmailJS (lazy-loaded) |
+| **Contact** | Server-side endpoint (`VITE_CONTACT_ENDPOINT`) |
 
 ## Development
 
@@ -158,11 +165,21 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 git clone https://github.com/cwlum/lum.bio.git
 cd lum.bio
 npm install
-cp .env.example .env  # Configure EmailJS credentials
+cp .env.example .env  # Configure VITE_CONTACT_ENDPOINT if needed
 npm run dev
 ```
 
 Development server runs at `http://localhost:5173`
+
+#### Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_CONTACT_ENDPOINT` | Server-side endpoint that handles contact form submissions. |
+| `VITE_CONTACT_TIMEOUT` | (Optional) Timeout in milliseconds for contact submissions. |
+| `VITE_SENTRY_DSN` | (Optional) Enables production crash reporting via Sentry. |
+| `VITE_APP_VERSION` | (Optional) Overrides the release tag reported to monitoring. |
+| `VITE_APP_ENV` | (Optional) Sets the monitoring environment label (`prod`, `staging`, etc.). |
 
 ### Available Scripts
 
@@ -183,6 +200,7 @@ Development server runs at `http://localhost:5173`
 | `npm run type-check` | Verify TypeScript types |
 | `npm run size` | Check bundle size against limits |
 | `npm run size:analyze` | Detailed bundle analysis |
+| `npm run integrity:check` | Verify or update `_aggregated.json` checksums |
 | `npm run ci` | Run all CI checks locally |
 | `npm run ci:quality` | Run quality checks (lint, format, types) |
 | `npm run ci:coverage` | Run tests with coverage reporting |
@@ -225,9 +243,9 @@ npx wrangler pages deploy dist
 ```
 
 **Required environment variables:**
-- `VITE_EMAILJS_SERVICE_ID`
-- `VITE_EMAILJS_TEMPLATE_ID`
-- `VITE_EMAILJS_PUBLIC_KEY`
+- `VITE_CONTACT_ENDPOINT` – URL to the server-side handler that delivers contact messages
+
+`vite-plugin-sitemap` runs during `vite build`, generating a fresh `dist/sitemap.xml` from the aggregated content so you no longer need to maintain a static `public/sitemap.xml`.
 
 ### CI/CD Pipeline
 

@@ -32,6 +32,7 @@ This runs all the same checks that CI will run.
 3. ✅ No TypeScript errors
 4. ✅ Tests pass with good coverage
 5. ✅ Commit messages are clear
+6. ✅ Run `npm run build:data` if you touched `src/content/` so the `_integrity` checksum stays current (Status Bar should read `[verified]`)
 
 ## 🔍 Understanding CI Failures
 
@@ -102,6 +103,7 @@ npm run ci:bundle
 - ✅ CodeQL (code security - GitHub only)
 
 ### 3. Build
+- ✅ Data aggregation (`npm run build:data`) to refresh `_integrity`
 - ✅ Production build
 - ✅ Bundle size check
 - ✅ Asset optimization
@@ -150,22 +152,28 @@ open coverage/index.html
 # Add tests or exclude file in vitest.config.ts
 ```
 
+### Status Bar shows `[tamper detected]`
+
+```bash
+npm run integrity:check   # Verifies checksum
+npm run build:data        # Regenerates src/content/_aggregated.json if needed
+git add src/content/_aggregated.json
+```
+
+Commit the regenerated file and redeploy to restore the verified badge.
+
 ## 🔐 Required Secrets/Variables
 
 ### GitHub Secrets
 Settings → Secrets and variables → Actions
 
-- `VITE_EMAILJS_SERVICE_ID`
-- `VITE_EMAILJS_TEMPLATE_ID`
-- `VITE_EMAILJS_PUBLIC_KEY`
+- `VITE_CONTACT_ENDPOINT`
 - `CODECOV_TOKEN` (optional)
 
 ### GitLab Variables
 Settings → CI/CD → Variables
 
-- `VITE_EMAILJS_SERVICE_ID`
-- `VITE_EMAILJS_TEMPLATE_ID`
-- `VITE_EMAILJS_PUBLIC_KEY`
+- `VITE_CONTACT_ENDPOINT`
 
 ## 📚 Learn More
 

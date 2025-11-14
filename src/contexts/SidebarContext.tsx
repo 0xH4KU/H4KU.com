@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
 } from 'react';
 import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -29,6 +30,17 @@ interface SidebarContextType {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
+const clampSidebarWidthValue = (value: number) => {
+  const numeric =
+    typeof value === 'number' && Number.isFinite(value)
+      ? value
+      : SIDEBAR_CONFIG.DEFAULT_WIDTH;
+  return Math.min(
+    Math.max(numeric, SIDEBAR_CONFIG.MIN_WIDTH),
+    SIDEBAR_CONFIG.MAX_WIDTH
+  );
+};
+
 const getInitialSidebarState = () => {
   /* c8 ignore next */
   if (typeof window === 'undefined') {
@@ -41,10 +53,12 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(getInitialSidebarState);
-  const [sidebarWidth, setSidebarWidth] = useLocalStorage<number>(
+  const [sidebarWidth, setSidebarWidthRaw] = useLocalStorage<number>(
     STORAGE_KEYS.SIDEBAR_WIDTH,
     SIDEBAR_CONFIG.DEFAULT_WIDTH
   );
+  const sidebarWidthSetterRef = useRef(setSidebarWidthRaw);
+  sidebarWidthSetterRef.current = setSidebarWidthRaw;
   const [expandedFolderIds, setExpandedFolderIds] = useLocalStorage<string[]>(
     STORAGE_KEYS.EXPANDED_FOLDERS,
     []
@@ -59,6 +73,18 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
     [expandedFolderIds]
   );
   const pinnedItems = useMemo(() => new Set(pinnedItemIds), [pinnedItemIds]);
+
+  const normalizedSidebarWidth = clampSidebarWidthValue(sidebarWidth);
+
+  useEffect(() => {
+    if (normalizedSidebarWidth !== sidebarWidth) {
+      sidebarWidthSetterRef.current(normalizedSidebarWidth);
+    }
+  }, [normalizedSidebarWidth, sidebarWidth]);
+
+  const setSidebarWidth = useCallback((nextWidth: number) => {
+    sidebarWidthSetterRef.current(clampSidebarWidthValue(nextWidth));
+  }, []);
 
   const updateExpandedFolders = useCallback(
     (updater: (current: Set<string>) => void) => {
@@ -169,7 +195,7 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
         collapseAll,
         pinnedItems,
         togglePin,
-        sidebarWidth,
+        sidebarWidth: normalizedSidebarWidth,
         setSidebarWidth,
       }}
     >

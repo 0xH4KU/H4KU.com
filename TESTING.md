@@ -6,7 +6,7 @@ This guide explains how we test Lum.bio, the tooling we rely on, and the expecta
 
 - **Runner**: Vitest 4 (jsdom environment)
 - **Library**: React Testing Library (`@testing-library/react` + `@testing-library/user-event`)
-- **Coverage**: 180 automated specs across hooks, utilities, contexts, and layout components
+- **Coverage**: 211 automated specs across hooks, utilities, contexts, and layout components (including integrity hashing and tamper surfacing)
 - **Philosophy**: test behaviours, not implementation details; strive for fast, deterministic suites (<2s in CI)
 
 ## 2. Directory Layout
@@ -18,7 +18,10 @@ src/
 │   └── __tests__/useLocalStorage.test.ts
 ├── utils/
 │   ├── navigation.ts
-│   └── __tests__/navigation.test.ts
+│   ├── integrity.ts
+│   └── __tests__/
+│       ├── navigation.test.ts
+│       └── integrity.test.ts
 ├── contexts/
 │   └── __tests__/*.test.tsx
 └── tests/
@@ -116,7 +119,8 @@ describe('buildNavigationMap', () => {
 3. **Use helpers** – `renderWithProviders` pre-wires all context providers; prefer it over manual nesting.
 4. **Mock smartly** – mock network/storage only when necessary. Avoid mocking React hooks or internal utilities unless absolutely required.
 5. **Respect accessibility** – when adding UI, tests should validate focus handling, ARIA labels, and keyboard flows.
-6. **Clean up timers** – if you call `vi.useFakeTimers()`, restore them in `afterEach`.
+6. **Cover integrity checks** – when touching the content pipeline or tamper UX, update `src/utils/__tests__/integrity.test.ts` and `src/components/layout/__tests__/StatusBar.test.tsx` so checksum regressions are caught in CI.
+7. **Clean up timers** – if you call `vi.useFakeTimers()`, restore them in `afterEach`.
 
 ## 6. Troubleshooting
 

@@ -16,7 +16,7 @@ Quality Gate ─► Build & Artifact
 Any failure in this stage stops the pipeline.
 
 ### 2. Build & Artifact
-- `npm run build:data` – refreshes `src/content/_aggregated.json`
+- `npm run build:data` – refreshes `src/content/_aggregated.json` and recalculates the `_integrity` checksum
 - `vite build`
 - Upload `dist/` as an artifact (retained for 7 days) so Cloudflare Pages can fetch a known-good bundle.
 
@@ -26,9 +26,7 @@ Configure them under **Settings → CI/CD → Variables**:
 
 | Variable | Purpose |
 | --- | --- |
-| `VITE_EMAILJS_SERVICE_ID` | EmailJS service ID |
-| `VITE_EMAILJS_TEMPLATE_ID` | Template ID |
-| `VITE_EMAILJS_PUBLIC_KEY` | Public key |
+| `VITE_CONTACT_ENDPOINT` | URL to your server-side contact handler (Cloudflare Worker, Pages Function, etc.) |
 
 Mark them as **Masked** and **Protected** if your repo uses protected branches.
 
@@ -53,7 +51,7 @@ Cloudflare Pages listens to the `main` branch artifacts. Use the following setti
 | --- | --- |
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Environment variables | same EmailJS variables as GitLab |
+| Environment variables | Same values as GitLab (`VITE_CONTACT_ENDPOINT`) |
 
 ## Monitoring Pipeline Status
 
@@ -67,8 +65,9 @@ Cloudflare Pages listens to the `main` branch artifacts. Use the following setti
 | --- | --- |
 | Pipeline doesn’t start | Ensure `.gitlab-ci.yml` exists at the repo root, CI is enabled, and the branch matches the trigger rules. |
 | `build:data` fails | Check for invalid JSON under `src/content/`. Re-run `npm run build:data` locally for details. |
-| Missing EmailJS config | Confirm variables exist in both GitLab and Cloudflare Pages. |
+| Contact endpoint missing | Confirm `VITE_CONTACT_ENDPOINT` is defined in both GitLab and Cloudflare Pages. |
 | Cloudflare deploy returns 404 | Make sure `public/_redirects` is included in the final `dist/`. |
+| Status bar shows `[tamper detected]` | Run `npm run integrity:check` locally (or rebuild with `npm run build:data`), commit the refreshed `_aggregated.json`, and redeploy. |
 
 ## Pre-push Checklist
 

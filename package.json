@@ -22,6 +22,7 @@
     "test:watch": "vitest watch",
     "size": "size-limit",
     "size:analyze": "size-limit --why",
+    "integrity:check": "tsx scripts/check-integrity.ts",
     "ci": "bash scripts/ci/run-all-checks.sh",
     "ci:quality": "bash scripts/ci/check-quality.sh",
     "ci:coverage": "bash scripts/ci/report-coverage.sh",
@@ -29,7 +30,7 @@
     "ci:bundle": "bash scripts/ci/check-bundle-size.sh"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
+    "@sentry/browser": "^8.55.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.552.0",
     "react": "^19.2.0",

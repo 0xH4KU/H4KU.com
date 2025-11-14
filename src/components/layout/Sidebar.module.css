@@ -584,6 +584,17 @@
   background: rgba(104, 150, 150, 0.6);
 }
 
+.resize-handle:focus-visible {
+  outline: none;
+  background: rgba(232, 119, 34, 0.2);
+  width: 12px;
+}
+
+.resize-handle:focus-visible::before {
+  background: rgba(232, 119, 34, 0.8);
+  box-shadow: 0 0 0 2px rgba(232, 119, 34, 0.35);
+}
+
 .resize-handle:active {
   background: rgba(104, 150, 150, 0.25);
 }

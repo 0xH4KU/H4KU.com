@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2025-11-16] - Monitoring & Anti-Tamper Tooling
+
+### Added
+- **Sentry integration** – `@sentry/browser` plus `src/services/monitoring.ts` bootstraps optional crash reporting when `VITE_SENTRY_DSN` is present.
+- **Friendly error recovery** – `ErrorBoundary` now surfaces recovery steps, reference codes, and copy-to-clipboard crash reports tied to monitoring tags.
+- **CLI verification** – `scripts/check-integrity.ts` powers `npm run integrity:check`, letting collaborators verify (or patch) `_aggregated.json` checksums.
+- **Integrity Guide** – `docs/INTEGRITY.md` and README/DEV/TESTING updates document how to validate official builds and respond to tamper warnings.
+- **Tamper tests** – `src/components/layout/__tests__/StatusBar.test.tsx` proves the UI reacts to checksum failures.
+
+### Changed
+- `StatusBar` now highlights checksum mismatches with guidance to run `npm run integrity:check` and links to the new guide.
+- `SidebarContext` clamps persisted widths so corrupted storage entries can’t break the layout shell.
+- Error fallback styling uses defined color tokens and introduces new instructional copy/controls.
+
+## [2025-11-14] - Integrity Verification & Accessibility Polish
+
+### Added
+- **Integrity hashing** – `scripts/build-data.js` now calculates an FNV-1a checksum for every aggregated data build and stores it as `_integrity`.
+- **Runtime verification** – `src/data/mockData.ts` recomputes the checksum at startup and exposes `dataIntegrity` so the UI can respond to tampering.
+- **Status Bar indicator** – Visitors now see `[verified]` / `[tamper detected]` in the footer along with tooltip details about the checksum.
+- **Integrity unit tests** – `src/utils/__tests__/integrity.test.ts` locks down the hashing logic.
+- **Server-side contact submissions** – The `ContactForm` now posts to a configurable endpoint (`VITE_CONTACT_ENDPOINT`) via `src/services/contact.ts`, keeping credentials on the backend.
+
+### Changed
+- Translated all inline comments to English across the React, Vite, and Node build scripts for consistency.
+- Replaced non-ASCII button labels with ASCII equivalents in the Status Bar sort controls to keep tooling happy.
+- Introduced a TODO tracker documenting follow-up items for accessibility, monitoring, and integrity documentation.
+- Upgraded `ContactForm` with aria-live status messaging, focus management, and `aria-invalid` inputs for better accessibility.
+- Converted clickable file/work cards in `ContentView` to semantic motion-enabled buttons so keyboard users can navigate every item.
+
+### Fixed
+- Regenerated `src/content/_aggregated.json` so it now carries both `_buildTime` and `_integrity`, keeping the public artifact trustworthy.
+
 ## [2025-11-12] - Performance & Documentation Refresh
 
 ### Added

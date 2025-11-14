@@ -22,12 +22,35 @@
 .error-message {
   font-size: 16px;
   margin-bottom: 32px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   line-height: 1.6;
 }
 
+.error-reference {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+}
+
+.error-reference code {
+  font-family:
+    'ProFont', ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--color-surface-hover);
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .error-button,
-.error-button-secondary {
+.error-button-secondary,
+.error-button-tertiary {
   padding: 12px 24px;
   margin: 0 8px;
   font-size: 14px;
@@ -62,4 +85,58 @@
   background: var(--color-surface-hover);
   color: var(--color-text);
   border-color: var(--color-border);
+}
+
+.error-button-tertiary {
+  background: transparent;
+  border-style: dashed;
+}
+
+.error-button-tertiary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.error-copy-status {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.error-instructions {
+  text-align: left;
+  font-size: 14px;
+  color: var(--color-text);
+  border: 2px dashed var(--color-border);
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--color-surface-hover);
+}
+
+.error-subtitle {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.error-list {
+  margin: 0 0 12px 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.error-list code {
+  font-family:
+    'ProFont', ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+.error-footnote {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.error-footnote a {
+  color: var(--color-primary);
 }

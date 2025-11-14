@@ -57,18 +57,14 @@ A file-system inspired portfolio built with React 19, TypeScript, and modern web
 
 Configure these secrets in your GitHub repository settings (Settings → Secrets and variables → Actions):
 
-- `VITE_EMAILJS_SERVICE_ID`
-- `VITE_EMAILJS_TEMPLATE_ID`
-- `VITE_EMAILJS_PUBLIC_KEY`
+- `VITE_CONTACT_ENDPOINT`
 - `CODECOV_TOKEN` (optional, for coverage tracking)
 
 ### 2. GitLab CI/CD Variables
 
 Configure these variables in your GitLab project settings (Settings → CI/CD → Variables):
 
-- `VITE_EMAILJS_SERVICE_ID`
-- `VITE_EMAILJS_TEMPLATE_ID`
-- `VITE_EMAILJS_PUBLIC_KEY`
+- `VITE_CONTACT_ENDPOINT`
 
 Mark these as "Protected" and "Masked" for security.
 
@@ -94,6 +90,12 @@ You can create custom badges using [shields.io](https://shields.io):
 <!-- React -->
 ![React](https://img.shields.io/badge/react-19.2-61dafb.svg)
 ```
+
+## Integrity Badge (Optional)
+
+- `_aggregated.json` now includes an `_integrity` checksum (FNV-1a) that the UI surfaces as `[verified]` / `[tamper detected]`.
+- You can publish that status via a shields.io [endpoint badge](https://shields.io/badges/endpoint-badge) by exposing a JSON file produced during deployment (e.g., `{"schemaVersion":1,"label":"integrity","message":"verified","color":"green"}`).
+- If the Status Bar ever reports `[tamper detected]`, flip the endpoint output to `"message":"tamper detected"` so the badge mirrors the warning.
 
 ## Badge Status Meanings
 

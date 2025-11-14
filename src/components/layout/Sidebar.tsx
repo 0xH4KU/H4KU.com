@@ -21,6 +21,11 @@ import { ContextMenu } from './ContextMenu';
 import { Tooltip } from './Tooltip';
 import styles from './Sidebar.module.css';
 
+const KEYBOARD_RESIZE_STEP = 16;
+const KEYBOARD_RESIZE_FAST_STEP = 48;
+const clampSidebarWidth = (value: number) =>
+  Math.min(Math.max(value, SIDEBAR_CONFIG.MIN_WIDTH), SIDEBAR_CONFIG.MAX_WIDTH);
+
 type SidebarEntry = Folder | Page;
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -60,6 +65,7 @@ const Sidebar: React.FC = () => {
     width !== undefined && width < SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const resizeHandleRef = useRef<HTMLDivElement | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -68,6 +74,7 @@ const Sidebar: React.FC = () => {
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isDragging, setIsDragging] = useState(false);
   const supportsInert = useMemo(() => hasInertSupport(), []);
+  const normalizedSidebarWidth = clampSidebarWidth(sidebarWidth);
 
   const activeSegments = useMemo(
     () => activePath.split('/').filter(Boolean),
@@ -158,6 +165,13 @@ const Sidebar: React.FC = () => {
     [navigateTo, isMobile, closeSidebar]
   );
 
+  const applySidebarWidth = useCallback(
+    (nextWidth: number) => {
+      setSidebarWidth(clampSidebarWidth(nextWidth));
+    },
+    [setSidebarWidth]
+  );
+
   const handleSearchResultSelect = useCallback(
     (result: SearchResult) => {
       if (result.type === 'folder') {
@@ -175,8 +189,12 @@ const Sidebar: React.FC = () => {
     [navigateTo, openLightbox, isMobile, closeSidebar]
   );
 
-  const handleDragStart = () => {
+  const handleDragStart = (
+    event: React.MouseEvent | React.TouchEvent | React.PointerEvent
+  ) => {
+    event.preventDefault();
     setIsDragging(true);
+    resizeHandleRef.current?.focus();
   };
 
   // Handle sidebar resize
@@ -186,11 +204,16 @@ const Sidebar: React.FC = () => {
     }
 
     const handleMouseMove = (event: MouseEvent) => {
-      const clamped = Math.min(
-        Math.max(event.clientX, SIDEBAR_CONFIG.MIN_WIDTH),
-        SIDEBAR_CONFIG.MAX_WIDTH
-      );
-      setSidebarWidth(clamped);
+      applySidebarWidth(event.clientX);
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!event.touches.length) {
+        return;
+      }
+      const touch = event.touches[0];
+      applySidebarWidth(touch.clientX);
+      event.preventDefault();
     };
 
     const stopDrag = () => {
@@ -199,12 +222,50 @@ const Sidebar: React.FC = () => {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchmove', handleTouchMove, {
+      passive: false,
+    });
+    document.addEventListener('touchend', stopDrag);
+    document.addEventListener('touchcancel', stopDrag);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', stopDrag);
+      document.removeEventListener('touchcancel', stopDrag);
     };
-  }, [isDragging, setSidebarWidth]);
+  }, [applySidebarWidth, isDragging]);
+
+  const handleResizeHandleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const baseStep = event.shiftKey
+        ? KEYBOARD_RESIZE_FAST_STEP
+        : KEYBOARD_RESIZE_STEP;
+
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          event.preventDefault();
+          applySidebarWidth(normalizedSidebarWidth - baseStep);
+          break;
+        case 'ArrowRight':
+        case 'ArrowUp':
+          event.preventDefault();
+          applySidebarWidth(normalizedSidebarWidth + baseStep);
+          break;
+        case 'Home':
+          event.preventDefault();
+          applySidebarWidth(SIDEBAR_CONFIG.MIN_WIDTH);
+          break;
+        case 'End':
+          event.preventDefault();
+          applySidebarWidth(SIDEBAR_CONFIG.MAX_WIDTH);
+          break;
+      }
+    },
+    [applySidebarWidth, normalizedSidebarWidth]
+  );
 
   useEffect(() => {
     if (supportsInert || !sidebarRef.current) {
@@ -653,7 +714,22 @@ const Sidebar: React.FC = () => {
         })}
       </div>
 
-      <div className={styles['resize-handle']} onMouseDown={handleDragStart} />
+      <div
+        ref={resizeHandleRef}
+        className={styles['resize-handle']}
+        role="separator"
+        tabIndex={0}
+        aria-label="Resize sidebar"
+        aria-controls="app-sidebar"
+        aria-orientation="vertical"
+        aria-valuemin={SIDEBAR_CONFIG.MIN_WIDTH}
+        aria-valuemax={SIDEBAR_CONFIG.MAX_WIDTH}
+        aria-valuenow={Math.round(normalizedSidebarWidth)}
+        aria-valuetext={`${Math.round(normalizedSidebarWidth)} pixels`}
+        onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
+        onKeyDown={handleResizeHandleKeyDown}
+      />
 
       {contextMenu && (
         <ContextMenu

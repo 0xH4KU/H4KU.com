@@ -91,6 +91,15 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 
 ---
 
+## 🔐 Integrity Tag
+
+- The CMS pipeline now writes an `_integrity` field (FNV-1a checksum) into `src/content/_aggregated.json` every time `npm run cms` or `npm run build:data` runs.
+- `mockData` recomputes that checksum at runtime and the UI exposes the verification result, so avoid editing `_aggregated.json` by hand.
+- If you ever edit raw JSON under `src/content/`, re-run `npm run build:data` (preferred) or `npm run integrity:check -- --write` to refresh both `_buildTime` and `_integrity`.
+- `npm run integrity:check` is also the quickest way to verify a downloaded build or CI artifact. See [`docs/INTEGRITY.md`](docs/INTEGRITY.md) for the full workflow.
+
+---
+
 ## 💡 Tips & Best Practices
 
 1. **Automatic sorting**

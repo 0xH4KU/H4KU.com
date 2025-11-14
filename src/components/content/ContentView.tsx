@@ -82,7 +82,7 @@ const ContentView: React.FC = () => {
     navigateBack();
   };
 
-  // 渲染內容的函數
+  // Render content depending on the active view
   const renderContent = () => {
     if (currentView?.type === 'txt') {
       return (
@@ -189,13 +189,15 @@ const ContentView: React.FC = () => {
               {bucketSequence.flatMap(bucket => {
                 if (bucket === 'folders') {
                   return sortedChildren.map(child => (
-                    <m.div
+                    <m.button
                       key={child.id}
                       className={styles['file-item']}
+                      type="button"
                       variants={itemVariants}
                       onClick={() => handleNavigate(child)}
                       whileHover={createHoverAnimation(prefersReducedMotion)}
                       whileTap={createTapAnimation(prefersReducedMotion)}
+                      aria-label={`Open folder ${child.name}`}
                     >
                       <img
                         className={styles['file-icon']}
@@ -203,14 +205,15 @@ const ContentView: React.FC = () => {
                         alt="Folder icon"
                       />
                       <div className={styles['file-name']}>{child.name}</div>
-                    </m.div>
+                    </m.button>
                   ));
                 }
                 if (bucket === 'pages') {
                   return textItems.map(item => (
-                    <m.div
+                    <m.button
                       key={item.id}
                       className={styles['file-item']}
+                      type="button"
                       variants={itemVariants}
                       onClick={() => {
                         const page: Page = {
@@ -223,6 +226,7 @@ const ContentView: React.FC = () => {
                       }}
                       whileHover={createHoverAnimation(prefersReducedMotion)}
                       whileTap={createTapAnimation(prefersReducedMotion)}
+                      aria-label={`Open page ${item.filename}`}
                     >
                       <img
                         className={styles['file-icon']}
@@ -230,19 +234,21 @@ const ContentView: React.FC = () => {
                         alt="Text file icon"
                       />
                       <div className={styles['file-name']}>{item.filename}</div>
-                    </m.div>
+                    </m.button>
                   ));
                 }
                 return workItems.map((item, workIndex) => {
                   const shouldPrioritize = workIndex < PRIORITY_IMAGE_COUNT;
                   return (
-                    <m.div
+                    <m.button
                       key={item.id}
                       className={styles['file-item']}
+                      type="button"
                       variants={itemVariants}
                       onClick={() => handleOpenLightbox(item, workItems)}
                       whileHover={createHoverAnimation(prefersReducedMotion)}
                       whileTap={createTapAnimation(prefersReducedMotion)}
+                      aria-label={`Open work ${item.filename}`}
                     >
                       <LazyImage
                         className={styles['file-thumb']}
@@ -253,7 +259,7 @@ const ContentView: React.FC = () => {
                         fetchPriority={shouldPrioritize ? 'high' : 'auto'}
                       />
                       <div className={styles['file-name']}>{item.filename}</div>
-                    </m.div>
+                    </m.button>
                   );
                 });
               })}
@@ -263,7 +269,7 @@ const ContentView: React.FC = () => {
       );
     }
 
-    // 主頁
+    // Home view
     const sortedFolders = sortByLabel(
       mockData.folders,
       sortOrder,
@@ -312,14 +318,19 @@ const ContentView: React.FC = () => {
                 }
               : () => handleOpenLightbox(item, sortedHomeWorkItems);
 
+            const ariaLabel = isTextPage
+              ? `Open page ${item.filename}`
+              : `Open work ${item.filename}`;
             return (
-              <m.div
+              <m.button
                 key={item.id}
                 className={styles['work-item']}
+                type="button"
                 variants={itemVariants}
                 onClick={handleClick}
                 whileHover={createHoverAnimation(prefersReducedMotion)}
                 whileTap={createTapAnimation(prefersReducedMotion)}
+                aria-label={ariaLabel}
               >
                 {isTextPage ? (
                   <img
@@ -338,7 +349,7 @@ const ContentView: React.FC = () => {
                   />
                 )}
                 <div className={styles['work-info']}>{item.filename}</div>
-              </m.div>
+              </m.button>
             );
           })}
         </m.div>
@@ -367,13 +378,15 @@ const ContentView: React.FC = () => {
           {homeFileBucketSequence.flatMap(bucket =>
             bucket === 'folders'
               ? sortedFolders.map(folder => (
-                  <m.div
+                  <m.button
                     key={folder.id}
                     className={styles['file-item']}
+                    type="button"
                     variants={itemVariants}
                     onClick={() => handleNavigate(folder)}
                     whileHover={createHoverAnimation(prefersReducedMotion)}
                     whileTap={createTapAnimation(prefersReducedMotion)}
+                    aria-label={`Open folder ${folder.name}`}
                   >
                     <img
                       className={styles['file-icon']}
@@ -381,16 +394,18 @@ const ContentView: React.FC = () => {
                       alt="Folder icon"
                     />
                     <div className={styles['file-name']}>{folder.name}</div>
-                  </m.div>
+                  </m.button>
                 ))
               : sortedPages.map(page => (
-                  <m.div
+                  <m.button
                     key={page.id}
                     className={styles['file-item']}
+                    type="button"
                     variants={itemVariants}
                     onClick={() => handleNavigate(page)}
                     whileHover={createHoverAnimation(prefersReducedMotion)}
                     whileTap={createTapAnimation(prefersReducedMotion)}
+                    aria-label={`Open page ${page.name}`}
                   >
                     <img
                       className={styles['file-icon']}
@@ -398,7 +413,7 @@ const ContentView: React.FC = () => {
                       alt="Text file icon"
                     />
                     <div className={styles['file-name']}>{page.name}</div>
-                  </m.div>
+                  </m.button>
                 ))
           )}
         </m.div>
@@ -409,7 +424,7 @@ const ContentView: React.FC = () => {
     );
   };
 
-  // 統一返回，包裹 AnimatePresence
+  // Always wrap the rendered view with AnimatePresence for transitions
   return <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>;
 };
 

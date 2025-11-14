@@ -1,6 +1,7 @@
 import { MockData, Folder, Page, Social, WorkItem } from '@/types';
 // Import aggregated data (built at build time by scripts/build-data.js)
 import aggregatedData from '@/content/_aggregated.json';
+import { verifyIntegrity } from '@/utils/integrity';
 
 /**
  * Load content from aggregated JSON file instead of glob imports.
@@ -44,15 +45,46 @@ interface WorkFile {
   content?: string;
 }
 
+interface AggregatedContent {
+  folders?: FolderFile[];
+  works?: WorkFile[];
+  pages?: PageFile[];
+  socials?: Social[];
+  _buildTime?: string;
+  _integrity?: string;
+}
+
+const rawAggregatedData = aggregatedData as AggregatedContent;
+
+const integrityPayload = {
+  folders: rawAggregatedData.folders ?? [],
+  works: rawAggregatedData.works ?? [],
+  pages: rawAggregatedData.pages ?? [],
+  socials: rawAggregatedData.socials ?? [],
+};
+
+export const dataIntegrity = verifyIntegrity(
+  integrityPayload,
+  rawAggregatedData._integrity
+);
+
+if (!dataIntegrity.isValid) {
+  console.warn(
+    '[lum.bio] Content integrity verification failed. Expected %s but calculated %s.',
+    dataIntegrity.expected ?? 'missing',
+    dataIntegrity.actual
+  );
+}
+
 /**
  * Data is loaded from a single pre-aggregated file.
  * Previously used import.meta.glob with eager:true which required
  * bundling all JSON files separately at build time.
  */
-const foldersData = (aggregatedData.folders ?? []) as FolderFile[];
-const worksData = (aggregatedData.works ?? []) as WorkFile[];
-const pagesData = (aggregatedData.pages ?? []) as PageFile[];
-const socialsData = (aggregatedData.socials ?? []) as Social[];
+const foldersData = (integrityPayload.folders ?? []) as FolderFile[];
+const worksData = (integrityPayload.works ?? []) as WorkFile[];
+const pagesData = (integrityPayload.pages ?? []) as PageFile[];
+const socialsData = (integrityPayload.socials ?? []) as Social[];
 
 const ORDER_FALLBACK = Number.MAX_SAFE_INTEGER;
 
@@ -82,7 +114,7 @@ const compareFolders = (a: Folder, b: Folder) => {
   if (orderDiff !== 0) {
     return orderDiff;
   }
-  // 默认倒序 (Z-A),让新的文件夹在前面 (如 2026 > 2025)
+  // Default to reverse alphabetical (Z-A) so newer folders appear first (for example, 2026 ahead of 2025)
   return b.name.localeCompare(a.name);
 };
 
@@ -102,11 +134,11 @@ const sortWorkItems = (items: WorkItem[]): WorkItem[] =>
     }
     const dateA = a.date ? new Date(a.date).getTime() : 0;
     const dateB = b.date ? new Date(b.date).getTime() : 0;
-    // 日期排序: 新的在前
+    // Sort by newest date first
     if (dateA !== dateB) {
       return dateB - dateA;
     }
-    // 文件名倒序 (Z-A),让新的在前面
+    // Fall back to reverse filename order (Z-A) to keep newer entries on top
     return b.filename.localeCompare(a.filename);
   });
 
