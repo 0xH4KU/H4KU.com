@@ -10,6 +10,11 @@ import {
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult, WorkItem } from '@/types';
 import { buildNavigationMap } from '@/utils/navigation';
+import {
+  getFolderLabel,
+  getPageLabel,
+  getWorkItemLabel,
+} from '@/utils/sortHelpers';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DEBOUNCE_DELAYS } from '@/config/constants';
 
@@ -30,6 +35,12 @@ const SearchUIContext = createContext<SearchUIContextValue | undefined>(
 );
 const SearchResultsContext = createContext<
   SearchResultsContextValue | undefined
+>(undefined);
+interface SearchExecutorContextValue {
+  runSearch: (query: string) => SearchResult[];
+}
+const SearchExecutorContext = createContext<
+  SearchExecutorContextValue | undefined
 >(undefined);
 
 const doesWorkItemMatch = (workItem: WorkItem, query: string) => {
@@ -114,77 +125,107 @@ const SearchResultsProvider = ({
   const standalonePages = useMemo(() => buildStandalonePageIndex(), []);
   const homeFolder = useMemo(() => buildHomeFolder(), []);
 
-  const searchResults = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) {
-      return [];
-    }
-
-    const queryValue = debouncedSearchQuery.toLowerCase();
-    const results: SearchResult[] = [];
-
-    folderIndex.forEach(entry => {
-      if (entry.searchableLabel.includes(queryValue)) {
-        results.push({
-          type: 'folder',
-          id: entry.folder.id,
-          label: 'Folder',
-          path: entry.path,
-          folder: entry.folder,
-        });
+  const runSearch = useCallback(
+    (rawQuery: string) => {
+      if (!rawQuery.trim()) {
+        return [];
       }
 
-      entry.folder.items?.forEach(workItem => {
-        if (doesWorkItemMatch(workItem, queryValue)) {
+      const queryValue = rawQuery.toLowerCase();
+      const results: SearchResult[] = [];
+
+      folderIndex.forEach(entry => {
+        if (entry.searchableLabel.includes(queryValue)) {
+          const folderLabel =
+            getFolderLabel(entry.folder) ||
+            entry.folder.name ||
+            entry.folder.id;
           results.push({
-            type: 'work',
-            id: workItem.id,
-            label: 'Work',
+            type: 'folder',
+            id: entry.folder.id,
+            label: folderLabel,
             path: entry.path,
             folder: entry.folder,
-            work: workItem,
+          });
+        }
+
+        entry.folder.items?.forEach(workItem => {
+          if (doesWorkItemMatch(workItem, queryValue)) {
+            const workLabel =
+              getWorkItemLabel(workItem) ||
+              workItem.title ||
+              workItem.filename ||
+              workItem.id;
+            results.push({
+              type: 'work',
+              id: workItem.id,
+              label: workLabel,
+              path: entry.path,
+              folder: entry.folder,
+              work: workItem,
+            });
+          }
+        });
+      });
+
+      standalonePages.forEach(entry => {
+        if (
+          entry.searchableName.includes(queryValue) ||
+          entry.searchableContent.includes(queryValue)
+        ) {
+          const pageLabel =
+            getPageLabel(entry.page) ||
+            entry.page.name ||
+            entry.page.filename ||
+            entry.page.id;
+          results.push({
+            type: 'page',
+            id: entry.page.id,
+            label: pageLabel,
+            page: entry.page,
           });
         }
       });
-    });
 
-    standalonePages.forEach(entry => {
-      if (
-        entry.searchableName.includes(queryValue) ||
-        entry.searchableContent.includes(queryValue)
-      ) {
-        results.push({
-          type: 'page',
-          id: entry.page.id,
-          label: 'Text File',
-          page: entry.page,
+      if (homeFolder?.items?.length) {
+        homeFolder.items.forEach(workItem => {
+          if (doesWorkItemMatch(workItem, queryValue)) {
+            const workLabel =
+              getWorkItemLabel(workItem) ||
+              workItem.title ||
+              workItem.filename ||
+              workItem.id;
+            results.push({
+              type: 'work',
+              id: workItem.id,
+              label: workLabel,
+              path: ['home'],
+              folder: homeFolder,
+              work: workItem,
+            });
+          }
         });
       }
-    });
 
-    if (homeFolder?.items?.length) {
-      homeFolder.items.forEach(workItem => {
-        if (doesWorkItemMatch(workItem, queryValue)) {
-          results.push({
-            type: 'work',
-            id: workItem.id,
-            label: 'Work',
-            path: ['home'],
-            folder: homeFolder,
-            work: workItem,
-          });
-        }
-      });
-    }
+      return results;
+    },
+    [folderIndex, standalonePages, homeFolder]
+  );
 
-    return results;
-  }, [debouncedSearchQuery, folderIndex, standalonePages, homeFolder]);
+  const searchResults = useMemo(
+    () => runSearch(debouncedSearchQuery),
+    [debouncedSearchQuery, runSearch]
+  );
 
+  const executorValue = useMemo(() => ({ runSearch }), [runSearch]);
   const resultsValue = useMemo(() => ({ searchResults }), [searchResults]);
 
   return (
-    <SearchResultsContext.Provider value={resultsValue}>
-      {children}
-    </SearchResultsContext.Provider>
+    <SearchExecutorContext.Provider value={executorValue}>
+      <SearchResultsContext.Provider value={resultsValue}>
+        {children}
+      </SearchResultsContext.Provider>
+    </SearchExecutorContext.Provider>
   );
 };
 
@@ -233,6 +274,14 @@ export function useSearchResults() {
   const context = useContext(SearchResultsContext);
   if (!context) {
     throw new Error('useSearchResults must be used within SearchProvider');
+  }
+  return context;
+}
+
+export function useSearchExecutor() {
+  const context = useContext(SearchExecutorContext);
+  if (!context) {
+    throw new Error('useSearchExecutor must be used within SearchProvider');
   }
   return context;
 }

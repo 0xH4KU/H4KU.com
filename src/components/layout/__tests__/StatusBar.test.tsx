@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import type { ViewType } from '@/types';
 
 type IntegrityStub = {
@@ -15,6 +15,12 @@ type RenderOptions = {
   safeUrlMock?: (
     url: string
   ) => ReturnType<(typeof import('@/utils/urlHelpers'))['getSafeUrl']>;
+  sortOverrides?: Partial<{
+    sortOrder: 'asc' | 'desc';
+    toggleSortOrder: () => void;
+    typeOrder: 'folders-first' | 'images-first';
+    toggleTypeOrder: () => void;
+  }>;
 };
 
 const DEFAULT_INTEGRITY: IntegrityStub = {
@@ -25,6 +31,12 @@ const DEFAULT_INTEGRITY: IntegrityStub = {
 
 const renderStatusBar = async (options: RenderOptions = {}) => {
   const { integrity = DEFAULT_INTEGRITY, currentView = null } = options;
+  const sortMocks = {
+    sortOrder: options.sortOverrides?.sortOrder ?? 'desc',
+    toggleSortOrder: options.sortOverrides?.toggleSortOrder ?? vi.fn(),
+    typeOrder: options.sortOverrides?.typeOrder ?? 'folders-first',
+    toggleTypeOrder: options.sortOverrides?.toggleTypeOrder ?? vi.fn(),
+  };
 
   vi.doMock('@/contexts/NavigationContext', () => ({
     useNavigation: () => ({
@@ -32,12 +44,7 @@ const renderStatusBar = async (options: RenderOptions = {}) => {
     }),
   }));
   vi.doMock('@/contexts/SortContext', () => ({
-    useSortOrder: () => ({
-      sortOrder: 'desc',
-      toggleSortOrder: vi.fn(),
-      typeOrder: 'folders-first',
-      toggleTypeOrder: vi.fn(),
-    }),
+    useSortOrder: () => sortMocks,
   }));
   vi.doMock('@/data/mockData', () => ({
     mockData: {
@@ -62,7 +69,8 @@ const renderStatusBar = async (options: RenderOptions = {}) => {
 
   const module = await import('../StatusBar');
   const StatusBar = module.default;
-  return render(<StatusBar />);
+  const view = render(<StatusBar />);
+  return { ...view, sortMocks };
 };
 
 describe('StatusBar integrity indicator', () => {
@@ -116,5 +124,53 @@ describe('StatusBar integrity indicator', () => {
     });
     const disabled = screen.getByText('[EM]');
     expect(disabled).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('adds rich metadata for mailto and external socials', async () => {
+    await renderStatusBar({
+      socials: [
+        { name: 'Contact', code: 'CT', url: 'mailto:hello@example.com' },
+        { name: 'Docs', code: 'DC', url: 'https://lum.bio/docs' },
+      ],
+    });
+
+    const mailtoLink = screen.getByLabelText(
+      /\[CT], Open Contact \(opens email client\)/i
+    );
+    expect(mailtoLink).toHaveAttribute('href', 'mailto:hello@example.com');
+    expect(mailtoLink).not.toHaveAttribute('target');
+
+    const externalLink = screen.getByLabelText(
+      /\[DC], Open Docs \(opens in new tab\)/i
+    );
+    expect(externalLink).toHaveAttribute('href', 'https://lum.bio/docs');
+    expect(externalLink).toHaveAttribute('target', '_blank');
+    expect(externalLink).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('invokes sort toggles when controls are clicked', async () => {
+    const sortOverrides = {
+      sortOrder: 'asc' as const,
+      toggleSortOrder: vi.fn(),
+      typeOrder: 'images-first' as const,
+      toggleTypeOrder: vi.fn(),
+    };
+    await renderStatusBar({ sortOverrides });
+
+    const sortButton = screen.getByRole('button', {
+      name: /toggle sort order/i,
+    });
+    const typeButton = screen.getByRole('button', {
+      name: /toggle type order/i,
+    });
+
+    expect(sortButton).toHaveTextContent('Z-A|0-9');
+    expect(typeButton).toHaveTextContent('Img>P>F');
+
+    fireEvent.click(sortButton);
+    fireEvent.click(typeButton);
+
+    expect(sortOverrides.toggleSortOrder).toHaveBeenCalledTimes(1);
+    expect(sortOverrides.toggleTypeOrder).toHaveBeenCalledTimes(1);
   });
 });

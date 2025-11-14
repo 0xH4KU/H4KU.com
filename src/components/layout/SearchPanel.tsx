@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
-import { SearchResult } from '@/types';
+import { Page, SearchResult } from '@/types';
 import { SEARCH_PANEL_ID } from '@/config/accessibility';
 import styles from './SearchPanel.module.css';
 
@@ -123,7 +123,9 @@ const SearchPanel: React.FC = () => {
             meta = `Text • lum.bio/${result.page.id}`;
             break;
           case 'work':
-            meta = `Work • ${buildPathLabel(result.path)}`;
+            meta = `${
+              result.work.itemType === 'page' ? 'Text' : 'Image'
+            } • ${buildPathLabel(result.path)}`;
             break;
           default:
             meta = undefined;
@@ -140,8 +142,19 @@ const SearchPanel: React.FC = () => {
     } else if (result.type === 'page') {
       navigateTo(result.page);
     } else if (result.type === 'work') {
-      const gallery = result.folder.items || [];
-      openLightbox(result.work, gallery);
+      if (result.work.itemType === 'page') {
+        const page: Page = {
+          id: result.work.id,
+          name: result.work.filename,
+          filename: result.work.filename,
+          type: 'txt',
+          content: 'content' in result.work ? result.work.content : '',
+        };
+        navigateTo(page, result.path);
+      } else {
+        const gallery = result.folder.items || [];
+        openLightbox(result.work, gallery);
+      }
     }
     closeSearch();
   };
@@ -194,7 +207,7 @@ const SearchPanel: React.FC = () => {
           Search lum.bio
         </div>
         <p className={styles['sr-only']} id={descriptionId}>
-          Type to search folders, works, and text files. Use arrow keys to
+          Type to search folders, images, and text files. Use arrow keys to
           navigate results and press Enter to open the selection.
         </p>
         <div className={styles['search-header']}>
@@ -219,7 +232,7 @@ const SearchPanel: React.FC = () => {
         <div className={styles['search-results']}>
           {searchQuery.trim().length === 0 && (
             <div className={styles['search-hint']}>
-              Start typing to search folders, works, and text files
+              Start typing to search folders, images, and text files
             </div>
           )}
           {searchQuery.trim().length > 0 && formattedResults.length === 0 && (

@@ -22,15 +22,7 @@
       "order": 2
     }
   ],
-  "works": [
-    {
-      "id": "featured-placeholder_file",
-      "filename": "placeholder_file.txt",
-      "content": "Placeholder File",
-      "itemType": "page",
-      "folderId": "featured",
-      "order": 1
-    },
+  "images": [
     {
       "id": "sketches-2025-2025-11-06",
       "filename": "2025-11-06.jpeg",
@@ -51,6 +43,13 @@
       "id": "contact",
       "filename": "Contact.txt",
       "content": "CONTACT\n════════════════════════\n\nEmail: hi@lum.bio\n\nFor commissions and inquiries,\nplease reach out via email or\nuse the contact form.\n\nResponse time: 1-2 business days\n"
+    },
+    {
+      "id": "featured-placeholder_file",
+      "filename": "placeholder_file.txt",
+      "content": "Placeholder File",
+      "folderId": "featured",
+      "order": 1
     }
   ],
   "socials": [
@@ -70,6 +69,6 @@
       "url": "https://twitter.com/lummuu_"
     }
   ],
-  "_buildTime": "2025-11-14T06:21:34.552Z",
-  "_integrity": "44b4e3ce"
+  "_buildTime": "2025-11-14T08:05:02.469Z",
+  "_integrity": "8cf31e40"
 }

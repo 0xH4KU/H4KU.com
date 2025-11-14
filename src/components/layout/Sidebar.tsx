@@ -9,12 +9,13 @@ import { Search, X, ChevronsDown, ChevronsUp, Pin } from 'lucide-react';
 import paperIcon from '@/assets/paper.gif';
 import folderIcon from '@/assets/folder.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
-import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
+import { useSearchExecutor } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
+import { useDebounce } from '@/hooks/useDebounce';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult } from '@/types';
-import { SIDEBAR_CONFIG } from '@/config/constants';
+import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG } from '@/config/constants';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import { FolderTreeItem } from './FolderTreeItem';
 import { ContextMenu } from './ContextMenu';
@@ -55,8 +56,7 @@ const Sidebar: React.FC = () => {
     sidebarWidth,
     setSidebarWidth,
   } = useSidebarContext();
-  const { searchQuery, setSearchQuery } = useSearchUI();
-  const { searchResults } = useSearchResults();
+  const { runSearch } = useSearchExecutor();
   const { activePath, navigateTo, openLightbox, resetToHome, allFolders } =
     useNavigation();
   const { width } = useWindowSize();
@@ -73,6 +73,15 @@ const Sidebar: React.FC = () => {
   } | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isDragging, setIsDragging] = useState(false);
+  const [sidebarQuery, setSidebarQuery] = useState('');
+  const debouncedSidebarQuery = useDebounce(
+    sidebarQuery,
+    DEBOUNCE_DELAYS.SEARCH
+  );
+  const sidebarResults = useMemo(
+    () => runSearch(debouncedSidebarQuery),
+    [runSearch, debouncedSidebarQuery]
+  );
   const supportsInert = useMemo(() => hasInertSupport(), []);
   const normalizedSidebarWidth = clampSidebarWidth(sidebarWidth);
 
@@ -179,8 +188,19 @@ const Sidebar: React.FC = () => {
       } else if (result.type === 'page') {
         navigateTo(result.page);
       } else if (result.type === 'work') {
-        const gallery = result.folder.items || [];
-        openLightbox(result.work, gallery);
+        if (result.work.itemType === 'page') {
+          const page: Page = {
+            id: result.work.id,
+            name: result.work.filename,
+            filename: result.work.filename,
+            type: 'txt',
+            content: 'content' in result.work ? result.work.content : '',
+          };
+          navigateTo(page, result.path);
+        } else {
+          const gallery = result.folder.items || [];
+          openLightbox(result.work, gallery);
+        }
       }
       if (isMobile) {
         closeSidebar();
@@ -316,8 +336,8 @@ const Sidebar: React.FC = () => {
   }, [
     supportsInert,
     isSidebarOpen,
-    searchQuery,
-    searchResults.length,
+    sidebarQuery,
+    sidebarResults.length,
     pinnedFolders.length,
     pinnedPages.length,
   ]);
@@ -396,12 +416,12 @@ const Sidebar: React.FC = () => {
       }
 
       // If searching, navigate search results
-      if (searchQuery.trim() && searchResults.length > 0) {
+      if (sidebarQuery.trim() && sidebarResults.length > 0) {
         switch (event.key) {
           case 'ArrowDown':
             event.preventDefault();
             setFocusedIndex(prev =>
-              prev < searchResults.length - 1 ? prev + 1 : prev
+              prev < sidebarResults.length - 1 ? prev + 1 : prev
             );
             break;
           case 'ArrowUp':
@@ -409,12 +429,12 @@ const Sidebar: React.FC = () => {
             setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
             break;
           case 'Enter':
-            if (focusedIndex >= 0 && searchResults[focusedIndex]) {
-              handleSearchResultSelect(searchResults[focusedIndex]);
+            if (focusedIndex >= 0 && sidebarResults[focusedIndex]) {
+              handleSearchResultSelect(sidebarResults[focusedIndex]);
             }
             break;
           case 'Escape':
-            setSearchQuery('');
+            setSidebarQuery('');
             break;
         }
       } else {
@@ -443,8 +463,8 @@ const Sidebar: React.FC = () => {
             }
             break;
           case 'Escape':
-            if (searchQuery) {
-              setSearchQuery('');
+            if (sidebarQuery) {
+              setSidebarQuery('');
             }
             break;
         }
@@ -456,15 +476,15 @@ const Sidebar: React.FC = () => {
   }, [
     isSidebarOpen,
     focusedIndex,
-    searchQuery,
-    searchResults,
+    sidebarQuery,
+    sidebarResults,
     pinnedFolders,
     unpinnedFolders,
     pinnedPages,
     unpinnedPages,
     handleNavigate,
     handleSearchResultSelect,
-    setSearchQuery,
+    setSidebarQuery,
     sidebarRef,
   ]);
 
@@ -534,7 +554,7 @@ const Sidebar: React.FC = () => {
         break;
       case 'work':
         label = result.work.filename;
-        meta = `Work • lum.bio/${result.path.join('/')}`;
+        meta = `${result.work.itemType === 'page' ? 'Text' : 'Image'} • lum.bio/${result.path.join('/')}`;
         break;
     }
 
@@ -607,16 +627,16 @@ const Sidebar: React.FC = () => {
         <input
           type="text"
           placeholder="Filter sidebar..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          value={sidebarQuery}
+          onChange={e => setSidebarQuery(e.target.value)}
           className={styles['search-input']}
           aria-label="Filter sidebar items"
           aria-describedby="sidebar-filter-help"
         />
-        {searchQuery && (
+        {sidebarQuery && (
           <button
             className={styles['search-clear']}
-            onClick={() => setSearchQuery('')}
+            onClick={() => setSidebarQuery('')}
             aria-label="Clear filter"
           >
             <X size={16} />
@@ -629,19 +649,19 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className={styles['sidebar-content']}>
-        {searchQuery.trim() ? (
+        {sidebarQuery.trim() ? (
           // Show search results
           <>
-            {searchResults.length === 0 && (
+            {sidebarResults.length === 0 && (
               <div className={styles['empty-state']}>
                 <Search size={32} />
                 <p>No results found</p>
                 <span>Try a different search term</span>
               </div>
             )}
-            {searchResults.length > 0 && (
+            {sidebarResults.length > 0 && (
               <div className={styles['search-results-container']}>
-                {searchResults.map((result, index) =>
+                {sidebarResults.map((result, index) =>
                   renderSearchResult(result, index)
                 )}
               </div>
