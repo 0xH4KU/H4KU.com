@@ -115,11 +115,15 @@ export const displayConsoleCopyright = (): void => {
   // Contact info
   console.log('%c📧 LICENSING INQUIRIES:', styles.warning);
   console.log(
-    '%c   For licensing or permission requests, please open an issue at:',
+    '%c   For licensing or permission requests, please open an issue via:',
     styles.info
   );
   console.log(
-    '%c   https://github.com/cervantes/lum.bio/issues',
+    '%c   GitHub: https://github.com/cwlum/lum.bio/issues',
+    styles.license
+  );
+  console.log(
+    '%c   GitLab: https://gitlab.com/lummuu/lum.bio/-/issues',
     styles.license
   );
 
@@ -131,7 +135,7 @@ export const displayConsoleCopyright = (): void => {
     'color: #333;'
   );
   console.log(
-    '%c© ' + new Date().getFullYear() + ' Cervantes. All rights reserved.',
+    `%c© ${new Date().getFullYear()} lum. All rights reserved.`,
     styles.license
   );
   console.log(

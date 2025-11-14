@@ -80,15 +80,23 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
             <h2>📄 License Information</h2>
             <p>
               For licensing inquiries or to report this unauthorized deployment,
-              please visit the official repository.
+              please visit the official repositories.
             </p>
             <a
-              href="https://github.com/cervantes/lum.bio"
+              href="https://github.com/cwlum/lum.bio"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.link}
             >
-              View License <ExternalLink size={16} />
+              GitHub Project <ExternalLink size={16} />
+            </a>
+            <a
+              href="https://gitlab.com/lummuu/lum.bio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.link}
+            >
+              GitLab Mirror <ExternalLink size={16} />
             </a>
           </div>
         </div>

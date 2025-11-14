@@ -262,7 +262,6 @@ Build artifacts retained for 7 days.
 
 ## Documentation
 
-- **[CHANGELOG.md](./CHANGELOG.md)** – Release history
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)** – Architecture deep dive
 - **[TESTING.md](./TESTING.md)** – Testing guidelines
 - **[CONTENT_GUIDE.md](./CONTENT_GUIDE.md)** – Content authoring guide
