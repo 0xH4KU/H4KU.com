@@ -116,11 +116,16 @@ build:
       - dist/
     expire_in: 7 days
   needs:
-    - lint
-    - format-check
-    - type-check
-    - test
-    - security-scan
+    - job: lint
+      artifacts: false
+    - job: format-check
+      artifacts: false
+    - job: type-check
+      artifacts: false
+    - job: test
+      artifacts: false
+    - job: security-scan
+      artifacts: false
   only:
     - main
     - develop
