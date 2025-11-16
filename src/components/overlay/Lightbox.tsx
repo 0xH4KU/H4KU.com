@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useId } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { ImageWorkItem } from '@/types';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import styles from './Lightbox.module.css';
 
 const Lightbox: React.FC = () => {
@@ -13,6 +14,17 @@ const Lightbox: React.FC = () => {
     navigateToNextImage,
     navigateToPrevImage,
   } = useNavigation();
+  const lightboxRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  useFocusTrap({
+    containerRef: lightboxRef,
+    active: Boolean(lightboxImage),
+    initialFocusRef: closeButtonRef,
+    onEscape: closeLightbox,
+  });
 
   useEffect(() => {
     if (!lightboxImage) return;
@@ -70,14 +82,24 @@ const Lightbox: React.FC = () => {
 
   return (
     <div
+      ref={lightboxRef}
       className={styles.lightbox}
       data-overlay="lightbox"
       role="dialog"
       aria-modal="true"
-      aria-label={imageItem.title || imageItem.filename}
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
       onClick={handleOverlayClick}
+      tabIndex={-1}
     >
+      <div className={styles['sr-only']} id={titleId}>
+        {imageItem.title || imageItem.filename}
+      </div>
+      <p className={styles['sr-only']} id={descriptionId}>
+        Lightbox dialog. Use arrow keys to move between images, Escape to close.
+      </p>
       <button
+        ref={closeButtonRef}
         className={styles['lightbox-close']}
         onClick={handleCloseButton}
         aria-label="Close lightbox"

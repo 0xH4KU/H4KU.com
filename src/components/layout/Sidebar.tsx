@@ -43,6 +43,18 @@ const hasInertSupport = () => {
   );
 };
 
+type KeybindingSnapshot = {
+  isSidebarOpen: boolean;
+  sidebarQuery: string;
+  sidebarResults: SearchResult[];
+  focusedIndex: number;
+  sidebarElement: HTMLDivElement | null;
+  handleSearchResultSelect: (result: SearchResult) => void;
+  handleNavigate: (item: SidebarEntry) => void;
+  setSidebarQuery: (value: string) => void;
+  allVisibleItems: SidebarEntry[];
+};
+
 const Sidebar: React.FC = () => {
   const {
     isSidebarOpen,
@@ -68,6 +80,7 @@ const Sidebar: React.FC = () => {
   const resizeHandleRef = useRef<HTMLDivElement | null>(null);
   const dragFrameRef = useRef<number | null>(null);
   const pendingDragWidthRef = useRef<number | null>(null);
+  const keybindingStateRef = useRef<KeybindingSnapshot | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -153,6 +166,16 @@ const Sidebar: React.FC = () => {
     });
     return { pinnedPages: pinned, unpinnedPages: unpinned };
   }, [pages, pinnedItems]);
+
+  const allVisibleItems = useMemo(
+    () => [
+      ...pinnedFolders,
+      ...unpinnedFolders,
+      ...pinnedPages,
+      ...unpinnedPages,
+    ],
+    [pinnedFolders, unpinnedFolders, pinnedPages, unpinnedPages]
+  );
 
   useEffect(() => {
     activeSegments.forEach(segment => {
@@ -443,55 +466,54 @@ const Sidebar: React.FC = () => {
     [getItemUrl]
   );
 
-  // Keyboard navigation
+  useEffect(() => {
+    keybindingStateRef.current = {
+      isSidebarOpen,
+      sidebarQuery,
+      sidebarResults,
+      focusedIndex,
+      sidebarElement: sidebarRef.current,
+      handleSearchResultSelect,
+      handleNavigate,
+      setSidebarQuery,
+      allVisibleItems,
+    };
+  }, [
+    isSidebarOpen,
+    sidebarQuery,
+    sidebarResults,
+    focusedIndex,
+    handleSearchResultSelect,
+    handleNavigate,
+    setSidebarQuery,
+    allVisibleItems,
+  ]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isSidebarOpen) return;
+      const state = keybindingStateRef.current;
+      if (!state?.isSidebarOpen) {
+        return;
+      }
+
       const target = event.target as HTMLElement | null;
       if (
-        sidebarRef.current &&
+        state.sidebarElement &&
         target &&
-        !sidebarRef.current.contains(target)
+        !state.sidebarElement.contains(target)
       ) {
         return;
       }
 
-      // If searching, navigate search results
-      if (sidebarQuery.trim() && sidebarResults.length > 0) {
-        switch (event.key) {
-          case 'ArrowDown':
-            event.preventDefault();
-            setFocusedIndex(prev =>
-              prev < sidebarResults.length - 1 ? prev + 1 : prev
-            );
-            break;
-          case 'ArrowUp':
-            event.preventDefault();
-            setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
-            break;
-          case 'Enter':
-            if (focusedIndex >= 0 && sidebarResults[focusedIndex]) {
-              handleSearchResultSelect(sidebarResults[focusedIndex]);
-            }
-            break;
-          case 'Escape':
-            setSidebarQuery('');
-            break;
-        }
-      } else {
-        // Navigate normal sidebar items
-        const allVisibleItems = [
-          ...pinnedFolders,
-          ...unpinnedFolders,
-          ...pinnedPages,
-          ...unpinnedPages,
-        ];
+      const isSearching =
+        state.sidebarQuery.trim().length > 0 && state.sidebarResults.length > 0;
 
+      if (isSearching) {
         switch (event.key) {
           case 'ArrowDown':
             event.preventDefault();
             setFocusedIndex(prev =>
-              prev < allVisibleItems.length - 1 ? prev + 1 : prev
+              prev < state.sidebarResults.length - 1 ? prev + 1 : prev
             );
             break;
           case 'ArrowUp':
@@ -499,35 +521,52 @@ const Sidebar: React.FC = () => {
             setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
             break;
           case 'Enter':
-            if (focusedIndex >= 0 && allVisibleItems[focusedIndex]) {
-              handleNavigate(allVisibleItems[focusedIndex]);
+            if (
+              state.focusedIndex >= 0 &&
+              state.sidebarResults[state.focusedIndex]
+            ) {
+              state.handleSearchResultSelect(
+                state.sidebarResults[state.focusedIndex]
+              );
             }
             break;
           case 'Escape':
-            if (sidebarQuery) {
-              setSidebarQuery('');
-            }
+            state.setSidebarQuery('');
             break;
         }
+        return;
+      }
+
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          setFocusedIndex(prev =>
+            prev < state.allVisibleItems.length - 1 ? prev + 1 : prev
+          );
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
+          break;
+        case 'Enter':
+          if (
+            state.focusedIndex >= 0 &&
+            state.allVisibleItems[state.focusedIndex]
+          ) {
+            state.handleNavigate(state.allVisibleItems[state.focusedIndex]);
+          }
+          break;
+        case 'Escape':
+          if (state.sidebarQuery) {
+            state.setSidebarQuery('');
+          }
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
-    isSidebarOpen,
-    focusedIndex,
-    sidebarQuery,
-    sidebarResults,
-    pinnedFolders,
-    unpinnedFolders,
-    pinnedPages,
-    unpinnedPages,
-    handleNavigate,
-    handleSearchResultSelect,
-    setSidebarQuery,
-    sidebarRef,
-  ]);
+  }, []);
 
   const renderItem = (item: SidebarEntry, showPin = false) => {
     const isActive = activePathSegments.has(item.id);

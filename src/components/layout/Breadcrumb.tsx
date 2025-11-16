@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { BREAKPOINTS, BREADCRUMB_CONFIG } from '@/config/constants';
 import styles from './TopBar.module.css';
@@ -15,6 +15,16 @@ interface BreadcrumbProps {
 
 const Breadcrumb: React.FC<BreadcrumbProps> = ({ segments, onSelect }) => {
   const { width } = useWindowSize();
+  const [announcement, setAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (segments.length === 0) {
+      setAnnouncement('Navigation path cleared');
+      return;
+    }
+    const pathDescription = segments.map(segment => segment.label).join(' / ');
+    setAnnouncement(`Navigation path: ${pathDescription}`);
+  }, [segments]);
 
   // Calculate how many segments to show based on screen width
   const visibleSegments = useMemo(() => {
@@ -62,7 +72,19 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ segments, onSelect }) => {
   }, [segments, width]);
 
   return (
-    <div className={styles.breadcrumb}>
+    <div
+      className={styles.breadcrumb}
+      role="navigation"
+      aria-label="Breadcrumb navigation"
+    >
+      <span
+        className={styles['sr-only']}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {announcement}
+      </span>
       {visibleSegments.map(item => {
         if (item === 'ellipsis') {
           return (
