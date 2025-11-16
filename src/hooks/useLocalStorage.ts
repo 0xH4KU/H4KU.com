@@ -60,6 +60,15 @@ export function useLocalStorage<T>(
         setStoredValue(JSON.parse(event.newValue));
       } catch (error) {
         console.error(`Error parsing storage event for key "${key}":`, error);
+        setStoredValue(initialValueRef.current);
+        try {
+          window.localStorage.removeItem(key);
+        } catch (cleanupError) {
+          console.warn(
+            `Unable to reset corrupted localStorage key "${key}":`,
+            cleanupError
+          );
+        }
       }
     };
 

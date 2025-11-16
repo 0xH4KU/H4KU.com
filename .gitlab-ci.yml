@@ -66,9 +66,7 @@ test:
   extends: .install-deps
   stage: quality
   variables:
-    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
-    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
-    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
+    VITE_CONTACT_ENDPOINT: https://example.com/contact
   script:
     - npm run test:coverage
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
@@ -102,9 +100,7 @@ build:
   extends: .install-deps
   stage: build
   variables:
-    VITE_EMAILJS_SERVICE_ID: $VITE_EMAILJS_SERVICE_ID
-    VITE_EMAILJS_TEMPLATE_ID: $VITE_EMAILJS_TEMPLATE_ID
-    VITE_EMAILJS_PUBLIC_KEY: $VITE_EMAILJS_PUBLIC_KEY
+    VITE_CONTACT_ENDPOINT: https://example.com/contact
   script:
     - npm run build
     - echo "## Build Size Report"

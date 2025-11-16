@@ -165,6 +165,44 @@
   white-space: pre-wrap;
 }
 
+.contact-loading,
+.contact-error {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.contact-error-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.contact-error-button {
+  border: 1px solid var(--color-text);
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.contact-error-button:hover {
+  background: var(--color-text);
+  color: var(--color-background);
+}
+
+.contact-error-link {
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .file-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
