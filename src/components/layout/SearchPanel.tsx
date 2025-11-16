@@ -2,15 +2,10 @@ import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { Page, SearchResult } from '@/types';
+import { buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
+import { getImageGallery, isImageWorkItem } from '@/utils/workItems';
 import { SEARCH_PANEL_ID } from '@/config/accessibility';
 import styles from './SearchPanel.module.css';
-
-const buildPathLabel = (path: string[]): string => {
-  if (!path.length) {
-    return 'lum.bio';
-  }
-  return `lum.bio/${path.join('/')}`;
-};
 
 const SearchPanel: React.FC = () => {
   const { searchOpen, searchQuery, setSearchQuery, closeSearch } =
@@ -127,15 +122,16 @@ const SearchPanel: React.FC = () => {
 
         switch (result.type) {
           case 'folder':
-            meta = `Folder • ${buildPathLabel(result.path)}`;
+            meta = `Folder • ${buildFolderUrl(result.path)}`;
             break;
           case 'page':
-            meta = `Text • lum.bio/${result.page.id}`;
+            meta = `Text • ${buildPageUrl(result.page.id)}`;
             break;
           case 'work':
-            meta = `${
-              result.work.itemType === 'page' ? 'Text' : 'Image'
-            } • ${buildPathLabel(result.path)}`;
+            meta =
+              result.work.itemType === 'page'
+                ? `Text • ${buildPageUrl(result.work.id)}`
+                : `Image • ${buildFolderUrl(result.path)}`;
             break;
           default:
             meta = undefined;
@@ -147,25 +143,27 @@ const SearchPanel: React.FC = () => {
   );
 
   const handleSelect = (result: SearchResult) => {
-    if (result.type === 'folder') {
-      navigateTo(result.folder, result.path);
-    } else if (result.type === 'page') {
-      navigateTo(result.page);
-    } else if (result.type === 'work') {
-      if (result.work.itemType === 'page') {
-        const page: Page = {
-          id: result.work.id,
-          name: result.work.filename,
-          filename: result.work.filename,
-          type: 'txt',
-          content: 'content' in result.work ? result.work.content : '',
-        };
-        navigateTo(page, result.path);
-      } else {
-        const gallery = result.folder.items || [];
-        openLightbox(result.work, gallery);
+      if (result.type === 'folder') {
+        navigateTo(result.folder, result.path);
+      } else if (result.type === 'page') {
+        navigateTo(result.page);
+      } else if (result.type === 'work') {
+        if (result.work.itemType === 'page') {
+          const page: Page = {
+            id: result.work.id,
+            name: result.work.filename,
+            filename: result.work.filename,
+            type: 'txt',
+            content: 'content' in result.work ? result.work.content : '',
+          };
+          navigateTo(page, result.path);
+        } else if (isImageWorkItem(result.work)) {
+          const gallery = getImageGallery(result.folder);
+          if (gallery.length > 0) {
+            openLightbox(result.work, gallery);
+          }
+        }
       }
-    }
     closeSearch();
   };
 

@@ -69,7 +69,14 @@ const Lightbox: React.FC = () => {
   const showNavigation = lightboxGallery.length > 1;
 
   return (
-    <div className={styles.lightbox} onClick={handleOverlayClick}>
+    <div
+      className={styles.lightbox}
+      data-overlay="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label={imageItem.title || imageItem.filename}
+      onClick={handleOverlayClick}
+    >
       <button
         className={styles['lightbox-close']}
         onClick={handleCloseButton}
