@@ -1,11 +1,53 @@
-import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useId,
+  useCallback,
+} from 'react';
 import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { Page, SearchResult } from '@/types';
 import { buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
 import { getImageGallery, isImageWorkItem } from '@/utils/workItems';
 import { SEARCH_PANEL_ID } from '@/config/accessibility';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import styles from './SearchPanel.module.css';
+
+type ResultCategory = SearchResult['type'];
+
+const CATEGORY_ORDER: ResultCategory[] = ['folder', 'page', 'work'];
+const CATEGORY_LABELS: Record<ResultCategory, string> = {
+  folder: 'Folders',
+  work: 'Images & Files',
+  page: 'Pages',
+};
+
+const CATEGORY_BATCH_SIZES: Record<ResultCategory, number> = {
+  folder: 10,
+  work: 12,
+  page: 8,
+};
+
+const createDefaultLimits = () => ({ ...CATEGORY_BATCH_SIZES });
+
+const formatResultMeta = (result: SearchResult) => {
+  switch (result.type) {
+    case 'folder':
+      return `Folder • ${buildFolderUrl(result.path)}`;
+    case 'page':
+      return `Text • ${buildPageUrl(result.page.id)}`;
+    case 'work':
+      return result.work.itemType === 'page'
+        ? `Text • ${buildPageUrl(result.work.id)}`
+        : `Image • ${buildFolderUrl(result.path)}`;
+    default:
+      return undefined;
+  }
+};
+
+type FormattedResult = SearchResult & { meta?: string };
 
 const SearchPanel: React.FC = () => {
   const { searchOpen, searchQuery, setSearchQuery, closeSearch } =
@@ -14,132 +56,94 @@ const SearchPanel: React.FC = () => {
   const { navigateTo, openLightbox } = useNavigation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
-  const closeSearchRef = useRef(closeSearch);
-  const searchOpenRef = useRef(searchOpen);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [visibleLimits, setVisibleLimits] = useState(createDefaultLimits);
   const titleId = useId();
   const descriptionId = useId();
 
-  useEffect(() => {
-    closeSearchRef.current = closeSearch;
-  }, [closeSearch]);
+  useFocusTrap({
+    containerRef: panelRef,
+    active: searchOpen,
+    initialFocusRef: inputRef,
+    onEscape: closeSearch,
+  });
 
   useEffect(() => {
-    searchOpenRef.current = searchOpen;
+    setVisibleLimits(createDefaultLimits());
+    setSelectedIndex(0);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!searchOpen) {
+      setSelectedIndex(0);
+    }
   }, [searchOpen]);
 
+  const categorizedResults = useMemo(() => {
+    return searchResults.reduce<Record<ResultCategory, SearchResult[]>>(
+      (acc, result) => {
+        acc[result.type].push(result);
+        return acc;
+      },
+      {
+        folder: [],
+        work: [],
+        page: [],
+      }
+    );
+  }, [searchResults]);
+
+  const resultSections = useMemo(() => {
+    return CATEGORY_ORDER.map(category => {
+      const total = categorizedResults[category].length;
+      const limit = visibleLimits[category];
+      const items = categorizedResults[category].slice(0, limit);
+      const formattedItems = items.map(result => ({
+        ...result,
+        meta: formatResultMeta(result),
+      }));
+
+      return {
+        category,
+        label: CATEGORY_LABELS[category],
+        items: formattedItems,
+        total,
+        visibleCount: items.length,
+        hasMore: total > items.length,
+      };
+    });
+  }, [categorizedResults, visibleLimits]);
+
+  const flattenedResults = useMemo<FormattedResult[]>(() => {
+    return resultSections.flatMap(section => section.items);
+  }, [resultSections]);
+
   useEffect(() => {
-    if (searchOpen) {
-      previouslyFocusedElement.current =
-        (document.activeElement as HTMLElement | null) ?? null;
-      inputRef.current?.focus();
+    if (flattenedResults.length === 0) {
       setSelectedIndex(0);
       return;
     }
+    setSelectedIndex(prev => Math.min(prev, flattenedResults.length - 1));
+  }, [flattenedResults.length]);
 
-    if (previouslyFocusedElement.current) {
-      previouslyFocusedElement.current.focus();
-      previouslyFocusedElement.current = null;
-    }
-  }, [searchOpen]);
-
-  // Reset selected index when results change
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [searchResults.length]);
-
-  useEffect(() => {
-    const getFocusableElements = () => {
-      if (!panelRef.current) {
-        return [];
-      }
-
-      const selectors = [
-        'a[href]',
-        'button:not([disabled])',
-        'input:not([disabled])',
-        'textarea:not([disabled])',
-        '[tabindex]:not([tabindex="-1"])',
-      ].join(',');
-
-      return Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>(selectors)
-      ).filter(element => !element.hasAttribute('aria-hidden'));
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!searchOpenRef.current) {
-        return;
-      }
-
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeSearchRef.current?.();
-        return;
-      }
-
-      if (event.key !== 'Tab') {
-        return;
-      }
-
-      const focusableElements = getFocusableElements();
-
-      if (focusableElements.length === 0) {
-        event.preventDefault();
-        panelRef.current?.focus();
-        return;
-      }
-
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-      const activeElement = document.activeElement as HTMLElement | null;
-
-      if (event.shiftKey) {
-        if (!activeElement || activeElement === firstElement) {
-          event.preventDefault();
-          lastElement.focus();
+  const handleShowMore = useCallback(
+    (category: ResultCategory) => {
+      setVisibleLimits(prev => {
+        const max = categorizedResults[category].length;
+        const nextLimit = Math.min(
+          prev[category] + CATEGORY_BATCH_SIZES[category],
+          max
+        );
+        if (nextLimit === prev[category]) {
+          return prev;
         }
-        return;
-      }
-
-      if (activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  type FormattedResult = SearchResult & { meta?: string };
-
-  const formattedResults = useMemo<FormattedResult[]>(
-    () =>
-      searchResults.map(result => {
-        let meta: string | undefined;
-
-        switch (result.type) {
-          case 'folder':
-            meta = `Folder • ${buildFolderUrl(result.path)}`;
-            break;
-          case 'page':
-            meta = `Text • ${buildPageUrl(result.page.id)}`;
-            break;
-          case 'work':
-            meta =
-              result.work.itemType === 'page'
-                ? `Text • ${buildPageUrl(result.work.id)}`
-                : `Image • ${buildFolderUrl(result.path)}`;
-            break;
-          default:
-            meta = undefined;
-        }
-
-        return { ...result, meta };
-      }),
-    [searchResults]
+        return {
+          ...prev,
+          [category]: nextLimit,
+        };
+      });
+    },
+    [categorizedResults]
   );
 
   const handleSelect = (result: SearchResult) => {
@@ -171,17 +175,13 @@ const SearchPanel: React.FC = () => {
     setSearchQuery(value);
   };
 
-  const handleClose = () => {
-    closeSearch();
-  };
-
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && formattedResults.length > 0) {
-      handleSelect(formattedResults[selectedIndex]);
+    if (event.key === 'Enter' && flattenedResults.length > 0) {
+      handleSelect(flattenedResults[selectedIndex]);
     } else if (event.key === 'ArrowDown') {
       event.preventDefault();
       setSelectedIndex(prev =>
-        prev < formattedResults.length - 1 ? prev + 1 : prev
+        prev < flattenedResults.length - 1 ? prev + 1 : prev
       );
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
@@ -189,9 +189,15 @@ const SearchPanel: React.FC = () => {
     }
   };
 
+  const handleClose = () => {
+    closeSearch();
+  };
+
   if (!searchOpen) {
     return null;
   }
+
+  let runningIndex = 0;
 
   return (
     <div
@@ -243,26 +249,66 @@ const SearchPanel: React.FC = () => {
               Start typing to search folders, images, and text files
             </div>
           )}
-          {searchQuery.trim().length > 0 && formattedResults.length === 0 && (
+          {searchQuery.trim().length > 0 && flattenedResults.length === 0 && (
             <div className={styles['search-empty']}>No matches found</div>
           )}
-          {formattedResults.map((result, index) => (
-            <button
-              key={`${result.type}-${result.id}`}
-              className={`${styles['search-result']} ${index === selectedIndex ? styles['search-result--selected'] : ''}`}
-              type="button"
-              onClick={() => handleSelect(result)}
-            >
-              <div className={styles['search-result-label']}>
-                {result.label}
-              </div>
-              {'meta' in result && result.meta ? (
-                <div className={styles['search-result-meta']}>
-                  {result.meta}
-                </div>
-              ) : null}
-            </button>
-          ))}
+          {searchQuery.trim().length > 0 &&
+            resultSections.some(section => section.total > 0) &&
+            resultSections.map(section => {
+              if (section.total === 0) {
+                return null;
+              }
+
+              return (
+                <section
+                  key={section.category}
+                  className={styles['search-section']}
+                  aria-label={`${section.label} results`}
+                >
+                  <div className={styles['search-section-header']}>
+                    <span>{section.label}</span>
+                    <span className={styles['search-section-count']}>
+                      {section.visibleCount} of {section.total}
+                    </span>
+                  </div>
+                  <div className={styles['search-section-results']}>
+                    {section.items.map(result => {
+                      const currentIndex = runningIndex;
+                      runningIndex += 1;
+
+                      return (
+                        <button
+                          key={`${result.type}-${result.id}`}
+                          className={`${styles['search-result']} ${currentIndex === selectedIndex ? styles['search-result--selected'] : ''}`}
+                          type="button"
+                          onClick={() => handleSelect(result)}
+                          aria-pressed={currentIndex === selectedIndex}
+                        >
+                          <div className={styles['search-result-label']}>
+                            {result.label}
+                          </div>
+                          {'meta' in result && result.meta ? (
+                            <div className={styles['search-result-meta']}>
+                              {result.meta}
+                            </div>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {section.hasMore && (
+                    <button
+                      type="button"
+                      className={styles['search-show-more']}
+                      onClick={() => handleShowMore(section.category)}
+                    >
+                      Show more ({section.total - section.visibleCount}{' '}
+                      remaining)
+                    </button>
+                  )}
+                </section>
+              );
+            })}
         </div>
       </div>
     </div>

@@ -177,72 +177,81 @@
 
 ### 7. Performance Issues
 
-#### 7.1 Search results have no limit
+#### ~~7.1 Search results have no limit~~
 - **Location:** `src/contexts/SearchContext.tsx:128-218`
 - **Problem:** Iterates through ALL folders, items, pages without limit. Broad query (single letter) could return hundreds of results
 - **Impact:** Search panel UI slowdown, excessive memory usage with large result sets
 - **Risk Level:** MEDIUM
 - **Action:** Implement result limit (e.g., 10 per category) with "show more" pagination
+  - **Fix:** Search overlay now buckets results per type with capped batches, "Show more" pagination, and a dedicated focus trap hook so rendering stays bounded even with single-letter queries (`src/components/layout/SearchPanel.tsx`, `src/components/layout/SearchPanel.module.css`, `src/hooks/useFocusTrap.ts`).
 
-#### 7.2 Sidebar keyboard navigation recreates frequently
+#### ~~7.2 Sidebar keyboard navigation recreates frequently~~
 - **Location:** `src/components/layout/Sidebar.tsx:406-489`
 - **Problem:** Window-level keydown listener with 11 dependencies. Fires for EVERY keypress globally, effect recreates on any dependency change
 - **Impact:** Performance overhead from frequent effect recreation and unnecessary event handling
 - **Risk Level:** MEDIUM
 - **Action:** Reduce dependencies using refs OR scope listener to sidebar element only
+  - **Fix:** Key binding logic now stores the latest sidebar state in a ref and registers a single global listener, so handlers no longer churn on every dependency change while still respecting scoped focus (`src/components/layout/Sidebar.tsx`).
 
-#### 7.3 LazyImage sets up IntersectionObserver for priority images
+#### ~~7.3 LazyImage sets up IntersectionObserver for priority images~~
 - **Location:** `src/components/common/LazyImage.tsx:96-121`
 - **Problem:** Calls `observeNode` unconditionally even when `priority={true}`. Priority images load via `loading="eager"` anyway
 - **Impact:** Wastes resources setting up observers that never trigger
 - **Risk Level:** LOW-MEDIUM
 - **Action:** Skip observer setup when `priority` is true
+  - **Fix:** Priority images now bypass the shared IntersectionObserver entirely, keeping eager loads synchronous while adding loading state attributes for a11y (`src/components/common/LazyImage.tsx`).
 
-#### 7.4 Theme meta tag updates perform redundant DOM queries
+#### ~~7.4 Theme meta tag updates perform redundant DOM queries~~
 - **Location:** `src/contexts/ThemeContext.tsx:64-98`
 - **Problem:** Queries DOM for meta tags (lines 70, 90) and computes styles in BOTH light and dark paths on every theme change, but only one is active
 - **Impact:** Unnecessary DOM queries on every theme toggle
 - **Risk Level:** LOW-MEDIUM
 - **Action:** Cache meta tag refs OR only query active theme path
+  - **Fix:** Theme meta updates cache the light/dark nodes once and only recompute the active mode’s color on toggle, eliminating duplicate DOM queries (`src/contexts/ThemeContext.tsx`).
 
 ---
 
 ### 8. Accessibility & UX Gaps
 
-#### 8.1 Lightbox lacks dialog semantics
+#### ~~8.1 Lightbox lacks dialog semantics~~
 - **Location:** Lightbox overlay
 - **Problem:** Doesn't set `role="dialog"` / `aria-modal="true"`, doesn't trap focus
 - **Impact:** Poor screen reader experience, focus can escape dialog
 - **Risk Level:** MEDIUM
 - **Action:** Move focus to close button on open, restore focus on close, use `aria-modal`
+  - **Fix:** The Lightbox now reuses the shared focus trap hook, adds labeled SR-only descriptors, and restores focus when closed so it behaves like a modal dialog for assistive tech (`src/components/overlay/Lightbox.tsx`, `src/components/overlay/Lightbox.module.css`, `src/hooks/useFocusTrap.ts`).
 
-#### 8.2 SearchPanel focus trap brittle
+#### ~~8.2 SearchPanel focus trap brittle~~
 - **Location:** SearchPanel focus trap logic
 - **Problem:** Listens to `document` keydown globally, recreated on every open. Any error leaves listeners dangling
 - **Impact:** Potential memory leaks, focus management failures
 - **Risk Level:** MEDIUM
 - **Action:** Combine event management into cleanup-friendly hook, consider `focus-trap` library
+  - **Fix:** Search overlay now relies on the reusable `useFocusTrap` hook so listeners mount only while the dialog is open and focus is automatically restored on close (`src/components/layout/SearchPanel.tsx`, `src/hooks/useFocusTrap.ts`).
 
-#### 8.3 Breadcrumb lacks keyboard focus indicators
+#### ~~8.3 Breadcrumb lacks keyboard focus indicators~~
 - **Location:** `src/components/layout/Breadcrumb.tsx:86-111`
 - **Problem:** Buttons without explicit focus management, no `aria-live` for navigation
 - **Impact:** Keyboard users may not see focused breadcrumb; screen readers don't get navigation announcements
 - **Risk Level:** MEDIUM
 - **Action:** Add focus styles, implement focus management, add aria-live region
+  - **Fix:** Breadcrumb buttons expose a high-contrast `:focus-visible` outline and an aria-live status message that announces the current path for screen readers (`src/components/layout/Breadcrumb.tsx`, `src/components/layout/TopBar.module.css`).
 
-#### 8.4 LazyImage doesn't announce loading states
+#### ~~8.4 LazyImage doesn't announce loading states~~
 - **Location:** `src/components/common/LazyImage.tsx:138-156`
 - **Problem:** Opacity transition (line 152) provides visual feedback but no `aria-busy` or `aria-live`
 - **Impact:** Screen reader users don't know when images loaded/loading
 - **Risk Level:** MEDIUM
 - **Action:** Add `aria-busy="true"` during loading, `aria-live="polite"` when loaded
+  - **Fix:** `LazyImage` exposes `aria-busy` while fetching and switches to `aria-live="polite"` once the final image renders, mirroring the visual fade (`src/components/common/LazyImage.tsx`).
 
-#### 8.5 Domain whitelist hard-coded
+#### ~~8.5 Domain whitelist hard-coded~~
 - **Location:** `src/utils/domainCheck.ts`
 - **Problem:** Only allows specific hosts. Every preview/staging URL forces source code change
 - **Impact:** Cannot deploy to staging/QA without code commits
 - **Risk Level:** MEDIUM
 - **Action:** Read allowed domains from environment variables (e.g., `VITE_ALLOWED_DOMAINS`)
+  - **Fix:** Authorized domain lists now merge a comma-delimited `VITE_ALLOWED_DOMAINS` override (with wildcard/regex support) on top of the defaults so staging hosts can be configured without code edits (`src/utils/domainCheck.ts`).
 
 ---
 

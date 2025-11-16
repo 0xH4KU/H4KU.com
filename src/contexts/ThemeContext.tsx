@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   ReactNode,
 } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -48,6 +49,39 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = storedTheme || systemTheme;
   const hasStoredTheme = storedTheme !== null;
 
+  const themeMetaRefs = useRef<{
+    light: HTMLMetaElement | null;
+    dark: HTMLMetaElement | null;
+  }>({ light: null, dark: null });
+
+  const ensureThemeMeta = (mode: Theme) => {
+    const selector =
+      mode === 'light'
+        ? 'meta[name="theme-color"][media*="light"]'
+        : 'meta[name="theme-color"][media*="dark"]';
+
+    if (themeMetaRefs.current[mode]) {
+      return themeMetaRefs.current[mode];
+    }
+
+    let meta = document.querySelector<HTMLMetaElement>(selector);
+
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      meta.setAttribute(
+        'media',
+        mode === 'light'
+          ? '(prefers-color-scheme: light)'
+          : '(prefers-color-scheme: dark)'
+      );
+      document.head.appendChild(meta);
+    }
+
+    themeMetaRefs.current[mode] = meta;
+    return meta;
+  };
+
   // Apply theme to document and update meta tags
   useEffect(() => {
     /* istanbul ignore next */
@@ -60,42 +94,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.colorScheme = theme;
     document.body?.setAttribute('data-theme', theme);
 
-    // Update theme-color meta tags (create if missing)
-    const updateThemeColorMeta = (mode: Theme) => {
-      const selector =
-        mode === 'light'
-          ? 'meta[name="theme-color"][media*="light"]'
-          : 'meta[name="theme-color"][media*="dark"]';
+    const fallback =
+      theme === 'light'
+        ? THEME_COLORS.LIGHT.SURFACE
+        : THEME_COLORS.DARK.SURFACE;
 
-      let meta = document.querySelector<HTMLMetaElement>(selector);
+    const rootStyles = window.getComputedStyle(document.documentElement);
+    const chromeColor = rootStyles.getPropertyValue('--color-chrome').trim();
+    const color = chromeColor || fallback;
 
-      // Create meta tag if it doesn't exist
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('name', 'theme-color');
-        meta.setAttribute(
-          'media',
-          mode === 'light'
-            ? '(prefers-color-scheme: light)'
-            : '(prefers-color-scheme: dark)'
-        );
-        document.head.appendChild(meta);
-      }
-
-      const fallback =
-        mode === 'light'
-          ? THEME_COLORS.LIGHT.SURFACE
-          : THEME_COLORS.DARK.SURFACE;
-
-      const rootStyles = window.getComputedStyle(document.documentElement);
-      const chromeColor = rootStyles.getPropertyValue('--color-chrome').trim();
-      const color = chromeColor || fallback;
-
-      meta.setAttribute('content', color);
-    };
-
-    updateThemeColorMeta('light');
-    updateThemeColorMeta('dark');
+    const meta = ensureThemeMeta(theme);
+    meta.setAttribute('content', color);
   }, [theme]);
 
   const toggleTheme = () => {

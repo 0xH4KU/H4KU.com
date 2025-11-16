@@ -11,7 +11,9 @@
  * Authorized domains whitelist
  * Add your production and development domains here
  */
-const AUTHORIZED_DOMAINS = [
+type DomainMatcher = string | RegExp;
+
+const DEFAULT_AUTHORIZED_DOMAINS: DomainMatcher[] = [
   'localhost',
   '127.0.0.1',
   'lum.bio',
@@ -19,7 +21,60 @@ const AUTHORIZED_DOMAINS = [
   'lum-bio.pages.dev',
   /.*\.lum-bio\.pages\.dev$/,
   /^192\.168\.\d{1,3}\.\d{1,3}$/,
-] as const;
+];
+
+const escapeRegExp = (value: string) =>
+  value.replace(/[-/\\^$+?.()|[\]{}]/g, '\\$&');
+
+const normalizeDomainEntry = (entry: string): DomainMatcher | null => {
+  if (!entry) {
+    return null;
+  }
+
+  const trimmed = entry.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.startsWith('/') && trimmed.endsWith('/')) {
+    try {
+      return new RegExp(trimmed.slice(1, -1));
+    } catch (error) {
+      console.warn('Invalid domain regex provided:', trimmed, error);
+      return null;
+    }
+  }
+
+  if (trimmed.includes('*')) {
+    const pattern = '^' + trimmed.split('*').map(escapeRegExp).join('.*') + '$';
+    return new RegExp(pattern);
+  }
+
+  return trimmed;
+};
+
+const getEnvironmentDomains = (): DomainMatcher[] => {
+  const raw =
+    (typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    typeof import.meta.env.VITE_ALLOWED_DOMAINS === 'string'
+      ? import.meta.env.VITE_ALLOWED_DOMAINS
+      : '') || '';
+
+  if (!raw) {
+    return [];
+  }
+
+  return raw
+    .split(',')
+    .map(value => normalizeDomainEntry(value))
+    .filter((value): value is DomainMatcher => value !== null);
+};
+
+const AUTHORIZED_DOMAINS: DomainMatcher[] = [
+  ...getEnvironmentDomains(),
+  ...DEFAULT_AUTHORIZED_DOMAINS,
+];
 
 /**
  * Check if a domain matches the whitelist
