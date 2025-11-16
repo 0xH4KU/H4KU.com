@@ -8,7 +8,11 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
+import {
+  DEBOUNCE_DELAYS,
+  SIDEBAR_CONFIG,
+  STORAGE_KEYS,
+} from '@/config/constants';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface SidebarContextType {

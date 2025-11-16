@@ -183,10 +183,9 @@ describe('SearchPanel interactions', () => {
     render(<SearchPanel />);
     const workButton = getResultButtonByLabel('work');
     await userEvent.click(workButton);
-    expect(navigationMock.openLightbox).toHaveBeenCalledWith(
-      workResult.work,
-      [imageItem]
-    );
+    expect(navigationMock.openLightbox).toHaveBeenCalledWith(workResult.work, [
+      imageItem,
+    ]);
   });
 
   it('focuses the panel when no focusable elements are found', async () => {

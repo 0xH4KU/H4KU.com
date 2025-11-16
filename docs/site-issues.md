@@ -182,7 +182,7 @@
 - **Problem:** Iterates through ALL folders, items, pages without limit. Broad query (single letter) could return hundreds of results
 - **Impact:** Search panel UI slowdown, excessive memory usage with large result sets
 - **Risk Level:** MEDIUM
-- **Action:** Implement result limit (e.g., 50 per category) with "show more" pagination
+- **Action:** Implement result limit (e.g., 10 per category) with "show more" pagination
 
 #### 7.2 Sidebar keyboard navigation recreates frequently
 - **Location:** `src/components/layout/Sidebar.tsx:406-489`

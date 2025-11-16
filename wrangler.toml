@@ -1,9 +1,6 @@
 name = "lum-bio"
 pages_build_output_dir = "dist"
 
-[build]
-command = "npm run build"
-
 [vars]
 VITE_CONTACT_ENDPOINT = "https://api.example.com/contact"
 # Optional overrides

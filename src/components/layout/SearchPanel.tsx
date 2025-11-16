@@ -143,27 +143,27 @@ const SearchPanel: React.FC = () => {
   );
 
   const handleSelect = (result: SearchResult) => {
-      if (result.type === 'folder') {
-        navigateTo(result.folder, result.path);
-      } else if (result.type === 'page') {
-        navigateTo(result.page);
-      } else if (result.type === 'work') {
-        if (result.work.itemType === 'page') {
-          const page: Page = {
-            id: result.work.id,
-            name: result.work.filename,
-            filename: result.work.filename,
-            type: 'txt',
-            content: 'content' in result.work ? result.work.content : '',
-          };
-          navigateTo(page, result.path);
-        } else if (isImageWorkItem(result.work)) {
-          const gallery = getImageGallery(result.folder);
-          if (gallery.length > 0) {
-            openLightbox(result.work, gallery);
-          }
+    if (result.type === 'folder') {
+      navigateTo(result.folder, result.path);
+    } else if (result.type === 'page') {
+      navigateTo(result.page);
+    } else if (result.type === 'work') {
+      if (result.work.itemType === 'page') {
+        const page: Page = {
+          id: result.work.id,
+          name: result.work.filename,
+          filename: result.work.filename,
+          type: 'txt',
+          content: 'content' in result.work ? result.work.content : '',
+        };
+        navigateTo(page, result.path);
+      } else if (isImageWorkItem(result.work)) {
+        const gallery = getImageGallery(result.folder);
+        if (gallery.length > 0) {
+          openLightbox(result.work, gallery);
         }
       }
+    }
     closeSearch();
   };
 
