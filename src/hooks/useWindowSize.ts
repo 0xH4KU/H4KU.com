@@ -13,7 +13,7 @@ export function useWindowSize(): WindowSize {
   });
 
   useEffect(() => {
-    /* istanbul ignore next */
+    /* c8 ignore next */
     if (typeof window === 'undefined') {
       return;
     }

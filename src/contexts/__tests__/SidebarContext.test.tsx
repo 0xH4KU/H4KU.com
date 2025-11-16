@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
-import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
+import {
+  DEBOUNCE_DELAYS,
+  SIDEBAR_CONFIG,
+  STORAGE_KEYS,
+} from '@/config/constants';
 import type { ReactNode } from 'react';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
@@ -99,6 +103,74 @@ describe('SidebarContext', () => {
 
     act(() => result.current.setSidebarWidth(SIDEBAR_CONFIG.MIN_WIDTH - 50));
     expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.MIN_WIDTH);
+  });
+
+  it('falls back to default width when stored value is invalid', () => {
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_WIDTH, JSON.stringify('oops'));
+    const { result } = renderHook(() => useSidebarContext(), { wrapper });
+    expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.DEFAULT_WIDTH);
+    expect(localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH)).toBe(
+      JSON.stringify(SIDEBAR_CONFIG.DEFAULT_WIDTH)
+    );
+  });
+
+  it('resets to default width when a non-finite value is provided', () => {
+    const { result } = renderHook(() => useSidebarContext(), { wrapper });
+    act(() => {
+      result.current.setSidebarWidth(Number.POSITIVE_INFINITY);
+    });
+    expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.DEFAULT_WIDTH);
+  });
+
+  it('clears pending persistence timers before scheduling new ones', () => {
+    const timers: Array<{ id: number; cleared: boolean }> = [];
+    const originalSetTimeout = globalThis.setTimeout;
+    const originalClearTimeout = globalThis.clearTimeout;
+    const originalWindowSetTimeout = window.setTimeout;
+    const originalWindowClearTimeout = window.clearTimeout;
+
+    const fakeSetTimeout = vi
+      .fn<typeof setTimeout>((cb, delay, ...args) => {
+        if (typeof cb === 'function' && delay === DEBOUNCE_DELAYS.RESIZE) {
+          const id = timers.length + 1;
+          timers.push({ id, cleared: false });
+          return id as unknown as ReturnType<typeof setTimeout>;
+        }
+        return originalSetTimeout(cb as TimerHandler, delay as number, ...args);
+      })
+      .mockName('fakeSetTimeout');
+
+    const fakeClearTimeout = vi
+      .fn<typeof clearTimeout>(id => {
+        const timer = timers.find(entry => entry.id === (id as number));
+        if (timer) {
+          timer.cleared = true;
+        }
+        return undefined;
+      })
+      .mockName('fakeClearTimeout');
+
+    globalThis.setTimeout = fakeSetTimeout;
+    window.setTimeout = fakeSetTimeout;
+    globalThis.clearTimeout = fakeClearTimeout;
+    window.clearTimeout = fakeClearTimeout;
+
+    try {
+      const { result } = renderHook(() => useSidebarContext(), { wrapper });
+
+      act(() => {
+        result.current.setSidebarWidth(300);
+        result.current.setSidebarWidth(280);
+      });
+
+      expect(timers.length).toBe(2);
+      expect(timers[0].cleared).toBe(true);
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+      window.setTimeout = originalWindowSetTimeout;
+      globalThis.clearTimeout = originalClearTimeout;
+      window.clearTimeout = originalWindowClearTimeout;
+    }
   });
 
   it('reacts to media query breakpoint changes', () => {

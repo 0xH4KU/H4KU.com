@@ -117,7 +117,7 @@ describe('useWindowSize', () => {
   });
 
   it('should handle window being undefined (SSR)', () => {
-    // jsdom always provides window; guard clause is validated via integration tests
+    // jsdom always injects window; guard clause is left for integration/runtime tests
     expect(true).toBe(true);
   });
 
