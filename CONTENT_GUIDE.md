@@ -6,30 +6,29 @@ _How to add or update assets under `public/content` without breaking licensing o
 
 ## Quick Start
 
-1. **Add files to the content tree**
-   - Images → `public/content/homepage/` (or any subfolder)
-   - Text (`.txt`/`.md`) → `public/content/homepage/`
-   - New folders → create them directly under `public/content/homepage/`
+1. **Add files to `public/content/`**
+   - Images go anywhere under this root (e.g. `public/content/gallery/...`).
+   - Text pages (`.txt`/`.md`) live alongside the images or in their own folders.
 2. **Sync files into structured JSON**
    ```bash
    npm run cms
+   npm run build:data  # bundles everything into src/content/_aggregated.json
    ```
-3. **Done!**  
-   If `npm run dev` is running, Vite will pick up the regenerated data automatically—no server restart required.
+3. **Done.** Vite reloads when `_aggregated.json` changes; no dev server restart needed.
 
 ## Directory Layout
 
 ```
-public/content/homepage/
+public/content/
 ├── About.txt              # Standalone page
 ├── Contact.txt            # Standalone page
-├── featured/              # Folder displayed on the site
-│   ├── metadata.json      # Optional folder configuration
-│   └── image1.jpg         # Artwork file
-└── sketches/
-    ├── 2025/              # Nested folders are supported
-    │   └── sketch.png
-    └── metadata.json
+├── gallery/
+│   ├── character-designs/
+│   │   ├── metadata.json
+│   │   └── lumina-aeon-full.svg
+│   └── fan-arts/
+│       └── stellar-echo-full.svg
+└── metadata.json          # Optional top-level overrides
 ```
 
 ## Configuring `metadata.json`
@@ -78,17 +77,17 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 
 | Command | Purpose |
 | --- | --- |
-| `npm run cms` | Scan `public/content/`, rebuild JSON, aggregate data |
+| `npm run cms` | Scan `public/content/` → regenerate `src/content/{folders,images,pages,socials}` |
 | `npm run sync` | Alias of `npm run cms` |
+| `npm run build:data` | Bundle `src/content/**` into `_aggregated.json` with hashes |
 | `npm run dev` | Start the Vite dev server |
-| `npm run build` | Production build (automatically runs the CMS pipeline) |
+| `npm run build` | Production build (CMS + fingerprint + Vite; does **not** run build:data) |
 
 ## Integrity Tag
 
-- The CMS pipeline now writes an `_integrity` field (FNV-1a checksum) into `src/content/_aggregated.json` every time `npm run cms` or `npm run build:data` runs.
-- `mockData` recomputes that checksum at runtime and the UI exposes the verification result, so avoid editing `_aggregated.json` by hand.
-- If you ever edit raw JSON under `src/content/`, re-run `npm run build:data` (preferred) or `npm run integrity:check -- --write` to refresh both `_buildTime` and `_integrity`.
-- `npm run integrity:check` is also the quickest way to verify a downloaded build or CI artifact. See [`docs/INTEGRITY.md`](docs/INTEGRITY.md) for the full workflow.
+- The bundled snapshot stores `_integrity` (FNV-1a), `_integritySHA256`, and `_buildTime`. Regenerate them with `npm run build:data` after content changes.
+- `mockData` recomputes both hashes at runtime; the UI surfaces the status. Avoid hand-editing `_aggregated.json`.
+- `npm run integrity:check` (or `-- --write` for intentional edits) verifies these hashes without rebuilding content. See [`docs/INTEGRITY.md`](docs/INTEGRITY.md) for details.
 
 ## Tips and Best Practices
 

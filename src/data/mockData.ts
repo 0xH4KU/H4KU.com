@@ -5,6 +5,7 @@ import {
   verifyIntegrityDual,
   type DualIntegrityCheckResult,
 } from '@/utils/integrity';
+import { secureWarn } from '@/utils/secureConsole';
 
 /**
  * Load content from aggregated JSON file instead of glob imports.
@@ -94,7 +95,7 @@ export const dataIntegrity: RuntimeIntegritySummary = {
 };
 
 if (!integrityResults.isFullyValid) {
-  console.warn(
+  secureWarn(
     '[lum.bio] Content integrity verification failed.\n  • FNV-1a expected %s / actual %s\n  • SHA-256 expected %s / actual %s',
     integrityResults.fnv1a.expected ?? 'missing',
     integrityResults.fnv1a.actual,

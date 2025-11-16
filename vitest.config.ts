@@ -33,12 +33,11 @@ export default mergeConfig(
         ],
         // Global thresholds enforced by CI
         thresholds: {
-          lines: 70,
-          functions: 70,
-          branches: 70,
-          statements: 70,
-          // Per-file thresholds for critical code
-          perFile: true,
+          lines: 95,
+          functions: 95,
+          branches: 95,
+          statements: 95,
+          perFile: false,
         },
         // Fail CI if coverage drops below thresholds
         reportOnFailure: true,

@@ -43,6 +43,8 @@ lum.bio/
 │   ├── utils/               # Pure utility functions
 │   │   ├── frontmatter.ts   # Markdown parsing
 │   │   ├── navigation.ts    # Navigation helpers
+│   │   ├── searchNavigation.ts # Shared search selection handler
+│   │   ├── secureConsole.ts # Console shims that survive minification
 │   │   ├── sortHelpers.ts   # Sorting logic
 │   │   └── urlHelpers.ts    # URL manipulation
 │   ├── content/             # Static content data
@@ -112,21 +114,21 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 - O(1) path lookups via Map-based indexing
 - Persistent navigation state across reloads via URL parsing + context state hydration
 
-### Performance Optimizations
+### Performance Notes
 
-- **Lazy image loading** – Shared IntersectionObserver across all images
-- **Debounced search** – 300ms delay with abort controller
-- **CSS Modules** – Scoped styles, tree-shakeable
-- **Reduced motion support** – Respects `prefers-reduced-motion`
-- **Font loading strategy** – `font-display: swap` with fallback stack
+- **Lazy image loading** – IntersectionObserver covers non-priority images; eager thumbs bypass the observer to avoid extra work.
+- **Bounded search** – Results render in capped batches with “show more” pagination to keep single-letter queries fast.
+- **CSS Modules** – Scoped styles that tree-shake cleanly.
+- **Reduced motion** – Every animation variant respects `prefers-reduced-motion`.
+- **Fonts** – `font-display: swap` with defined fallbacks.
 
 ## Integrity Verification
 
-- `scripts/build-data.js` generates an `_integrity` checksum (FNV-1a) for the aggregated content payload.
-- `npm run integrity:check` re-computes the checksum locally so collaborators can verify releases or update the signature (pass `-- --write`).
-- `src/data/mockData.ts` re-computes the checksum at runtime and surfaces a `[verified]` / `[tamper detected]` indicator inside the Status Bar so visitors know whether the bundle was tampered with.
-- Re-run `node scripts/build-data.js` (or `npm run build:data`) after touching anything inside `src/content/` to regenerate `_aggregated.json` and refresh the checksum before committing.
-- See [`docs/INTEGRITY.md`](docs/INTEGRITY.md) for the full anti-tamper workflow.
+- `scripts/build-data.js` writes `_integrity` (FNV-1a) and `_integritySHA256` plus `_buildTime` into `src/content/_aggregated.json`.
+- `npm run integrity:check` recomputes both hashes. Pass `-- --write` to update the stored values when you intentionally edit content JSON.
+- `src/data/mockData.ts` validates the hashes at runtime; the UI surfaces the status so tamper warnings aren’t silent.
+- Always run `npm run build:data` after changing anything under `src/content/` or after syncing with `npm run cms`, then commit the refreshed snapshot.
+- More detail lives in [`docs/INTEGRITY.md`](docs/INTEGRITY.md).
 
 ### Accessibility Features
 
@@ -147,7 +149,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 | **Build Tool** | Vite 7 |
 | **Styling** | CSS Modules + global tokens |
 | **Animation** | Framer Motion (reduced-motion aware) |
-| **Testing** | Vitest 4 + React Testing Library |
+| **Testing** | Vitest 4 + React Testing Library (95% global threshold) |
 | **Linting** | ESLint + Prettier |
 | **CI/CD** | GitLab CI + Cloudflare Pages |
 | **Contact** | Server-side endpoint (`VITE_CONTACT_ENDPOINT`) |
@@ -186,18 +188,20 @@ Development server runs at `http://localhost:5173`
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start development server with HMR |
-| `npm run build` | Build for production (includes data aggregation) |
+| `npm run build` | Production build orchestrator (CMS → fingerprint → Vite) |
+| `npm run build:fast` | Skip CMS + fingerprint for quick UI builds (`--skip=cms,fingerprint`) |
 | `npm run build:data` | Aggregate content JSON into `_aggregated.json` |
 | `npm run preview` | Preview production build locally |
 | `npm test` | Run tests in watch mode |
 | `npm run test:run` | Run tests once (CI mode) |
-| `npm run test:coverage` | Generate coverage report |
+| `npm run test:coverage` | Generate coverage report (95% global threshold) |
 | `npm run test:ui` | Open Vitest UI dashboard |
 | `npm run lint` | Check code style |
 | `npm run lint:fix` | Fix auto-fixable lint issues |
 | `npm run format` | Format code with Prettier |
 | `npm run format:check` | Check code formatting |
 | `npm run type-check` | Verify TypeScript types |
+| `npm run deps:prune` | Remove extraneous packages (runs after install) |
 | `npm run size` | Check bundle size against limits |
 | `npm run size:analyze` | Detailed bundle analysis |
 | `npm run integrity:check` | Verify or update `_aggregated.json` checksums |
@@ -209,29 +213,28 @@ Development server runs at `http://localhost:5173`
 
 ### Content Management
 
-Content is stored as JSON files in `src/content/`:
+Content lives in committed JSON under `src/content/` (currently three top-level folders with three sample works plus About/Contact pages). The CMS importer (`npm run cms`) can regenerate these JSON files from `public/content/` and `npm run build:data` bundles them into `_aggregated.json` with integrity hashes.
 
 - `folders/*.json` – Folder hierarchy and metadata
-- `pages/*.json` – Text content with markdown support
-- `images/*.json` – Image metadata and captions
-- `socials/*.json` – Social media links
+- `pages/*.json` – Text content
+- `images/*.json` – Image/work metadata (thumb + full URLs under `public/content/`)
+- `socials/*.json` – Social links
 
-After editing, run `npm run build:data` to regenerate `_aggregated.json`.
+After editing any of the above, run `npm run build:data` and commit the refreshed `_aggregated.json`.
 
 ## Testing
 
-21 automated tests covering:
+- Runner: Vitest 4 + Testing Library (jsdom)
+- Suite size: 25 spec files / ~273 tests as of Nov 2025
+- Coverage: 95% global thresholds for lines/branches/functions/statements
 
-- Context providers (state management)
-- Custom hooks (side effects, localStorage)
-- Utility functions (sorting, navigation, parsing)
-- Component behaviors (search, sidebar, layout)
+Focus areas:
+- Context providers (navigation, search, sidebar, theme)
+- Hooks with side effects (storage, focus trapping, debounced resize)
+- Utilities (navigation maps, integrity hashing, URL helpers)
+- Layout behaviors (search overlay, status bar, keyboard flows)
 
-**Testing philosophy:**
-- Behavior-driven tests (not implementation details)
-- Minimal mocking (test real integrations where possible)
-- Fast execution (< 2 seconds for full suite on CI)
-- No snapshot tests (explicit assertions only)
+Principles: prefer behavior over implementation, keep mocks minimal, avoid snapshots, and keep the suite fast enough to run with every commit.
 
 ## Deployment
 

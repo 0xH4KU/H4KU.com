@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+import { secureLog, secureWarn } from '@/utils/secureConsole';
 
 /**
  * Domain Verification Utility
@@ -40,7 +40,7 @@ const normalizeDomainEntry = (entry: string): DomainMatcher | null => {
     try {
       return new RegExp(trimmed.slice(1, -1));
     } catch (error) {
-      console.warn('Invalid domain regex provided:', trimmed, error);
+      secureWarn('Invalid domain regex provided:', trimmed, error);
       return null;
     }
   }
@@ -128,23 +128,23 @@ export const verifyDomain = (): DomainCheckResult => {
 export const logDomainVerification = (result: DomainCheckResult): void => {
   if (result.isAuthorized) {
     if (import.meta.env.DEV) {
-      console.log(`✅ Domain verified: ${result.currentDomain}`);
+      secureLog(`✅ Domain verified: ${result.currentDomain}`);
     }
   } else {
-    console.warn(
+    secureWarn(
       `%c⚠️  UNAUTHORIZED DEPLOYMENT DETECTED`,
       'color: red; font-size: 14px; font-weight: bold;'
     );
-    console.warn(`%c${result.message}`, 'color: orange; font-size: 12px;');
-    console.warn(
+    secureWarn(`%c${result.message}`, 'color: orange; font-size: 12px;');
+    secureWarn(
       `%cThis website is protected by copyright law (LPSL-1.0).`,
       'color: orange; font-size: 12px;'
     );
-    console.warn(
+    secureWarn(
       `%cUnauthorized deployment, redistribution, or commercial use is strictly prohibited.`,
       'color: orange; font-size: 12px;'
     );
-    console.warn(
+    secureWarn(
       `%cLegal action may be taken against violators.`,
       'color: red; font-size: 12px; font-weight: bold;'
     );

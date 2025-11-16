@@ -16,16 +16,20 @@ _Architecture reference for contributors extending Lum.bio without regressing th
 ### Data Flow
 
 ```
-src/content/**/*  ──►  npm run build:data  ──►  src/content/_aggregated.json
-                                         │
-                                         ▼
-                              src/data/mockData.ts (runtime parser)
-                                         │
-                                         ▼
-                             Contexts/hooks/components render tree
+public/content/**/* (source assets)
+        │
+        ├─► npm run cms          # optional: regenerate src/content/*.json
+        │
+        └─► src/content/**/*     # committed JSON + assets
+                │
+                ├─► npm run build:data   # bundle into _aggregated.json with hashes
+                │
+                └─► src/data/mockData.ts # runtime parser + integrity check
+                          │
+                          └─► Contexts/hooks/components render tree
 ```
 
-The aggregation step keeps the runtime bundle small and guarantees deterministic content snapshots for every build. If you forget to run `npm run build:data`, `npm run build` will do it for you.
+`npm run build` orchestrates CMS → fingerprint → Vite. It does **not** regenerate `_aggregated.json`; run `npm run build:data` after content edits and commit the snapshot so hashes stay in sync.
 
 ## 2. Key Modules
 
@@ -50,20 +54,18 @@ The aggregation step keeps the runtime bundle small and guarantees deterministic
 - The inline script in `index.html` only sets `data-theme` before hydration to avoid flashes.
 
 ### LazyImage (`src/components/common/LazyImage.tsx`)
-- Registers every thumbnail with a module-level IntersectionObserver using thresholds from `IMAGE_CONFIG`.
-- Supports optional `srcSet` / `sizes` and falls back to a transparent pixel until the observer resolves.
-- On errors, swaps in an inline SVG so grids keep their layout.
+- Uses a shared IntersectionObserver for non-priority images; priority items load eagerly.
+- Optional `srcSet`/`sizes` support; errors fall back to an inline placeholder to preserve layout.
 
 ### Data Parser (`src/data/mockData.ts`)
 - Reads from `_aggregated.json`, normalises folder relationships, attaches works/pages, and sorts everything with deterministic rules.
 - `buildNavigationMap` consumes the resulting folder tree for O(1) lookups elsewhere.
 
 ### Integrity Verification Pipeline
-- `scripts/build-data.js` appends an `_integrity` FNV-1a checksum alongside `_buildTime` every time the aggregated file is regenerated.
-- `scripts/check-integrity.ts` powers `npm run integrity:check`, allowing collaborators (and CI) to recompute the checksum or fix it with `--write` without rebuilding everything.
-- `src/data/mockData.ts` exports a `dataIntegrity` helper that recomputes the checksum at runtime and warns if the payload was tampered with.
-- `StatusBar` consumes `dataIntegrity`, prints `[verified]` / `[tamper detected]`, and a new tamper warning links to the Integrity Guide plus the CLI command.
-- `src/components/layout/__tests__/StatusBar.test.tsx` simulates tampering to prove the UI updates and messaging behave as expected.
+- `scripts/build-data.js` writes `_integrity` (FNV-1a) and `_integritySHA256` plus `_buildTime` when aggregating content.
+- `scripts/check-integrity.ts` drives `npm run integrity:check`; `-- --write` updates hashes for intentional content changes.
+- `src/data/mockData.ts` recomputes both hashes at runtime; the layout surfaces the status so tamper warnings are visible.
+- Tests cover hash verification and tamper UI in `src/components/layout/__tests__/StatusBar.test.tsx`.
 
 ### Monitoring & Error Handling
 - `src/services/monitoring.ts` wraps Sentry initialisation; set `VITE_SENTRY_DSN` to enable crash reporting (the app gracefully no-ops when it’s missing).
@@ -84,9 +86,10 @@ When profiling, pay close attention to `NavigationContext` (URL synchronisation)
 
 ## 4. Build & Deployment
 
-- **Local build** – `npm run build` runs the data aggregator then `vite build`.
-- **CI** – GitLab pipeline runs lint → type-check → tests → build. Artifacts are uploaded so Cloudflare Pages can deploy from a known-good bundle.
-- **Cloudflare Pages** – SPA redirect handled by `public/_redirects`; contact form endpoint configured via `VITE_CONTACT_ENDPOINT`.
+- **Local build** – `npm run build` runs CMS sync (unless skipped), injects fingerprints, then runs `vite build`. Use `npm run build:fast` to skip CMS/fingerprint when iterating on UI.
+- **Content aggregation** – Run `npm run build:data` after changing `src/content/**` (or after `npm run cms`), then commit the refreshed `_aggregated.json`.
+- **CI** – `npm run ci` mirrors the GitLab pipeline: quality → coverage (95% global thresholds) → security scan → build + bundle-size check. Artifacts stay available for deploys.
+- **Cloudflare Pages** – SPA redirect handled by `public/_redirects`; configure `VITE_CONTACT_ENDPOINT` via Pages settings.
 
 ## 5. Extending the Project
 

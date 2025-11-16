@@ -8,11 +8,11 @@ import React, {
 } from 'react';
 import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
-import { Page, SearchResult } from '@/types';
+import { SearchResult } from '@/types';
 import { buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
-import { getImageGallery, isImageWorkItem } from '@/utils/workItems';
 import { SEARCH_PANEL_ID } from '@/config/accessibility';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { navigateFromSearchResult } from '@/utils/searchNavigation';
 import styles from './SearchPanel.module.css';
 
 type ResultCategory = SearchResult['type'];
@@ -147,27 +147,7 @@ const SearchPanel: React.FC = () => {
   );
 
   const handleSelect = (result: SearchResult) => {
-    if (result.type === 'folder') {
-      navigateTo(result.folder, result.path);
-    } else if (result.type === 'page') {
-      navigateTo(result.page);
-    } else if (result.type === 'work') {
-      if (result.work.itemType === 'page') {
-        const page: Page = {
-          id: result.work.id,
-          name: result.work.filename,
-          filename: result.work.filename,
-          type: 'txt',
-          content: 'content' in result.work ? result.work.content : '',
-        };
-        navigateTo(page, result.path);
-      } else if (isImageWorkItem(result.work)) {
-        const gallery = getImageGallery(result.folder);
-        if (gallery.length > 0) {
-          openLightbox(result.work, gallery);
-        }
-      }
-    }
+    navigateFromSearchResult(result, { navigateTo, openLightbox });
     closeSearch();
   };
 
