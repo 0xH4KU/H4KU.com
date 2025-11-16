@@ -8,8 +8,8 @@
       "order": 1
     },
     {
-      "id": "fan-art",
-      "name": "fan-art",
+      "id": "fan-arts",
+      "name": "fan-arts",
       "type": "folder",
       "parentId": null,
       "order": 2
@@ -52,7 +52,7 @@
       "url": "https://twitter.com/lummuu_"
     }
   ],
-  "_buildTime": "2025-11-16T08:42:48.312Z",
-  "_integrity": "db3914a6",
-  "_integritySHA256": "0922f7fdd7682170234362d06c357c11766724345fba54fdbc0dabab9750e882"
+  "_buildTime": "2025-11-16T08:45:19.235Z",
+  "_integrity": "f98549ba",
+  "_integritySHA256": "f3c03b40b56c4ca421a491347dc22df033a984736422f02200e18eebb4e3795e"
 }
