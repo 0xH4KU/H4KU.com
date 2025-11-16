@@ -101,10 +101,14 @@ export function LazyImage({
 
     setIsLoaded(false);
     setHasError(false);
-    setImageSrc(resolvedPlaceholder);
-    setImageSrcSet(undefined);
+    setImageSrc(priority ? src : resolvedPlaceholder);
+    setImageSrcSet(priority ? srcSet : undefined);
 
     if (!src) {
+      return;
+    }
+
+    if (priority) {
       return;
     }
 
@@ -116,9 +120,11 @@ export function LazyImage({
     });
 
     return () => {
-      unobserveNode(node);
+      if (!priority) {
+        unobserveNode(node);
+      }
     };
-  }, [src, srcSet, resolvedPlaceholder]);
+  }, [src, srcSet, resolvedPlaceholder, priority]);
 
   const handleError = () => {
     if (!hasError && imageSrc === src) {
@@ -135,6 +141,8 @@ export function LazyImage({
     }
   };
 
+  const isLoading = Boolean(src) && !isLoaded && !hasError;
+
   return (
     <img
       ref={imgRef}
@@ -148,6 +156,8 @@ export function LazyImage({
       fetchPriority={priority ? 'high' : fetchPriority}
       onLoad={handleLoad}
       onError={handleError}
+      aria-busy={isLoading ? 'true' : 'false'}
+      aria-live={!isLoading ? 'polite' : undefined}
       style={{
         opacity: isLoaded || priority ? 1 : 0.5,
         transition: priority ? 'none' : 'opacity 0.3s ease-in-out',
