@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   computeIntegrityHash,
+  computeSHA256Hash,
   computeSHA256HashSync,
   verifyIntegrity,
   verifyIntegritySHA256,
@@ -73,5 +74,33 @@ describe('integrity utilities', () => {
     expect(dual.isFullyValid).toBe(true);
     expect(dual.fnv1a.isValid).toBe(true);
     expect(dual.sha256.isValid).toBe(true);
+  });
+
+  it('provides an async SHA-256 hash helper', async () => {
+    const payload = { note: 'async' };
+    await expect(computeSHA256Hash(payload)).resolves.toBe(
+      computeSHA256HashSync(payload)
+    );
+  });
+
+  it('uses the UTF-8 fallback when TextEncoder is unavailable', async () => {
+    const originalEncoder = globalThis.TextEncoder;
+    vi.resetModules();
+    try {
+      (globalThis as { TextEncoder?: typeof TextEncoder }).TextEncoder =
+        undefined;
+
+      const module = await import('../integrity');
+      const payload = { text: 'unicode 🌌 payload' };
+      const hash = module.computeSHA256HashSync(payload);
+      expect(hash).toHaveLength(64);
+
+      const result = module.verifyIntegritySHA256(payload, hash);
+      expect(result.isValid).toBe(true);
+    } finally {
+      (globalThis as { TextEncoder?: typeof TextEncoder }).TextEncoder =
+        originalEncoder;
+      vi.resetModules();
+    }
   });
 });

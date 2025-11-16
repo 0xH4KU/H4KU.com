@@ -84,6 +84,12 @@ describe('buildAppUrl', () => {
     );
   });
 
+  it('normalizes base paths without trailing slashes', () => {
+    setBaseUrl('/studio');
+    const origin = getOrigin();
+    expect(buildAppUrl('folder/alt')).toBe(`${origin}/studio/folder/alt`);
+  });
+
   it('falls back to manual concatenation if URL construction fails', () => {
     const origin = getOrigin();
     const originalUrlCtor = OriginalURL;
@@ -96,6 +102,24 @@ describe('buildAppUrl', () => {
     globalThis.URL = ThrowingURL as unknown as typeof URL;
     expect(buildAppUrl('/folder/fallback')).toBe(`${origin}/folder/fallback`);
     globalThis.URL = originalUrlCtor;
+  });
+
+  it('uses the default origin when window origin is unavailable', () => {
+    const originalWindow = globalThis.window;
+    try {
+      (globalThis as { window?: typeof window }).window = undefined;
+      expect(buildAppUrl('/fallback-origin')).toBe(
+        'https://lum.bio/fallback-origin'
+      );
+    } finally {
+      globalThis.window = originalWindow;
+    }
+  });
+
+  it('falls back to the root when BASE_URL is undefined', () => {
+    delete (import.meta.env as { BASE_URL?: string }).BASE_URL;
+    const origin = getOrigin();
+    expect(buildAppUrl('/missing-base')).toBe(`${origin}/missing-base`);
   });
 });
 

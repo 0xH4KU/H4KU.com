@@ -45,6 +45,7 @@ export const useFocusTrap = ({
       return;
     }
 
+    /* c8 ignore next */
     if (typeof document === 'undefined') {
       return;
     }

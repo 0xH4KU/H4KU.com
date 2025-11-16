@@ -206,4 +206,37 @@ describe('StatusBar integrity indicator', () => {
     expect(sortOverrides.toggleSortOrder).toHaveBeenCalledTimes(1);
     expect(sortOverrides.toggleTypeOrder).toHaveBeenCalledTimes(1);
   });
+
+  it('shows detailed guidance when checksums are missing and using FNV-1a', async () => {
+    await renderStatusBar({
+      integrity: {
+        isValid: false,
+        expected: null,
+        actual: 'ffff0000',
+        algorithm: 'fnv1a',
+        details: {
+          fnv1a: {
+            expected: null,
+            actual: 'ffff0000',
+            isValid: false,
+            algorithm: 'fnv1a',
+          },
+          sha256: {
+            expected: null,
+            actual: 'abcd1234',
+            isValid: false,
+            algorithm: 'sha256',
+          },
+          isFullyValid: false,
+        },
+      },
+    });
+
+    expect(
+      screen.getByTitle(/FNV-1a mismatch \(expected unknown, actual ffff0000\)/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/FNV-1a expected missing vs ffff0000/i)
+    ).toBeInTheDocument();
+  });
 });

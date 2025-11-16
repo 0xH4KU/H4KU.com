@@ -71,14 +71,14 @@ const ensureLeadingSlash = (pathname: string) =>
 export const buildAppUrl = (pathname: string) => {
   const basePath = getBasePath();
   const normalizedPath = ensureLeadingSlash(pathname || '/');
-  const relativePath = `${basePath}${normalizedPath}` || '/';
+  const relativePath = `${basePath}${normalizedPath}`;
   const origin = getAppOrigin();
 
   try {
-    return new URL(relativePath || '/', origin).toString();
+    return new URL(relativePath, origin).toString();
   } catch {
     const sanitizedOrigin = origin.replace(/\/$/, '');
-    return `${sanitizedOrigin}${relativePath || '/'}`;
+    return `${sanitizedOrigin}${relativePath}`;
   }
 };
 

@@ -85,18 +85,19 @@ export const findFolderByPath = (
   }
 
   // Fallback to O(n) traversal
-  let current: Folder | undefined;
+  let current: Folder | null = null;
   let currentLevel = folders;
 
   for (const segment of path) {
-    current = currentLevel.find(folder => folder.id === segment);
-    if (!current) {
+    const next = currentLevel.find(folder => folder.id === segment);
+    if (!next) {
       return null;
     }
-    currentLevel = current.children ?? [];
+    current = next;
+    currentLevel = next.children ?? [];
   }
 
-  return current ?? null;
+  return current;
 };
 
 /**
@@ -122,10 +123,7 @@ export const findFolderPathById = (
   );
 
   while (stack.length) {
-    const current = stack.pop();
-    if (!current) {
-      continue;
-    }
+    const current = stack.pop()!;
     const { folder, path } = current;
     if (folder.id === targetId) {
       return path;
@@ -161,10 +159,7 @@ export const findFolderById = (
   const stack = [...folders];
 
   while (stack.length) {
-    const folder = stack.pop();
-    if (!folder) {
-      continue;
-    }
+    const folder = stack.pop()!;
     if (folder.id === targetId) {
       return folder;
     }

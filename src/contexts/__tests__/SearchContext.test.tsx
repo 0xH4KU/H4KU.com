@@ -238,6 +238,87 @@ describe('SearchContext', () => {
     const results = runSearch('portfolio');
     expect(results.some(entry => entry.type === 'folder')).toBe(true);
   });
+
+  it('falls back to identifiers when labels are missing', async () => {
+    const unlabeledWork: WorkItem = {
+      itemType: 'work',
+      id: 'bare-work',
+      filename: '',
+      title: '',
+      description: 'untitled fallback asset',
+      thumb: '/bare-thumb.jpg',
+      full: '/bare-full.jpg',
+    };
+    const unlabeledPage: Page = {
+      id: 'bare-page',
+      name: '',
+      filename: '',
+      type: 'txt',
+      content: 'page fallback narrative',
+    };
+    const unlabeledHome: WorkItem = {
+      itemType: 'page',
+      id: 'home-bare',
+      filename: '',
+      title: '',
+      content: 'home fallback article',
+    };
+
+    mockData.folders = [
+      {
+        id: 'fallback',
+        name: 'Fallbacks',
+        type: 'folder',
+        parentId: null,
+        items: [unlabeledWork],
+        children: [],
+      },
+    ];
+    mockData.pages = [unlabeledPage];
+    mockData.homeItems = [unlabeledHome];
+
+    const { result } = renderHook(() => useSearch(), { wrapper });
+
+    act(() => {
+      result.current.openSearch();
+      result.current.setSearchQuery('fallback asset');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(
+          entry => entry.type === 'work' && entry.label === 'bare-work'
+        )
+      ).toBe(true)
+    );
+
+    act(() => {
+      result.current.setSearchQuery('fallback narrative');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(
+          entry => entry.type === 'page' && entry.label === 'bare-page'
+        )
+      ).toBe(true)
+    );
+
+    act(() => {
+      result.current.setSearchQuery('home fallback article');
+    });
+
+    await waitFor(() =>
+      expect(
+        result.current.searchResults.some(
+          entry =>
+            entry.type === 'work' &&
+            entry.path?.[0] === 'home' &&
+            entry.label === 'home-bare'
+        )
+      ).toBe(true)
+    );
+  });
 });
 
 describe('Search hooks guard rails', () => {
