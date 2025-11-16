@@ -90,5 +90,4 @@ export const buildFolderUrl = (path: string[]) => {
   return buildAppUrl(`/folder/${folderPath}`);
 };
 
-export const buildPageUrl = (pageId: string) =>
-  buildAppUrl(`/page/${pageId}`);
+export const buildPageUrl = (pageId: string) => buildAppUrl(`/page/${pageId}`);

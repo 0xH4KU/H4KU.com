@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const isBrowser = () => typeof window !== 'undefined' && !!window.localStorage;
 
@@ -11,23 +11,27 @@ export function useLocalStorage<T>(
   initialValue: T,
   options?: UseLocalStorageOptions<T>
 ): [T, (value: T | ((prev: T) => T)) => void] {
+  const sanitize = options?.sanitize;
   const initialValueRef = useRef(initialValue);
   initialValueRef.current = initialValue;
 
-  const applySanitizer = (value: unknown, fallback: T): T => {
-    if (!options?.sanitize) {
-      return value as T;
-    }
-    try {
-      return options.sanitize(value, fallback);
-    } catch (error) {
-      console.error(`Error sanitizing localStorage key "${key}":`, error);
-      return fallback;
-    }
-  };
+  const applySanitizer = useCallback(
+    (value: unknown, fallback: T): T => {
+      if (!sanitize) {
+        return value as T;
+      }
+      try {
+        return sanitize(value, fallback);
+      } catch (error) {
+        console.error(`Error sanitizing localStorage key "${key}":`, error);
+        return fallback;
+      }
+    },
+    [key, sanitize]
+  );
 
   const persistSanitizedValue = (original: unknown, sanitized: T) => {
-    if (!options?.sanitize || !isBrowser()) {
+    if (!sanitize || !isBrowser()) {
       return;
     }
 
@@ -119,7 +123,7 @@ export function useLocalStorage<T>(
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [key]);
+  }, [key, applySanitizer]);
 
   return [storedValue, setValue];
 }
