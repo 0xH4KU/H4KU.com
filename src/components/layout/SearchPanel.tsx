@@ -20,9 +20,19 @@ const SearchPanel: React.FC = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+  const closeSearchRef = useRef(closeSearch);
+  const searchOpenRef = useRef(searchOpen);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const titleId = useId();
   const descriptionId = useId();
+
+  useEffect(() => {
+    closeSearchRef.current = closeSearch;
+  }, [closeSearch]);
+
+  useEffect(() => {
+    searchOpenRef.current = searchOpen;
+  }, [searchOpen]);
 
   useEffect(() => {
     if (searchOpen) {
@@ -45,10 +55,6 @@ const SearchPanel: React.FC = () => {
   }, [searchResults.length]);
 
   useEffect(() => {
-    if (!searchOpen) {
-      return;
-    }
-
     const getFocusableElements = () => {
       if (!panelRef.current) {
         return [];
@@ -68,9 +74,13 @@ const SearchPanel: React.FC = () => {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!searchOpenRef.current) {
+        return;
+      }
+
       if (event.key === 'Escape') {
         event.preventDefault();
-        closeSearch();
+        closeSearchRef.current?.();
         return;
       }
 
@@ -106,7 +116,7 @@ const SearchPanel: React.FC = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [searchOpen, closeSearch]);
+  }, []);
 
   type FormattedResult = SearchResult & { meta?: string };
 

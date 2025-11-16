@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -28,6 +29,8 @@ const FALLBACK_ROUTES = [
   '/page/about',
   '/page/contact',
 ];
+
+const rootDir = fileURLToPath(new URL('.', import.meta.url));
 
 const aggregatedContentPath = fileURLToPath(
   new URL('./src/content/_aggregated.json', import.meta.url)
@@ -177,13 +180,38 @@ const buildVersion =
   process.env.VITE_APP_VERSION ||
   process.env['npm_package_version'] ||
   '1.0.0';
-const buildFingerprintMeta = {
+const cachedFingerprintPath = path.join(rootDir, '.cache', 'build-meta.json');
+
+const readCachedFingerprint = () => {
+  try {
+    if (!fs.existsSync(cachedFingerprintPath)) {
+      return null;
+    }
+    const raw = fs.readFileSync(cachedFingerprintPath, 'utf-8');
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch (error) {
+    console.warn(
+      '[vite-config] Unable to read cached build fingerprint:',
+      error instanceof Error ? error.message : error
+    );
+    return null;
+  }
+};
+
+const baseFingerprint = {
   buildId: process.env.VITE_BUILD_ID || 'dev-local',
   timestamp: Number(process.env.VITE_BUILD_TIMESTAMP || Date.now()),
   signature: process.env.VITE_BUILD_SIGNATURE || '',
   version: buildVersion,
   environment:
     process.env.NODE_ENV === 'production' ? 'production' : 'development',
+};
+
+const cachedFingerprint = readCachedFingerprint();
+
+const buildFingerprintMeta = {
+  ...baseFingerprint,
+  ...(cachedFingerprint ?? {}),
 };
 
 // https://vitejs.dev/config/

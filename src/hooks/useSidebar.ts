@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
 
@@ -11,6 +11,11 @@ export function useSidebar(
   );
   const [sidebarWidth, setSidebarWidth] = useState<number>(storedWidth);
   const [isDragging, setIsDragging] = useState(false);
+  const widthRef = useRef(sidebarWidth);
+
+  useEffect(() => {
+    widthRef.current = sidebarWidth;
+  }, [sidebarWidth]);
 
   useEffect(() => {
     if (!isDragging) {
@@ -27,7 +32,7 @@ export function useSidebar(
 
     const stopDrag = () => {
       setIsDragging(false);
-      setStoredWidth(sidebarWidth);
+      setStoredWidth(widthRef.current);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -37,7 +42,7 @@ export function useSidebar(
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', stopDrag);
     };
-  }, [isDragging, sidebarWidth, setStoredWidth]);
+  }, [isDragging, setStoredWidth]);
 
   const startDrag = () => setIsDragging(true);
 
