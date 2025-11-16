@@ -28,6 +28,20 @@ const BACKUP_ROOT = path.join(CACHE_DIR, 'cms-backups');
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'];
 const TEXT_EXTENSIONS = ['.txt', '.md'];
 
+function throwReadableFsError(action, targetPath, error) {
+  const code = error && typeof error === 'object' ? error.code : null;
+  if (code === 'EACCES' || code === 'EPERM') {
+    const reason = error?.message ?? 'permission denied';
+    throw new Error(
+      `\n🚫 CMS could not ${action} "${targetPath}" due to insufficient permissions.\n` +
+        'Fix the directory/file permissions or rerun the sync with the appropriate access.\n' +
+        `Original error: ${reason}`
+    );
+  }
+
+  throw error;
+}
+
 // Ensure output directories exist
 function ensureDirectories() {
   [OUTPUT_FOLDERS, OUTPUT_IMAGES, OUTPUT_PAGES].forEach(dir => {
@@ -107,8 +121,17 @@ function cleanOutputDirectories() {
       const files = fs.readdirSync(dir);
       files.forEach(file => {
         const filePath = path.join(dir, file);
-        if (fs.statSync(filePath).isFile()) {
-          fs.unlinkSync(filePath);
+        try {
+          const stats = fs.statSync(filePath);
+          if (stats.isDirectory()) {
+            fs.rmSync(filePath, { recursive: true, force: true });
+            return;
+          }
+          if (stats.isFile()) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (error) {
+          throwReadableFsError('remove', filePath, error);
         }
       });
     }

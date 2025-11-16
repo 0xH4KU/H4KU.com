@@ -78,9 +78,7 @@ jobs:
     name: Test & Coverage
     runs-on: ubuntu-latest
     env:
-      VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
-      VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
-      VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+      VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || 'https://example.com/contact' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -140,9 +138,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, format, type-check, test, security]
     env:
-      VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
-      VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
-      VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+      VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || 'https://example.com/contact' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
