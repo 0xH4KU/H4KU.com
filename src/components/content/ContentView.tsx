@@ -1,4 +1,4 @@
-import React, { useMemo, lazy, Suspense } from 'react';
+import React, { useMemo, lazy, Suspense, useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
@@ -9,6 +9,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
 import { LazyImage } from '@/components/common/LazyImage';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { IMAGE_CONFIG } from '@/config/constants';
 import {
   createContainerVariants,
@@ -43,6 +44,7 @@ const ContentView: React.FC = () => {
   const { theme } = useTheme();
   const { sortOrder, typeOrder } = useSortOrder();
   const prefersReducedMotion = useReducedMotion();
+  const [contactRetryKey, setContactRetryKey] = useState(0);
 
   // Use centralized animation configurations
   const containerVariants = useMemo(
@@ -85,6 +87,27 @@ const ContentView: React.FC = () => {
   // Render content depending on the active view
   const renderContent = () => {
     if (currentView?.type === 'txt') {
+      const contactFormFallback = (
+        <div className={styles['contact-error']} role="alert">
+          <p>We could not load the contact form just yet.</p>
+          <div className={styles['contact-error-actions']}>
+            <button
+              type="button"
+              className={styles['contact-error-button']}
+              onClick={() => setContactRetryKey(prev => prev + 1)}
+            >
+              Try again
+            </button>
+            <a
+              className={styles['contact-error-link']}
+              href="mailto:hi@lum.bio"
+            >
+              Email hi@lum.bio
+            </a>
+          </div>
+        </div>
+      );
+
       return (
         <m.div
           className={`${styles['txt-viewer']} ${theme}`}
@@ -126,9 +149,20 @@ const ContentView: React.FC = () => {
           >
             <pre>{currentView.data.content}</pre>
             {currentView.data.id === 'contact' && (
-              <Suspense fallback={null}>
-                <ContactForm />
-              </Suspense>
+              <ErrorBoundary
+                key={contactRetryKey}
+                fallback={contactFormFallback}
+              >
+                <Suspense
+                  fallback={
+                    <div className={styles['contact-loading']} role="status">
+                      Loading secure contact form…
+                    </div>
+                  }
+                >
+                  <ContactForm />
+                </Suspense>
+              </ErrorBoundary>
             )}
           </m.div>
         </m.div>

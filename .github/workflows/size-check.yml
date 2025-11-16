@@ -11,9 +11,7 @@ jobs:
     name: Check Bundle Size
     runs-on: ubuntu-latest
     env:
-      VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
-      VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
-      VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+      VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || 'https://example.com/contact' }}
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v4

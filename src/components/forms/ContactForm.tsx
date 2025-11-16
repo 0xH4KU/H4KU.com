@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useId, FormEvent } from 'react';
+import isEmail from 'validator/lib/isEmail';
+import type { IsEmailOptions } from 'validator/lib/isEmail';
 import {
   submitContactRequest,
   ContactSubmissionError,
@@ -15,6 +17,16 @@ interface FormStatus {
   type: 'idle' | 'loading' | 'success' | 'error';
   message?: string;
 }
+
+const EMAIL_VALIDATION_OPTIONS: IsEmailOptions = {
+  allow_display_name: false,
+  allow_utf8_local_part: true,
+  allow_ip_domain: true,
+  require_tld: false,
+};
+
+const isValidEmailAddress = (email: string) =>
+  isEmail(email.trim(), EMAIL_VALIDATION_OPTIONS);
 
 export function ContactForm() {
   const statusMessageId = useId();
@@ -93,9 +105,9 @@ export function ContactForm() {
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
+    const normalizedEmail = formData.email.trim();
+
+    if (!isValidEmailAddress(normalizedEmail)) {
       setStatus({
         type: 'error',
         message: 'Please enter a valid email address',
@@ -113,7 +125,7 @@ export function ContactForm() {
       const result = await submitContactRequest(
         {
           name: formData.name,
-          email: formData.email,
+          email: normalizedEmail,
           message: formData.message,
         },
         controller.signal

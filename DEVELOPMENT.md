@@ -9,7 +9,7 @@ _Architecture reference for contributors extending Lum.bio without regressing th
 | Rendering | React 19 + Vite 7 with CSS Modules for scoped styling |
 | Global State | Context providers for navigation, theme, search UI/results, sorting, and sidebar preferences |
 | Data Source | Static JSON under `src/content/` aggregated at build time (`npm run build:data`) into `src/content/_aggregated.json` |
-| Routing | React Router (`/`, `/folder/<path>`, `/page/<id>`) with URL ↔ state synchronisation |
+| Routing | Custom NavigationContext built on the History API (`/`, `/folder/<path>`, `/page/<id>`) with manual URL ↔ state synchronisation |
 | Animations | Framer Motion variants with reduced-motion fallbacks |
 | Assets | Everything under `public/` (images, gifs, fonts) served verbatim by Vite |
 
@@ -32,7 +32,7 @@ The aggregation step keeps the runtime bundle small and guarantees deterministic
 ### Navigation Context (`src/contexts/NavigationContext.tsx`)
 - Holds the current path (`['home', ...]`), active view, and lightbox state.
 - Uses `buildNavigationMap` from `src/utils/navigation.ts` to create `byId`, `byPath`, and `pathById` maps (O(1) lookups).
-- Synchronises URL changes via React Router’s `useNavigate`/`useLocation`.
+- Subscribes to `popstate` and writes via `window.history.pushState`, so URLs remain the single source of truth without React Router.
 - Provides helpers for breadcrumbs, back/forward behaviour, and lightbox navigation.
 
 ### Search Context (`src/contexts/SearchContext.tsx`)

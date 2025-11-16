@@ -15,14 +15,14 @@
 | 2.1 | ✳️ Resolved | `ErrorBoundary` now clears copy timeout in `componentWillUnmount` (`src/components/common/ErrorBoundary.tsx:20-68`). |
 | 2.2 | ✳️ Resolved | SearchPanel effect cleans up its document keydown listener on dependency change/unmount (`src/components/layout/SearchPanel.tsx:47-109`). |
 | 2.3 | ✳️ Resolved | `useSidebar` effect depends on `sidebarWidth`, so closures stay fresh and listeners are torn down correctly (`src/hooks/useSidebar.ts:15-41`). |
-| 3.1 | ✅ Still valid | README/DEVELOPMENT still promise “React Router 7.x” although no `react-router*` dependency exists (`README.md`, `DEVELOPMENT.md`). |
-| 3.2 | ✅ Still valid | EmailJS env vars remain in `.env.example` and CI configs even though code paths were removed (`.env.example`, `.gitlab-ci.yml`, `.github/workflows/*.yml`). |
-| 3.3 | ✅ Still valid | README still advertises “180+ tests” while only 21 spec files exist in `src` (`README.md`, `find src -name "*.test.ts*"`). |
-| 3.4 | ✅ Still valid | README references `wrangler pages deploy` without providing any `wrangler.toml` or CF configuration (`README.md`, project root). |
-| 4.1 | ✖️ Not reproducible | The `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` regex accepts plus-addressing, dotted names, and IP literals; rejection examples listed are already supported (`src/components/forms/ContactForm.tsx:96-104`). |
-| 4.2 | ✅ Still valid | Storage event handler logs parse errors but never resets state, keeping hooks stuck on corrupt values (`src/hooks/useLocalStorage.ts:50-68`). |
-| 4.3 | ✅ Still valid | `fs.unlinkSync` calls remain unguarded, so permission errors crash CMS without messaging (`scripts/cms.js:39-52`). |
-| 4.4 | ✅ Still valid | Contact view lazy-loads the form inside `Suspense` without any `ErrorBoundary`, so chunk failures crash the page (`src/components/content/ContentView.tsx:124-134`). |
+| 3.1 | ✳️ Resolved | README/DEVELOPMENT now describe the custom History API navigation stack instead of React Router (`README.md`, `DEVELOPMENT.md`). |
+| 3.2 | ✳️ Resolved | EmailJS env vars removed from `.env.example`, GitHub Actions, and GitLab CI; docs reference the contact endpoint instead. |
+| 3.3 | ✳️ Resolved | README now states the real Vitest file count (21 specs) instead of “180+ tests.” |
+| 3.4 | ✳️ Resolved | README deployment guide references the new `wrangler.toml`, so `wrangler pages deploy` is fully configured. |
+| 4.1 | ✳️ Resolved | ContactForm switched to `validator.isEmail` with relaxed RFC 5322 options, plus `type="email"` fallback. |
+| 4.2 | ✳️ Resolved | `useLocalStorage` now resets corrupted keys to the initial value and removes them from storage on parse errors. |
+| 4.3 | ✳️ Resolved | `scripts/cms.js` wraps file deletions in try/catch and surfaces human-readable permission errors before exiting. |
+| 4.4 | ✳️ Resolved | Contact view wraps the lazy ContactForm in `ErrorBoundary` + Suspense so chunk failures surface friendly fallbacks. |
 | 5.1 | ✅ Still valid | Lightbox still receives folders’ entire `items` arrays (including text pages) and closes via guard (`SearchPanel.tsx:139-158`, `Sidebar.tsx:184-210`, `Lightbox.tsx:38-44`). |
 | 5.2 | ✅ Still valid | `useCrosshair` checks for `.lightbox`, but CSS modules rename the class, so ESC toggles even when overlays are open (`src/hooks/useCrosshair.ts:93-120`, `src/components/overlay/Lightbox.module.css`). |
 | 5.3 | ✖️ Not reproducible | Sidebar context clamps and exposes normalized widths, so inline styles already receive safe values (`src/contexts/SidebarContext.tsx:24-88`, `Sidebar.tsx:575-582`). |
@@ -48,7 +48,7 @@
 | 13.1 | ✅ Still valid | `vite-plugin-image-optimizer` remains installed but fully commented out (`vite.config.ts:193-206`, `package.json`). |
 | 13.2 | ✅ Still valid | Sidebar inert fallback effect still re-queries DOM whenever derived counts change (`Sidebar.tsx:300-343`). |
 | 13.3 | ✅ Still valid | GitLab CI jobs still disable upstream artifacts, preventing dependent jobs from consuming results (`.gitlab-ci.yml:118-128`). |
-| 14.1 | ✅ Still valid | EmailJS env vars documented but unused—same root problem as 3.2 (`.env.example`, CI configs). |
+| 14.1 | ✳️ Resolved | EmailJS env vars documented but unused—same root problem as 3.2 (`.env.example`, CI configs). |
 | 14.2 | ➿ Duplicate | Mirrors 12.1 (`drop_console`). |
 | 14.3 | ➿ Duplicate | Mirrors 9.2 (`npm prune`). |
 | 15.1 | ✅ Still valid | `_aggregated.json` still ships with empty folders/no works, making most UI paths untestable (`src/content/_aggregated.json`). |
@@ -101,87 +101,41 @@
 
 ### 3. Documentation Lies & Misleading Configuration
 
-#### 3.1 React Router documentation without implementation (SEVERELY MISLEADING)
-- **Locations:**
-  - `README.md:110` - "React Router 7 with file-path routing patterns"
-  - `README.md:145` - Table entry "| Routing | React Router 7.9 |"
-  - `DEVELOPMENT.md:12` - Mentions React Router paths
-  - `DEVELOPMENT.md:35` - References `useNavigate`/`useLocation` hooks
-- **Reality:**
-  - NO `react-router` or `react-router-dom` in package.json
-  - Actual implementation: Custom `useHistoryNavigation` hook (`src/hooks/useHistoryNavigation.ts`) using browser History API
-- **Impact:** Severely misleading for new contributors, suggests completely wrong mental model
-- **Risk Level:** HIGH
-- **Action:** Update ALL documentation to accurately describe custom history-based navigation system
+#### ~~3.1 React Router documentation without implementation (SEVERELY MISLEADING)~~
+- **Fix:** README + DEVELOPMENT now spell out that `NavigationContext` drives routing on top of the History API, so there is no silent React Router dependency left.
+  - **Files:** `README.md`, `DEVELOPMENT.md`
 
-#### 3.2 EmailJS documentation exists but code removed
-- **Locations:**
-  - `.env.example:1-11` - Documents EmailJS setup
-  - `.gitlab-ci.yml:69-71, 105-107` - Sets `VITE_EMAILJS_*` env vars
-  - `.github/workflows/ci.yml:81-83, 143-145` - Configures EmailJS secrets
-  - `.github/workflows/size-check.yml:14-16` - Sets EmailJS secrets
-- **Reality:**
-  - NO EmailJS code in src/ (grep confirms)
-  - Contact form uses `VITE_CONTACT_ENDPOINT` (generic API)
-  - See `src/config/contact.ts:18` and `src/services/contact.ts`
-- **Impact:** Misleading onboarding, wastes CI resources setting unused variables, confuses contact form implementation
-- **Risk Level:** MEDIUM-HIGH
-- **Action:** Remove ALL EmailJS references from `.env.example` and all CI configs
+#### ~~3.2 EmailJS documentation exists but code removed~~
+- **Fix:** `.env.example`, GitHub Actions, and GitLab CI all reference `VITE_CONTACT_ENDPOINT` (the real integration) and drop every EmailJS secret/variable.
+  - **Files:** `.env.example`, `.gitlab-ci.yml`, `.github/workflows/ci.yml`, `.github/workflows/size-check.yml`
 
-#### 3.3 Test count overstated
-- **Location:** `README.md:223`
-- **Claim:** "180+ automated tests covering:"
-- **Reality:** Only 20 test files (`find src -name "*.test.ts*" | wc -l`)
-- **Impact:** Overstated quality metrics, misleading project maturity
-- **Risk Level:** MEDIUM
-- **Action:** Update README to reflect actual count OR add missing ~160 tests
+#### ~~3.3 Test count overstated~~
+- **Fix:** README now cites the actual Vitest footprint (21 specs) so the quality bar is transparent.
+  - **File:** `README.md`
 
-#### 3.4 Deployment instructions incomplete
-- **Location:** `README.md` - references `wrangler pages deploy`
-- **Missing:**
-  - No `wrangler.toml` configuration
-  - No `.dev.vars` or deployment environment docs
-  - Only `VITE_CONTACT_ENDPOINT` mentioned, no Cloudflare-specific setup
-- **Impact:** Cannot deploy following README alone
-- **Risk Level:** MEDIUM
-- **Action:** Add complete Wrangler configuration OR remove deployment snippet
+#### ~~3.4 Deployment instructions incomplete~~
+- **Fix:** Checked in a `wrangler.toml` with the build command + Pages output dir and refreshed the README deployment guide so `wrangler pages deploy` works verbatim.
+  - **Files:** `wrangler.toml`, `README.md`
 
 ---
 
 ### 4. Error Handling & Validation Gaps
 
-#### 4.1 Email validation regex too restrictive
-- **Location:** `src/components/forms/ContactForm.tsx:96-104`
-- **Problem:** Uses regex `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
-- **Rejects valid formats:**
-  - Plus addressing: `user+tag@domain.com`
-  - Multiple dots: `first.last@domain.com`
-  - IP addresses: `user@[192.168.1.1]`
-  - Other RFC 5322 compliant formats
-- **Impact:** False negatives blocking legitimate contact form submissions
-- **Risk Level:** MEDIUM-HIGH
-- **Action:** Use robust email validation library (e.g., `validator.js`) OR HTML5 `type="email"` with server-side validation
+#### ~~4.1 Email validation regex too restrictive~~
+- **Fix:** ContactForm now trims input and validates with `validator/lib/isEmail` (allowing plus-addressing, dots, and IP literals) before hitting the API.
+  - **Files:** `src/components/forms/ContactForm.tsx`, `package.json`
 
-#### 4.2 localStorage corruption causes state inconsistency
-- **Location:** `src/hooks/useLocalStorage.ts:50-64`
-- **Problem:** Storage event handler (line 60) calls `JSON.parse` in try-catch, but on failure only logs error without updating state. Initial `readValue` has fallback, but storage event doesn't
-- **Impact:** App state becomes inconsistent when localStorage corrupted or contains invalid JSON
-- **Risk Level:** MEDIUM-HIGH
-- **Action:** Add fallback to initialValue in storage event handler OR reset corrupted localStorage keys
+#### ~~4.2 localStorage corruption causes state inconsistency~~
+- **Fix:** `useLocalStorage` falls back to the initial value and removes corrupted keys from storage whenever `JSON.parse` throws during a storage event.
+  - **File:** `src/hooks/useLocalStorage.ts`
 
-#### 4.3 CMS script doesn't handle permission errors
-- **Location:** `scripts/cms.js:39-52`
-- **Problem:** Calls `fs.unlinkSync` (line 48) without checking write permissions, no try-catch for EACCES/EPERM
-- **Impact:** Build fails with unclear error message if directories aren't writable
-- **Risk Level:** MEDIUM
-- **Action:** Wrap file operations in try-catch with descriptive error messages
+#### ~~4.3 CMS script doesn't handle permission errors~~
+- **Fix:** `scripts/cms.js` now wraps every unlink/rm call with descriptive permission-aware error messages so CMS sync fails loudly instead of crashing silently.
+  - **File:** `scripts/cms.js`
 
-#### 4.4 ContactForm lacks error boundary
-- **Location:** `src/components/content/ContentView.tsx:128-132`
-- **Problem:** Lazy-loads ContactForm with Suspense but no error boundary
-- **Impact:** If dynamic import fails (network error, chunk load failure), entire page crashes
-- **Risk Level:** MEDIUM
-- **Action:** Wrap lazy-loaded components in ErrorBoundary with retry capability
+#### ~~4.4 ContactForm lacks error boundary~~
+- **Fix:** Text view renders the lazy ContactForm inside `ErrorBoundary + Suspense` with actionable fallback UI that lets users retry or fall back to `mailto:hi@lum.bio`.
+  - **Files:** `src/components/content/ContentView.tsx`, `src/components/content/ContentView.module.css`
 
 ---
 
@@ -407,15 +361,9 @@
 
 ### 14. Deprecated Code & Unused Dependencies
 
-#### 14.1 Environment variables documented but never used
-- **Documented but not imported:**
-  - `VITE_EMAILJS_SERVICE_ID`
-  - `VITE_EMAILJS_TEMPLATE_ID`
-  - `VITE_EMAILJS_PUBLIC_KEY`
-- **Set in CI but unused:** All three in 4 CI config files
-- **Impact:** Misleading onboarding, wasted CI config
-- **Risk Level:** LOW (see 3.2)
-- **Action:** Remove from `.env.example` and CI (covered in 3.2)
+#### ~~14.1 Environment variables documented but never used~~
+- **Fix:** EmailJS placeholders were removed from `.env.example`, GitLab, and GitHub workflows alongside Issue 3.2 so only `VITE_CONTACT_*` env vars remain documented.
+  - **Files:** `.env.example`, `.gitlab-ci.yml`, `.github/workflows/ci.yml`, `.github/workflows/size-check.yml`
 
 #### 14.2 Console.log statements in production (duplicate of 12.1)
 - See section 12.1 for details
@@ -454,8 +402,8 @@
 1. ~~**🔴 CRITICAL:** Add `.env.production.local` to `.gitignore` (Issue 1.1)~~
 2. ~~**🔴 CRITICAL:** Implement CMS rollback mechanism (Issue 1.4)~~
 3. ~~**🔴 CRITICAL:** Fix memory leaks in ErrorBoundary, SearchPanel, useSidebar (Issues 2.1-2.3)~~
-4. **🟠 HIGH:** Update React Router documentation (Issue 3.1)
-5. **🟠 HIGH:** Remove EmailJS from all configs (Issue 3.2)
+4. ~~**🟠 HIGH:** Update React Router documentation (Issue 3.1)~~
+5. ~~**🟠 HIGH:** Remove EmailJS from all configs (Issue 3.2)~~
 
 ### Risk Assessment
 

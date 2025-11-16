@@ -107,10 +107,10 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 
 ### Navigation
 
-- React Router 7 with file-path routing patterns
+- Custom NavigationContext built directly on the History API (no React Router dependency)
 - Deep links: `/folder/path/to/item` and `/page/page-id`
 - O(1) path lookups via Map-based indexing
-- Persistent navigation state across route changes
+- Persistent navigation state across reloads via URL parsing + context state hydration
 
 ### Performance Optimizations
 
@@ -142,7 +142,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 | Layer | Technology |
 |-------|------------|
 | **Framework** | React 19.2 |
-| **Routing** | React Router 7.9 |
+| **Routing** | Custom NavigationContext (History API observers) |
 | **Language** | TypeScript 5.4 (strict mode) |
 | **Build Tool** | Vite 7 |
 | **Styling** | CSS Modules + global tokens |
@@ -220,7 +220,7 @@ After editing, run `npm run build:data` to regenerate `_aggregated.json`.
 
 ## Testing
 
-180+ automated tests covering:
+21 automated tests covering:
 
 - Context providers (state management)
 - Custom hooks (side effects, localStorage)
@@ -237,13 +237,16 @@ After editing, run `npm run build:data` to regenerate `_aggregated.json`.
 
 ### Cloudflare Pages
 
+Cloudflare Pages deployments run out of the box via the bundled `wrangler.toml`:
+
 ```bash
+npm install
 npm run build
-npx wrangler pages deploy dist
+npx wrangler pages deploy --project-name lum-bio dist
 ```
 
-**Required environment variables:**
-- `VITE_CONTACT_ENDPOINT` – URL to the server-side handler that delivers contact messages
+- Adjust `pages_build_output_dir` or `name` inside `wrangler.toml` if your project slug differs.
+- Set `VITE_CONTACT_ENDPOINT` (and any optional vars) through the Cloudflare Pages dashboard or by editing the `[vars]` block before deploying.
 
 `vite-plugin-sitemap` runs during `vite build`, generating a fresh `dist/sitemap.xml` from the aggregated content so you no longer need to maintain a static `public/sitemap.xml`.
 
