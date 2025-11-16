@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run sync && npm run fingerprint:inject && vite build",
+    "build": "node scripts/build.js",
     "build:data": "node scripts/build-data.js",
     "fingerprint:inject": "node scripts/inject-fingerprint.js",
     "preview": "vite preview",

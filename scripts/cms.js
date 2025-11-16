@@ -21,6 +21,8 @@ const CONTENT_SOURCE = path.join(ROOT_DIR, 'public', 'content');
 const OUTPUT_FOLDERS = path.join(ROOT_DIR, 'src', 'content', 'folders');
 const OUTPUT_IMAGES = path.join(ROOT_DIR, 'src', 'content', 'images');
 const OUTPUT_PAGES = path.join(ROOT_DIR, 'src', 'content', 'pages');
+const CACHE_DIR = path.join(ROOT_DIR, '.cache');
+const BACKUP_ROOT = path.join(CACHE_DIR, 'cms-backups');
 
 // Supported file extensions
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'];
@@ -33,6 +35,67 @@ function ensureDirectories() {
       fs.mkdirSync(dir, { recursive: true });
     }
   });
+
+  if (!fs.existsSync(BACKUP_ROOT)) {
+    fs.mkdirSync(BACKUP_ROOT, { recursive: true });
+  }
+}
+
+function copyDirectory(src, dest) {
+  if (!fs.existsSync(src)) {
+    return;
+  }
+
+  fs.mkdirSync(dest, { recursive: true });
+
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const sourcePath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, destPath);
+    } else if (entry.isFile()) {
+      fs.copyFileSync(sourcePath, destPath);
+    }
+  }
+}
+
+function cleanDirectory(dir) {
+  if (fs.existsSync(dir)) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  fs.mkdirSync(dir, { recursive: true });
+}
+
+function createBackup() {
+  const backupPath = path.join(BACKUP_ROOT, `backup-${Date.now()}`);
+
+  copyDirectory(OUTPUT_FOLDERS, path.join(backupPath, 'folders'));
+  copyDirectory(OUTPUT_IMAGES, path.join(backupPath, 'images'));
+  copyDirectory(OUTPUT_PAGES, path.join(backupPath, 'pages'));
+
+  return backupPath;
+}
+
+function restoreBackup(backupPath) {
+  if (!backupPath || !fs.existsSync(backupPath)) {
+    return;
+  }
+
+  console.log('\n⏪ Restoring CMS output from backup...');
+  cleanDirectory(OUTPUT_FOLDERS);
+  cleanDirectory(OUTPUT_IMAGES);
+  cleanDirectory(OUTPUT_PAGES);
+
+  copyDirectory(path.join(backupPath, 'folders'), OUTPUT_FOLDERS);
+  copyDirectory(path.join(backupPath, 'images'), OUTPUT_IMAGES);
+  copyDirectory(path.join(backupPath, 'pages'), OUTPUT_PAGES);
+}
+
+function removeBackup(backupPath) {
+  if (backupPath && fs.existsSync(backupPath)) {
+    fs.rmSync(backupPath, { recursive: true, force: true });
+  }
 }
 
 // Clean output directories
@@ -234,9 +297,10 @@ function main() {
   const homepagePath = path.join(CONTENT_SOURCE, 'homepage');
 
   if (!fs.existsSync(homepagePath)) {
-    console.error('❌ Error: public/content/homepage directory not found!');
-    console.log('   Please create the directory and add your content there.');
-    process.exit(1);
+    const error = new Error(
+      'public/content/homepage directory not found. Create it and add content.'
+    );
+    throw error;
   }
 
   const results = scanDirectory(homepagePath);
@@ -287,11 +351,16 @@ async function runBuildData() {
 
 // Run main function
 async function run() {
+  ensureDirectories();
+  const backupPath = createBackup();
+
   try {
     main();
     await runBuildData();
+    removeBackup(backupPath);
     console.log('\n✨ All done! Your content is ready.\n');
   } catch (error) {
+    restoreBackup(backupPath);
     console.error('❌ Error:', error.message);
     console.error(error.stack);
     process.exit(1);

@@ -3,6 +3,9 @@
 
 # Build artifacts
 /dist
+.cache/
+.build-manifest.json
+.env.production.local
 
 # Logs
 npm-debug.log*
