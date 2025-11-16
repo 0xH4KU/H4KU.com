@@ -19,13 +19,33 @@ type PageResult = {
   page: { id: string; name: string; type: 'txt'; content: string };
 };
 
+type ImageItem = {
+  id: string;
+  filename: string;
+  itemType: 'work';
+  thumb: string;
+  full: string;
+};
+
+type TextItem = {
+  id: string;
+  filename: string;
+  itemType: 'page';
+  content: string;
+};
+
 type WorkResult = {
   type: 'work';
   id: string;
   label: string;
   path: string[];
-  folder: { id: string; name: string; type: 'folder'; items?: unknown[] };
-  work: { id: string; filename: string; itemType: 'work' };
+  folder: {
+    id: string;
+    name: string;
+    type: 'folder';
+    items?: Array<ImageItem | TextItem>;
+  };
+  work: ImageItem;
 };
 
 type MockSearchResult = FolderResult | PageResult | WorkResult;
@@ -71,13 +91,33 @@ const pageResult: PageResult = {
   page: { id: 'page-1', name: 'Doc', type: 'txt', content: 'Body' },
 };
 
+const imageItem: ImageItem = {
+  id: 'work-1',
+  filename: 'work.png',
+  itemType: 'work',
+  thumb: '/thumb/work.png',
+  full: '/full/work.png',
+};
+
+const textItem: TextItem = {
+  id: 'note-1',
+  filename: 'note.txt',
+  itemType: 'page',
+  content: 'hello',
+};
+
 const workResult: WorkResult = {
   type: 'work',
   id: 'work-1',
   label: 'work',
   path: ['folder-1'],
-  folder: { id: 'folder-1', name: 'Folder One', type: 'folder' },
-  work: { id: 'work-1', filename: 'work.png', itemType: 'work' },
+  folder: {
+    id: 'folder-1',
+    name: 'Folder One',
+    type: 'folder',
+    items: [imageItem, textItem],
+  },
+  work: imageItem,
 };
 
 const baseResults: MockSearchResult[] = [folderResult, pageResult, workResult];
@@ -145,7 +185,7 @@ describe('SearchPanel interactions', () => {
     await userEvent.click(workButton);
     expect(navigationMock.openLightbox).toHaveBeenCalledWith(
       workResult.work,
-      expect.any(Array)
+      [imageItem]
     );
   });
 

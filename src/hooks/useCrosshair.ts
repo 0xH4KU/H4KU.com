@@ -96,11 +96,17 @@ export function useCrosshair() {
       }
 
       // Check if any modal/overlay is open (lightbox, search panel, etc.)
-      const hasOpenModal =
-        typeof document !== 'undefined' &&
-        (document.querySelector('[role="dialog"]') ||
-          document.querySelector('[aria-modal="true"]') ||
-          document.querySelector('.lightbox'));
+      let hasOpenModal = false;
+      if (typeof document !== 'undefined') {
+        const modalSelectors = [
+          '[role="dialog"]',
+          '[aria-modal="true"]',
+          '[data-overlay="lightbox"]',
+        ];
+        hasOpenModal = modalSelectors.some(selector =>
+          document.querySelector(selector)
+        );
+      }
 
       // Only toggle crosshair if no modals are open and no input is focused
       if (hasOpenModal) {

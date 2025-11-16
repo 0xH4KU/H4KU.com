@@ -47,3 +47,48 @@ export function getSafeUrl(
     return null;
   }
 }
+
+const DEFAULT_APP_ORIGIN = 'https://lum.bio';
+
+const getAppOrigin = () => {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  return DEFAULT_APP_ORIGIN;
+};
+
+const getBasePath = () => {
+  const rawBase = (import.meta.env.BASE_URL ?? '/') as string;
+  if (rawBase === '/') {
+    return '';
+  }
+  return rawBase.endsWith('/') ? rawBase.slice(0, -1) : rawBase;
+};
+
+const ensureLeadingSlash = (pathname: string) =>
+  pathname.startsWith('/') ? pathname : `/${pathname}`;
+
+export const buildAppUrl = (pathname: string) => {
+  const basePath = getBasePath();
+  const normalizedPath = ensureLeadingSlash(pathname || '/');
+  const relativePath = `${basePath}${normalizedPath}` || '/';
+  const origin = getAppOrigin();
+
+  try {
+    return new URL(relativePath || '/', origin).toString();
+  } catch {
+    const sanitizedOrigin = origin.replace(/\/$/, '');
+    return `${sanitizedOrigin}${relativePath || '/'}`;
+  }
+};
+
+export const buildFolderUrl = (path: string[]) => {
+  if (!path.length) {
+    return buildAppUrl('/');
+  }
+  const folderPath = path.join('/');
+  return buildAppUrl(`/folder/${folderPath}`);
+};
+
+export const buildPageUrl = (pageId: string) =>
+  buildAppUrl(`/page/${pageId}`);

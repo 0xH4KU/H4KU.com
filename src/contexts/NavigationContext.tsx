@@ -4,6 +4,8 @@ import {
   useState,
   useMemo,
   useEffect,
+  useRef,
+  useCallback,
   ReactNode,
 } from 'react';
 import { mockData } from '@/data/mockData';
@@ -48,7 +50,17 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [lightboxImage, setLightboxImage] = useState<WorkItem | null>(null);
   const [lightboxGallery, setLightboxGallery] = useState<WorkItem[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number>(0);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const pendingHistoryPathRef = useRef<string | null>(null);
+  const currentPathRef = useRef(currentPath);
+  const currentViewRef = useRef<ViewType | null>(currentView);
+
+  useEffect(() => {
+    currentPathRef.current = currentPath;
+  }, [currentPath]);
+
+  useEffect(() => {
+    currentViewRef.current = currentView;
+  }, [currentView]);
 
   // Build navigation map once for O(1) lookups
   const navMap = useMemo<NavigationMap>(
@@ -80,79 +92,91 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const activePath = useMemo(() => currentPath.join('/'), [currentPath]);
 
-  // Initialize from URL on mount
+  const parsePathname = useCallback(
+    (targetPath: string) => {
+      const normalized = targetPath && targetPath !== '' ? targetPath : '/';
+      const segments = normalized.split('/').filter(Boolean);
+
+      if (segments.length === 0) {
+        return { path: ['home'], view: null };
+      }
+
+      if (segments[0] === 'page' && segments[1]) {
+        const page = mockData.pages.find(p => p.id === segments[1]);
+        if (page) {
+          return {
+            path: ['home', page.id],
+            view: { type: 'txt', data: page } as ViewType,
+          };
+        }
+        return { path: ['home'], view: null };
+      }
+
+      if (segments[0] === 'folder') {
+        const folderIds = segments.slice(1);
+        if (folderIds.length) {
+          const folder = findFolderByPath(mockData.folders, folderIds, navMap);
+          if (folder) {
+            return {
+              path: ['home', ...folderIds],
+              view: { type: 'folder', data: folder } as ViewType,
+            };
+          }
+        }
+      }
+
+      return { path: ['home'], view: null };
+    },
+    [navMap]
+  );
+
   useEffect(() => {
-    if (isInitialized) return;
-
-    const pathFromUrl = pathname;
-    if (pathFromUrl === '/' || pathFromUrl === '') {
-      setIsInitialized(true);
+    if (pendingHistoryPathRef.current === pathname) {
+      pendingHistoryPathRef.current = null;
       return;
     }
 
-    const segments = pathFromUrl.split('/').filter(Boolean);
-
-    if (segments.length === 0) {
-      setIsInitialized(true);
-      return;
+    const { path: nextPath, view: nextView } = parsePathname(pathname);
+    const pathsMatch =
+      currentPathRef.current.length === nextPath.length &&
+      currentPathRef.current.every(
+        (segment, index) => segment === nextPath[index]
+      );
+    if (!pathsMatch) {
+      setCurrentPath(nextPath);
     }
 
-    // Check if it's a page
-    if (segments[0] === 'page') {
-      const pageId = segments[1];
-      const page = mockData.pages.find(p => p.id === pageId);
+    const viewsMatch =
+      (currentViewRef.current === null && nextView === null) ||
+      (currentViewRef.current?.type === nextView?.type &&
+        currentViewRef.current?.data === nextView?.data);
+    if (!viewsMatch) {
+      setCurrentView(nextView);
+    }
+  }, [pathname, parsePathname]);
+
+  useEffect(() => {
+    let targetPath = '/';
+
+    if (currentPath.length > 1) {
+      const lastSegment = currentPath[currentPath.length - 1];
+      const page = mockData.pages.find(p => p.id === lastSegment);
+
       if (page) {
-        setCurrentPath(['home', page.id]);
-        setCurrentView({ type: 'txt', data: page });
+        targetPath = `/page/${page.id}`;
+      } else {
+        const folderPath = currentPath.slice(1).join('/');
+        targetPath = `/folder/${folderPath}`;
       }
-      setIsInitialized(true);
+    }
+
+    if (pathname === targetPath) {
       return;
     }
 
-    // Check if it's a folder path
-    if (segments[0] === 'folder') {
-      const folderIds = segments.slice(1);
-      // O(1) lookup using navigation map
-      const folder = findFolderByPath(mockData.folders, folderIds, navMap);
-      if (folder) {
-        setCurrentPath(['home', ...folderIds]);
-        setCurrentView({ type: 'folder', data: folder });
-      }
-    }
-
-    setIsInitialized(true);
-  }, [pathname, isInitialized, navMap]);
-
-  // Sync URL when currentPath changes (after initialization)
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    if (currentPath.length <= 1) {
-      if (pathname !== '/') {
-        updateHistory('/', { replace: true });
-      }
-      return;
-    }
-
-    const lastSegment = currentPath[currentPath.length - 1];
-
-    // Check if it's a page
-    const page = mockData.pages.find(p => p.id === lastSegment);
-    if (page) {
-      const url = `/page/${page.id}`;
-      if (pathname !== url) {
-        updateHistory(url, { replace: true });
-      }
-      return;
-    }
-
-    // It's a folder
-    const folderPath = currentPath.slice(1).join('/');
-    const url = `/folder/${folderPath}`;
-    if (pathname !== url) {
-      updateHistory(url, { replace: true });
-    }
-  }, [currentPath, pathname, updateHistory, isInitialized]);
+    pendingHistoryPathRef.current = targetPath;
+    updateHistory(targetPath, { replace: true });
+  }, [currentPath, pathname, updateHistory]);
 
   const openFolder = (folder: Folder, pathOverride?: string[]) => {
     // O(1) lookup using navigation map
