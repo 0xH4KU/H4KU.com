@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="fullGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00c6ff" />
+      <stop offset="100%" stop-color="#0072ff" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#fullGradient)" rx="48" />
+  <text x="50%" y="46%" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-size="72" fill="#ffffff">Lumina Aeon</text>
+  <text x="50%" y="58%" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-size="28" fill="#e0f7ff">Synthwave tactician study</text>
+</svg>

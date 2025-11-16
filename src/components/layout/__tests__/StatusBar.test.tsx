@@ -233,7 +233,9 @@ describe('StatusBar integrity indicator', () => {
     });
 
     expect(
-      screen.getByTitle(/FNV-1a mismatch \(expected unknown, actual ffff0000\)/i)
+      screen.getByTitle(
+        /FNV-1a mismatch \(expected unknown, actual ffff0000\)/i
+      )
     ).toBeInTheDocument();
     expect(
       screen.getByText(/FNV-1a expected missing vs ffff0000/i)

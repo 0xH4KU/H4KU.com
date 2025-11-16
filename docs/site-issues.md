@@ -259,60 +259,66 @@
 
 ### 9. Build Process & Pipeline
 
-#### 9.1 Build always runs CMS + fingerprint
+#### ~~9.1 Build always runs CMS + fingerprint~~
 - **Location:** `package.json:8` - `npm run build` chain
 - **Problem:** ALWAYS executes sync (CMS) → fingerprint → vite. No flag to skip steps
 - **Impact:** Slows local iteration, impossible to run quick smoke build without mutating repo files
 - **Risk Level:** LOW-MEDIUM
 - **Action:** Add environment flags (`SKIP_CMS`, `SKIP_FINGERPRINT`) for conditional builds
+  - **Fix:** Build orchestrator now supports `SKIP_BUILD_STEPS` / `ONLY_BUILD_STEPS`, `--skip`/`--only` CLI flags, and a `build:fast` shortcut so CMS/fingerprint can be skipped without ad-hoc edits (`scripts/build.js`, `package.json`).
 
-#### 9.2 Extraneous packages in node_modules
+#### ~~9.2 Extraneous packages in node_modules~~
 - **Problem:** `npm list` shows extraneous packages not in package.json: `@isaacs/balanced-match`, `@isaacs/brace-expansion`, `@isaacs/cliui`, etc.
 - **Impact:** Potential transitive dependency conflicts, bloated node_modules, unclear dependency tree
 - **Risk Level:** LOW
 - **Action:** Run `npm prune` to remove extraneous packages
+  - **Fix:** A dedicated `deps:prune` script now runs after every install to auto-prune stragglers, keeping `node_modules` aligned with `package-lock.json` by default (`package.json`).
 
 ---
 
 ### 10. Type Safety & Code Quality
 
-#### 10.1 skipLibCheck disabled in tsconfig
+#### ~~10.1 skipLibCheck disabled in tsconfig~~
 - **Location:** `tsconfig.json:7`
 - **Problem:** Sets `"skipLibCheck": false`, forcing TypeScript to check ALL `.d.ts` in node_modules
 - **Impact:** Unusually strict, can cause build failures from third-party type errors outside your control
 - **Risk Level:** LOW-MEDIUM
 - **Action:** Set `"skipLibCheck": true` (recommended practice)
+  - **Fix:** TypeScript now skips `.d.ts` verification via `skipLibCheck: true`, preventing vendor typings from blocking builds while keeping app sources strictly checked (`tsconfig.json`).
 
-#### 10.2 renderHomeWorksGrid mutates counter inside map
+#### ~~10.2 renderHomeWorksGrid mutates counter inside map~~
 - **Location:** `src/components/content/ContentView.tsx:292-356`
 - **Problem:** Declares `let prioritizedHomeImages = 0` (line 293), mutates inside `.map()` callback (302-308)
 - **Impact:** Mixes declarative/imperative styles; refactoring could introduce bugs if map order changes
 - **Risk Level:** LOW
 - **Action:** Use reduce or separate iteration to count declaratively
+  - **Fix:** Home grid priority is computed once via memoized ID sets, so renders stay declarative without `let` counters inside `.map()` (`src/components/content/ContentView.tsx`).
 
 ---
 
 ### 11. Code Duplication
 
-#### 11.1 URL path building duplicated
+#### ~~11.1 URL path building duplicated~~
 - **Locations:** `SearchPanel.tsx:8-13, 120-128` and `Sidebar.tsx:549-557`
 - **Problem:** Both build path labels with `lum.bio/${path.join('/')}` format
 - **Impact:** Maintenance burden; URL format changes require multiple updates
 - **Risk Level:** LOW
 - **Action:** Extract to shared utility in `src/utils/navigation.ts`
+  - **Fix:** Sidebar copy/open URLs now flow through the existing `buildAppUrl` helpers, so folder/page links inherit base path + origin logic from one source (`src/components/layout/Sidebar.tsx`, `src/utils/urlHelpers.ts`).
 
-#### 11.2 Search result selection logic duplicated
+#### ~~11.2 Search result selection logic duplicated~~
 - **Locations:** `SearchPanel.tsx:139-160` and `Sidebar.tsx:184-210`
 - **Problem:** Nearly identical `handleSelect`/`handleSearchResultSelect` functions
 - **Impact:** Duplication makes consistent updates difficult; bugs may only be fixed in one location
 - **Risk Level:** LOW
 - **Action:** Extract to custom hook `useSearchResultHandler` or shared utility
+  - **Fix:** A shared `navigateFromSearchResult` helper now powers both SearchPanel and Sidebar selection flows, ensuring folder/page/lightbox navigation stays in sync (`src/utils/searchNavigation.ts`, `src/components/layout/SearchPanel.tsx`, `src/components/layout/Sidebar.tsx`).
 
 ---
 
 ### 12. Security (Minor)
 
-#### 12.1 Console logs retained in production
+#### ~~12.1 Console logs retained in production~~
 - **Location:** `vite.config.ts:267`
 - **Problem:** `drop_console: false` - all console statements retained in production
 - **Analysis:** 49 console statements across 6 files:
@@ -322,31 +328,35 @@
 - **Impact:** Debugging info visible, minor security concern, ~2-3KB bundle size increase
 - **Risk Level:** LOW (except copyright console which is intentional)
 - **Action:** Set `drop_console: true` and whitelist copyright code OR implement conditional logging wrapper
+  - **Fix:** Production builds now enable `drop_console` while purposeful copyright/domain logs route through a new `secureConsole` shim so the heavy DRM messaging survives minification but stray debug statements disappear (`vite.config.ts`, `src/utils/secureConsole.ts`, `src/utils/domainCheck.ts`, `src/utils/consoleCopyright.ts`, `src/utils/fingerprint.ts`, `src/utils/signature.ts`, `src/data/mockData.ts`).
 
 ---
 
 ### 13. Configuration & Dependencies
 
-#### 13.1 ViteImageOptimizer commented out but dependency remains
+#### ~~13.1 ViteImageOptimizer commented out but dependency remains~~
 - **Location:** `vite.config.ts:5, 193-206` (14 lines commented), `package.json:63`
 - **Problem:** Plugin imported and configured but all commented out, yet package still installed
 - **Impact:** Wastes ~15MB in node_modules, unclear whether optimization intended or deprecated
 - **Risk Level:** LOW
 - **Action:** Enable plugin with proper config OR remove dependency entirely
+  - **Fix:** The dormant plugin import/config were removed altogether so the dependency graph matches reality and installs stay lean (`vite.config.ts`, `package.json`, `package-lock.json`).
 
-#### 13.2 Sidebar inert fallback effect has derived dependencies
+#### ~~13.2 Sidebar inert fallback effect has derived dependencies~~
 - **Location:** `src/components/layout/Sidebar.tsx:336-343`
 - **Problem:** Dependencies include `pinnedFolders.length`, `pinnedPages.length` (derived from useMemo). Any change triggers expensive DOM queries (line 296) for all focusable elements
 - **Impact:** Excessive re-runs of tabindex management
 - **Risk Level:** LOW
 - **Action:** Memoize pinned counts separately or use refs
+  - **Fix:** When native `inert` is unavailable, a MutationObserver now keeps focusable states in sync without watching derived lengths, eliminating expensive re-queries every time sidebar data changes (`src/components/layout/Sidebar.tsx`).
 
-#### 13.3 GitLab CI artifacts explicitly disabled
+#### ~~13.3 GitLab CI artifacts explicitly disabled~~
 - **Location:** `.gitlab-ci.yml:118-128`
 - **Problem:** Build job depends on 5 quality jobs but sets `artifacts: false` for all (commit `cb4cafa`)
 - **Impact:** Build job cannot access artifacts from previous jobs (coverage, test results, generated data)
 - **Risk Level:** LOW (may be intentional for performance)
 - **Action:** Document why artifacts disabled OR re-enable if needed
+  - **Fix:** `needs` dependencies once again download upstream artifacts so the build stage can access coverage, reports, or generated assets without rerunning earlier jobs (`.gitlab-ci.yml`).
 
 ---
 
@@ -366,11 +376,12 @@
 
 ### 15. Content & Data Issues
 
-#### 15.1 `_aggregated.json` only contains empty folders
+#### ~~15.1 `_aggregated.json` only contains empty folders~~
 - **Current state:** 3 top-level folders, 0 work items, 2 pages (About/Contact)
 - **Impact:** ContentView rarely displays anything, undermines navigation experience, most UI paths cannot be validated
 - **Risk Level:** LOW (data issue, not code issue)
 - **Action:** Add sample work items (even placeholders) so UI paths can be validated
+  - **Fix:** New sample works and inline SVG assets are sourced from `src/content/images/*` with fresh integrity metadata, so the aggregated feed now ships three populated folders for testing (`src/content/images/*.json`, `src/content/_aggregated.json`, `public/content/gallery/**`).
 
 ---
 

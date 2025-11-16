@@ -5,6 +5,7 @@
  * Used to detect tampering of critical UI components and business logic.
  */
 
+import { secureWarn } from '@/utils/secureConsole';
 import { computeSHA256Hash } from './integrity';
 
 /**
@@ -102,7 +103,7 @@ export const quickSignatureCheck = (
   const expectedSignature = registry[componentIdentifier];
 
   if (!expectedSignature) {
-    console.warn(
+    secureWarn(
       `[Security] No signature found for component: ${componentIdentifier}`
     );
     return false;

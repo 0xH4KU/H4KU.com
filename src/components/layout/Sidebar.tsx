@@ -16,8 +16,13 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult } from '@/types';
 import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG } from '@/config/constants';
-import { getSafeUrl, buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
-import { getImageGallery, isImageWorkItem } from '@/utils/workItems';
+import {
+  getSafeUrl,
+  buildAppUrl,
+  buildFolderUrl,
+  buildPageUrl,
+} from '@/utils/urlHelpers';
+import { navigateFromSearchResult } from '@/utils/searchNavigation';
 import { FolderTreeItem } from './FolderTreeItem';
 import { ContextMenu } from './ContextMenu';
 import { Tooltip } from './Tooltip';
@@ -115,27 +120,19 @@ const Sidebar: React.FC = () => {
 
   const getItemUrl = useCallback(
     (item: SidebarEntry) => {
-      if (typeof window === 'undefined') {
-        return '';
-      }
-
-      const origin = window.location.origin;
-      const basePath = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
-
       if (item.type === 'folder') {
         const flatFolder = allFolders.find(flat => flat.folder.id === item.id);
         if (!flatFolder) {
-          return origin;
+          return buildAppUrl('/');
         }
-        const folderPath = flatFolder.path.join('/');
-        return `${origin}${basePath}/folder/${folderPath}`;
+        return buildFolderUrl(flatFolder.path);
       }
 
       if (item.type === 'txt') {
-        return `${origin}${basePath}/page/${item.id}`;
+        return buildPageUrl(item.id);
       }
 
-      return origin;
+      return buildAppUrl('/');
     },
     [allFolders]
   );
@@ -236,28 +233,11 @@ const Sidebar: React.FC = () => {
 
   const handleSearchResultSelect = useCallback(
     (result: SearchResult) => {
-      if (result.type === 'folder') {
-        navigateTo(result.folder, result.path);
-      } else if (result.type === 'page') {
-        navigateTo(result.page);
-      } else if (result.type === 'work') {
-        if (result.work.itemType === 'page') {
-          const page: Page = {
-            id: result.work.id,
-            name: result.work.filename,
-            filename: result.work.filename,
-            type: 'txt',
-            content: 'content' in result.work ? result.work.content : '',
-          };
-          navigateTo(page, result.path);
-        } else if (isImageWorkItem(result.work)) {
-          const gallery = getImageGallery(result.folder);
-          if (gallery.length > 0) {
-            openLightbox(result.work, gallery);
-          }
-        }
-      }
-      if (isMobile) {
+      const handled = navigateFromSearchResult(result, {
+        navigateTo,
+        openLightbox,
+      });
+      if (handled && isMobile) {
         closeSidebar();
       }
     },
@@ -356,55 +336,57 @@ const Sidebar: React.FC = () => {
       return;
     }
 
-    const focusableElements =
-      sidebarRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    const container = sidebarRef.current;
 
-    focusableElements.forEach(element => {
-      if (!isSidebarOpen) {
-        if (!element.dataset[DATASET_KEY]) {
-          const existing = element.getAttribute('tabindex');
-          element.dataset[DATASET_KEY] = existing ?? DATASET_NONE;
-        }
-        element.setAttribute('tabindex', '-1');
-        element.setAttribute('aria-hidden', 'true');
-      } else {
-        const stored = element.dataset[DATASET_KEY];
-        if (stored) {
-          if (stored !== DATASET_NONE) {
-            element.setAttribute('tabindex', stored);
-          } else {
-            element.removeAttribute('tabindex');
-          }
-          delete element.dataset[DATASET_KEY];
-        } else {
-          element.removeAttribute('tabindex');
-        }
-        element.removeAttribute('aria-hidden');
-      }
-    });
+    const updateFocusableElements = (disable: boolean) => {
+      const focusableElements =
+        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
 
-    return () => {
       focusableElements.forEach(element => {
-        const stored = element.dataset[DATASET_KEY];
-        if (stored) {
-          if (stored !== DATASET_NONE) {
-            element.setAttribute('tabindex', stored);
+        if (disable) {
+          if (!element.dataset[DATASET_KEY]) {
+            const existing = element.getAttribute('tabindex');
+            element.dataset[DATASET_KEY] = existing ?? DATASET_NONE;
+          }
+          element.setAttribute('tabindex', '-1');
+          element.setAttribute('aria-hidden', 'true');
+        } else {
+          const stored = element.dataset[DATASET_KEY];
+          if (stored) {
+            if (stored !== DATASET_NONE) {
+              element.setAttribute('tabindex', stored);
+            } else {
+              element.removeAttribute('tabindex');
+            }
+            delete element.dataset[DATASET_KEY];
           } else {
             element.removeAttribute('tabindex');
           }
-          delete element.dataset[DATASET_KEY];
+          element.removeAttribute('aria-hidden');
         }
-        element.removeAttribute('aria-hidden');
       });
     };
-  }, [
-    supportsInert,
-    isSidebarOpen,
-    sidebarQuery,
-    sidebarResults.length,
-    pinnedFolders.length,
-    pinnedPages.length,
-  ]);
+
+    updateFocusableElements(!isSidebarOpen);
+
+    let observer: MutationObserver | null = null;
+
+    if (typeof MutationObserver !== 'undefined') {
+      observer = new MutationObserver(() => {
+        updateFocusableElements(!isSidebarOpen);
+      });
+
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    return () => {
+      observer?.disconnect();
+      updateFocusableElements(false);
+    };
+  }, [supportsInert, isSidebarOpen]);
 
   const handleContextMenu = useCallback(
     (event: React.MouseEvent, item: SidebarEntry) => {

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/build.js",
+    "build:fast": "node scripts/build.js --skip=cms,fingerprint",
     "build:data": "node scripts/build-data.js",
     "fingerprint:inject": "node scripts/inject-fingerprint.js",
     "preview": "vite preview",
@@ -28,7 +29,9 @@
     "ci:quality": "bash scripts/ci/check-quality.sh",
     "ci:coverage": "bash scripts/ci/report-coverage.sh",
     "ci:security": "bash scripts/ci/security-scan.sh",
-    "ci:bundle": "bash scripts/ci/check-bundle-size.sh"
+    "ci:bundle": "bash scripts/ci/check-bundle-size.sh",
+    "deps:prune": "npm prune --include=dev",
+    "postinstall": "npm run deps:prune"
   },
   "dependencies": {
     "@sentry/browser": "^8.55.0",
@@ -62,7 +65,6 @@
     "tsx": "^4.15.2",
     "typescript": "^5.4.5",
     "vite": "^7.1.12",
-    "vite-plugin-image-optimizer": "^2.0.3",
     "vite-plugin-sitemap": "^0.8.2",
     "vitest": "^4.0.8"
   }

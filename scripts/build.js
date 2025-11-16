@@ -36,6 +36,7 @@ const viteStep = resolveViteStep();
 
 const steps = [
   {
+    id: 'cms',
     name: 'CMS content sync',
     command: 'node',
     args: [path.join(__dirname, 'cms.js')],
@@ -43,6 +44,7 @@ const steps = [
     skipFlag: '--skip-cms',
   },
   {
+    id: 'fingerprint',
     name: 'Fingerprint injection',
     command: 'node',
     args: [path.join(__dirname, 'inject-fingerprint.js')],
@@ -50,6 +52,7 @@ const steps = [
     skipFlag: '--skip-fingerprint',
   },
   {
+    id: 'vite',
     name: 'Vite production build',
     command: viteStep.command,
     args: viteStep.args,
@@ -58,12 +61,47 @@ const steps = [
   },
 ];
 
-const cliFlags = new Set(process.argv.slice(2));
+const cliArgs = process.argv.slice(2);
+const cliFlags = new Set(cliArgs);
 
 const isTruthy = value => {
   if (!value) return false;
   return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
 };
+
+const normalizeStepId = value =>
+  typeof value === 'string' ? value.trim().toLowerCase() : '';
+
+const parseListValue = value => {
+  if (!value || typeof value !== 'string') {
+    return [];
+  }
+
+  return value
+    .split(',')
+    .map(segment => normalizeStepId(segment))
+    .filter(Boolean);
+};
+
+const collectEnvList = keys =>
+  keys.flatMap(key => parseListValue(process.env[key]));
+
+const collectCliList = flag => {
+  const prefix = `${flag}=`;
+  return cliArgs
+    .filter(arg => arg.startsWith(prefix))
+    .flatMap(arg => parseListValue(arg.slice(prefix.length)));
+};
+
+const skipStepSet = new Set([
+  ...collectEnvList(['SKIP_BUILD_STEPS', 'SKIP_STEPS']),
+  ...collectCliList('--skip'),
+]);
+
+const onlyStepSet = new Set([
+  ...collectEnvList(['ONLY_BUILD_STEPS', 'ONLY_STEPS']),
+  ...collectCliList('--only'),
+]);
 
 const shouldSkip = step => {
   if (step.skipFlag && cliFlags.has(step.skipFlag)) {
@@ -71,6 +109,16 @@ const shouldSkip = step => {
   }
   if (step.skipEnv && isTruthy(process.env[step.skipEnv] || '')) {
     return true;
+  }
+
+  const stepId = normalizeStepId(step.id);
+  if (stepId) {
+    if (onlyStepSet.size > 0 && !onlyStepSet.has(stepId)) {
+      return true;
+    }
+    if (skipStepSet.has(stepId)) {
+      return true;
+    }
   }
   return false;
 };

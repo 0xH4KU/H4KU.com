@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+import { secureLog } from '@/utils/secureConsole';
 
 /**
  * Digital Fingerprint Utility
@@ -280,7 +280,7 @@ export const injectAllFingerprints = (
   }
 
   if (import.meta.env.PROD) {
-    console.log(
+    secureLog(
       `%c🔒 Protected Build ${fp.buildId} (${fp.version})`,
       'color: #888; font-size: 10px'
     );

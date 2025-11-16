@@ -318,13 +318,18 @@ const ContentView: React.FC = () => {
     const sortedHomeWorkItems = sortedHomeItems.filter(
       item => item.itemType !== 'page'
     );
+    const prioritizedHomeImageIds = new Set(
+      sortedHomeItems
+        .filter(item => item.itemType !== 'page')
+        .slice(0, PRIORITY_IMAGE_COUNT)
+        .map(item => item.id)
+    );
     const homeFileBucketSequence =
       typeOrder === 'folders-first'
         ? (['folders', 'pages'] as const)
         : (['pages', 'folders'] as const);
 
     const renderHomeWorksGrid = () => {
-      let prioritizedHomeImages = 0;
       return (
         <m.div
           className={styles['works-grid']}
@@ -336,10 +341,7 @@ const ContentView: React.FC = () => {
           {sortedHomeItems.map(item => {
             const isTextPage = item.itemType === 'page';
             const shouldPrioritize =
-              !isTextPage && prioritizedHomeImages < PRIORITY_IMAGE_COUNT;
-            if (shouldPrioritize) {
-              prioritizedHomeImages += 1;
-            }
+              !isTextPage && prioritizedHomeImageIds.has(item.id);
             const handleClick = isTextPage
               ? () => {
                   const page: Page = {

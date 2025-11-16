@@ -3,7 +3,6 @@ import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-// import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 import sitemap from 'vite-plugin-sitemap';
 
 type AggregatedFolderRecord = {
@@ -218,20 +217,6 @@ const buildFingerprintMeta = {
 export default defineConfig({
   plugins: [
     react(),
-    // ViteImageOptimizer({
-    //   png: {
-    //     quality: 85,
-    //   },
-    //   jpeg: {
-    //     quality: 85,
-    //   },
-    //   jpg: {
-    //     quality: 85,
-    //   },
-    //   webp: {
-    //     quality: 85,
-    //   },
-    // }),
     ...(isVitest
       ? []
       : [
@@ -292,7 +277,7 @@ export default defineConfig({
       },
       compress: {
         passes: 3,
-        drop_console: false,
+        drop_console: true,
         drop_debugger: true,
       },
       format: {

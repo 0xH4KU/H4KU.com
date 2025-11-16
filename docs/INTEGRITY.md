@@ -4,9 +4,8 @@ _How to verify `src/content/_aggregated.json` checksums and respond to tamper wa
 
 ## Status Bar Indicator
 
-- The footer displays `[verified]` when the checksum embedded in `_aggregated.json` matches the payload on disk.
+- The footer displays `[verified]` when `_integrity` / `_integritySHA256` embedded in `_aggregated.json` match the payload on disk.
 - If someone edits the aggregated file without re-running the data builder, the indicator switches to `[tamper detected]` and surfaces actionable guidance.
-- Error boundaries reference the same checksum and include a reference code so production crashes can be correlated with monitoring alerts.
 
 ## CLI Verification
 
@@ -16,11 +15,11 @@ Run the integrity checker whenever you pull new content or before pushing a rele
 npm run integrity:check
 ```
 
-The script recomputes the checksum across `folders`, `images`, `pages`, and `socials` inside `_aggregated.json` and compares it with the persisted `_integrity` field. It exits with a non-zero status when the numbers do not match so CI pipelines can fail fast.
+The script recomputes both hashes across `folders`, `images`, `pages`, and `socials` inside `_aggregated.json` and compares them with `_integrity` and `_integritySHA256`. It exits non-zero when either hash diverges so CI can fail fast.
 
 ### Updating the Checksum
 
-If you intentionally edited JSON under `src/content/**`, regenerate the checksum (and preserve the pretty-printed file) with:
+If you intentionally edited JSON under `src/content/**`, regenerate the checksums (and preserve the pretty-printed file) with:
 
 ```bash
 npm run build:data          # preferred – regenerates everything
@@ -28,7 +27,7 @@ npm run build:data          # preferred – regenerates everything
 npm run integrity:check -- --write
 ```
 
-The `--write` flag only replaces the `_integrity` value; it does not rebuild folders or metadata.
+The `--write` flag only refreshes the stored hashes; it does not rebuild folders or metadata.
 
 ## Responding to Tamper Alerts
 

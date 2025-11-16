@@ -1,6 +1,5 @@
 import { getActiveFingerprint } from './fingerprint';
-
-/* eslint-disable no-console */
+import { secureClear, secureLog, secureWarn } from '@/utils/secureConsole';
 
 /**
  * Console Copyright Notice
@@ -13,7 +12,9 @@ import { getActiveFingerprint } from './fingerprint';
  * Display copyright banner in console
  */
 export const displayConsoleCopyright = (): void => {
-  if (typeof console === 'undefined') return;
+  if (typeof globalThis === 'undefined' || !globalThis.console) {
+    return;
+  }
 
   // ASCII Art Banner
   const banner = `
@@ -39,55 +40,52 @@ export const displayConsoleCopyright = (): void => {
 
   // Clear console (optional - only in production)
   if (import.meta.env.PROD) {
-    console.clear();
+    secureClear();
   }
 
   // Display banner
-  console.log('%c' + banner, styles.banner);
+  secureLog('%c' + banner, styles.banner);
 
   // Main title
-  console.log('%c🔒 PROTECTED SOURCE CODE', styles.title);
+  secureLog('%c🔒 PROTECTED SOURCE CODE', styles.title);
 
-  console.log('%cPersonal Portfolio Website', styles.subtitle);
+  secureLog('%cPersonal Portfolio Website', styles.subtitle);
 
-  console.log('');
+  secureLog('');
 
   // Legal notice
-  console.log('%c⚖️  COPYRIGHT NOTICE', styles.warning);
+  secureLog('%c⚖️  COPYRIGHT NOTICE', styles.warning);
 
-  console.log(
+  secureLog(
     '%cThis website and its source code are protected under copyright law.',
     styles.info
   );
 
-  console.log(
+  secureLog(
     '%cLicense: Limited Personal Source License (LPSL-1.0)',
     styles.license
   );
 
-  console.log('');
+  secureLog('');
 
   // Restrictions
-  console.log('%c❌ RESTRICTIONS:', styles.warning);
+  secureLog('%c❌ RESTRICTIONS:', styles.warning);
 
-  console.log('%c   • Deployment to other domains is PROHIBITED', styles.info);
-  console.log('%c   • Redistribution is NOT PERMITTED', styles.info);
-  console.log('%c   • Commercial use is STRICTLY FORBIDDEN', styles.info);
-  console.log('%c   • Removing attribution is ILLEGAL', styles.info);
+  secureLog('%c   • Deployment to other domains is PROHIBITED', styles.info);
+  secureLog('%c   • Redistribution is NOT PERMITTED', styles.info);
+  secureLog('%c   • Commercial use is STRICTLY FORBIDDEN', styles.info);
+  secureLog('%c   • Removing attribution is ILLEGAL', styles.info);
 
-  console.log('');
+  secureLog('');
 
   // Permissions
-  console.log('%c✅ ALLOWED:', styles.warning);
+  secureLog('%c✅ ALLOWED:', styles.warning);
 
-  console.log('%c   • Viewing for personal reference', styles.info);
-  console.log('%c   • Learning from implementation', styles.info);
-  console.log(
-    '%c   • Forking for study purposes (not deployment)',
-    styles.info
-  );
+  secureLog('%c   • Viewing for personal reference', styles.info);
+  secureLog('%c   • Learning from implementation', styles.info);
+  secureLog('%c   • Forking for study purposes (not deployment)', styles.info);
 
-  console.log('');
+  secureLog('');
 
   // Build info
   if (import.meta.env.PROD) {
@@ -98,61 +96,63 @@ export const displayConsoleCopyright = (): void => {
       import.meta.env.VITE_BUILD_DATE ||
       new Date(fingerprint.timestamp).toISOString();
 
-    console.log('%c📦 BUILD INFO:', styles.warning);
-    console.log(`%c   Build ID: ${buildId}`, styles.license);
-    console.log(`%c   Build Date: ${buildDate}`, styles.license);
+    secureLog('%c📦 BUILD INFO:', styles.warning);
+    secureLog(`%c   Build ID: ${buildId}`, styles.license);
+    secureLog(`%c   Build Date: ${buildDate}`, styles.license);
     if (fingerprint.signature) {
-      console.log(`%c   Signature: ${fingerprint.signature}`, styles.license);
+      secureLog(`%c   Signature: ${fingerprint.signature}`, styles.license);
     }
-    console.log(
+    secureLog(
       '%c   Note: This build is fingerprinted and can be traced.',
       styles.info
     );
 
-    console.log('');
+    secureLog('');
   }
 
   // Contact info
-  console.log('%c📧 LICENSING INQUIRIES:', styles.warning);
-  console.log(
+  secureLog('%c📧 LICENSING INQUIRIES:', styles.warning);
+  secureLog(
     '%c   For licensing or permission requests, please open an issue via:',
     styles.info
   );
-  console.log(
+  secureLog(
     '%c   GitHub: https://github.com/cwlum/lum.bio/issues',
     styles.license
   );
-  console.log(
+  secureLog(
     '%c   GitLab: https://gitlab.com/lummuu/lum.bio/-/issues',
     styles.license
   );
 
-  console.log('');
+  secureLog('');
 
   // Footer
-  console.log(
+  secureLog(
     '%c────────────────────────────────────────────────────────────────',
     'color: #333;'
   );
-  console.log(
+  secureLog(
     `%c© ${new Date().getFullYear()} lum. All rights reserved.`,
     styles.license
   );
-  console.log(
+  secureLog(
     '%cUnauthorized use will result in legal action.',
     'color: #ff0000; font-weight: bold;'
   );
-  console.log('');
+  secureLog('');
 };
 
 /**
  * Display a compact version for development
  */
 export const displayDevCopyright = (): void => {
-  if (typeof console === 'undefined') return;
+  if (typeof globalThis === 'undefined' || !globalThis.console) {
+    return;
+  }
 
-  console.log('%c🔒 Protected by LPSL-1.0', 'color: #888; font-size: 10px;');
-  console.log(
+  secureLog('%c🔒 Protected by LPSL-1.0', 'color: #888; font-size: 10px;');
+  secureLog(
     '%cThis code is protected by copyright law. See LICENSE.md for details.',
     'color: #666; font-size: 9px;'
   );
@@ -162,14 +162,14 @@ export const displayDevCopyright = (): void => {
  * Anti-debugging message
  */
 export const displayAntiDebugWarning = (): void => {
-  if (typeof console === 'undefined') return;
+  if (typeof globalThis === 'undefined' || !globalThis.console) {
+    return;
+  }
 
-  console.warn(
+  secureWarn(
     '%c⚠️  DEBUGGER DETECTED',
     'font-size: 16px; color: #ff6600; font-weight: bold;'
   );
-  console.warn('This application employs anti-tampering measures.');
-  console.warn(
-    'Unauthorized modification or reverse engineering is prohibited.'
-  );
+  secureWarn('This application employs anti-tampering measures.');
+  secureWarn('Unauthorized modification or reverse engineering is prohibited.');
 };

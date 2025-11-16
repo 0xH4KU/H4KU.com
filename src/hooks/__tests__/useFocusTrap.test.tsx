@@ -37,11 +37,7 @@ const FocusTrapHarness: React.FC<HarnessProps> = ({
     <div>
       <button data-testid="outside">Outside</button>
       {renderContainer ? (
-        <div
-          ref={containerRef}
-          data-testid="trap"
-          tabIndex={containerTabIndex}
-        >
+        <div ref={containerRef} data-testid="trap" tabIndex={containerTabIndex}>
           {hasFocusableChildren ? (
             <>
               <button data-testid="first">First</button>
