@@ -2,12 +2,49 @@ import { useState, useEffect, useRef } from 'react';
 
 const isBrowser = () => typeof window !== 'undefined' && !!window.localStorage;
 
+interface UseLocalStorageOptions<T> {
+  sanitize?: (value: unknown, fallback: T) => T;
+}
+
 export function useLocalStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
+  options?: UseLocalStorageOptions<T>
 ): [T, (value: T | ((prev: T) => T)) => void] {
   const initialValueRef = useRef(initialValue);
   initialValueRef.current = initialValue;
+
+  const applySanitizer = (value: unknown, fallback: T): T => {
+    if (!options?.sanitize) {
+      return value as T;
+    }
+    try {
+      return options.sanitize(value, fallback);
+    } catch (error) {
+      console.error(`Error sanitizing localStorage key "${key}":`, error);
+      return fallback;
+    }
+  };
+
+  const persistSanitizedValue = (original: unknown, sanitized: T) => {
+    if (!options?.sanitize || !isBrowser()) {
+      return;
+    }
+
+    if (Object.is(original as T, sanitized)) {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(key, JSON.stringify(sanitized));
+    } catch (error) {
+      console.error(
+        `Error persisting sanitized localStorage key "${key}":`,
+        error
+      );
+    }
+  };
+
   const readValue = () => {
     if (!isBrowser()) {
       return initialValue;
@@ -15,7 +52,13 @@ export function useLocalStorage<T>(
 
     try {
       const item = window.localStorage.getItem(key);
-      return item ? (JSON.parse(item) as T) : initialValue;
+      if (!item) {
+        return initialValue;
+      }
+      const parsed = JSON.parse(item) as unknown;
+      const sanitized = applySanitizer(parsed, initialValue);
+      persistSanitizedValue(parsed, sanitized);
+      return sanitized;
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error);
       return initialValue;
@@ -27,16 +70,17 @@ export function useLocalStorage<T>(
   storedValueRef.current = storedValue;
 
   const setValue = (value: T | ((prev: T) => T)) => {
-    const valueToStore =
+    const nextValue =
       value instanceof Function ? value(storedValueRef.current) : value;
-    setStoredValue(valueToStore);
+    const sanitizedValue = applySanitizer(nextValue, initialValueRef.current);
+    setStoredValue(sanitizedValue);
 
     if (!isBrowser()) {
       return;
     }
 
     try {
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      window.localStorage.setItem(key, JSON.stringify(sanitizedValue));
     } catch (error) {
       console.error(`Error setting localStorage key "${key}":`, error);
     }
@@ -57,7 +101,8 @@ export function useLocalStorage<T>(
           setStoredValue(initialValueRef.current);
           return;
         }
-        setStoredValue(JSON.parse(event.newValue));
+        const parsed = JSON.parse(event.newValue) as unknown;
+        setStoredValue(applySanitizer(parsed, initialValueRef.current));
       } catch (error) {
         console.error(`Error parsing storage event for key "${key}":`, error);
         setStoredValue(initialValueRef.current);

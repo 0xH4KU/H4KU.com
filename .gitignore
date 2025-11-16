@@ -3,6 +3,7 @@
 
 # Build artifacts
 /dist
+/coverage
 .cache/
 .build-manifest.json
 .env.production.local
@@ -23,14 +24,6 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
-
-# Private documentation (setup guides with sensitive info)
-EmailJS*.md
-reCAPTCHA*.md
-Cloudflare-Pages-*.md
-如何添加作品.md
-SETUP.md
-COMPLETED_TODAY.md
 
 # OS files
 .DS_Store

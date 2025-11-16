@@ -23,12 +23,12 @@
 | 4.2 | ✳️ Resolved | `useLocalStorage` now resets corrupted keys to the initial value and removes them from storage on parse errors. |
 | 4.3 | ✳️ Resolved | `scripts/cms.js` wraps file deletions in try/catch and surfaces human-readable permission errors before exiting. |
 | 4.4 | ✳️ Resolved | Contact view wraps the lazy ContactForm in `ErrorBoundary` + Suspense so chunk failures surface friendly fallbacks. |
-| 5.1 | ✅ Still valid | Lightbox still receives folders’ entire `items` arrays (including text pages) and closes via guard (`SearchPanel.tsx:139-158`, `Sidebar.tsx:184-210`, `Lightbox.tsx:38-44`). |
-| 5.2 | ✅ Still valid | `useCrosshair` checks for `.lightbox`, but CSS modules rename the class, so ESC toggles even when overlays are open (`src/hooks/useCrosshair.ts:93-120`, `src/components/overlay/Lightbox.module.css`). |
-| 5.3 | ✖️ Not reproducible | Sidebar context clamps and exposes normalized widths, so inline styles already receive safe values (`src/contexts/SidebarContext.tsx:24-88`, `Sidebar.tsx:575-582`). |
-| 5.4 | ✅ Still valid | Search metadata still emits `lum.bio/<path>` without `/folder` or `/page` prefixes, producing dead links (`SearchPanel.tsx:8-13`, `Sidebar.tsx:541-558`). |
-| 6.1 | ✖️ Not reproducible | `NavigationProvider` resets `isInitialized` on mount, so remounts (StrictMode/HMR) re-parse the URL correctly (`src/contexts/NavigationContext.tsx:51-124`). |
-| 6.2 | ✅ Still valid | Drag handlers still call `applySidebarWidth` on every pointer move without throttling/debouncing writes (`Sidebar.tsx:220-258`). |
+| 5.1 | ✳️ Resolved | Lightbox inputs now filter gallery items to `itemType === 'work'` so navigation never encounters text entries (`SearchPanel.tsx`, `Sidebar.tsx`, `src/utils/workItems.ts`). |
+| 5.2 | ✳️ Resolved | Lightbox exposes a stable `data-overlay` + dialog semantics and `useCrosshair` checks those attributes before toggling ESC (`src/components/overlay/Lightbox.tsx`, `src/hooks/useCrosshair.ts`). |
+| 5.3 | ✳️ Resolved | Sidebar renders the clamped width and corrupt localStorage values are sanitized + rewritten before hydration (`src/contexts/SidebarContext.tsx`, `src/hooks/useLocalStorage.ts`, `Sidebar.tsx`). |
+| 5.4 | ✳️ Resolved | Search metadata now uses real `/folder/...` & `/page/...` URLs derived via `URL` helpers, so copied paths are valid (`src/components/layout/SearchPanel.tsx`, `Sidebar.tsx`, `src/utils/urlHelpers.ts`). |
+| 6.1 | ✳️ Resolved | NavigationProvider replays URL parsing on every `pathname` change with history-loop guards, so remounts and back/forward events hydrate correctly (`src/contexts/NavigationContext.tsx`). |
+| 6.2 | ✳️ Resolved | Sidebar drag writes run through `requestAnimationFrame` + debounced persistence to avoid high-frequency `localStorage` churn (`Sidebar.tsx`, `src/contexts/SidebarContext.tsx`). |
 | 7.1 | ✅ Still valid | Search continues to return unbounded result sets for broad queries (`src/contexts/SearchContext.tsx:137-211`). |
 | 7.2 | ✅ Still valid | Global keydown listener depends on eleven values and reattaches frequently, impacting performance (`Sidebar.tsx:405-489`). |
 | 7.3 | ✅ Still valid | `LazyImage` registers the IntersectionObserver even for `priority` images that already load eagerly (`src/components/common/LazyImage.tsx:96-155`). |
@@ -143,51 +143,33 @@
 
 ### 5. Interaction Bugs
 
-#### 5.1 Lightbox receives non-image entries
-- **Location:** `src/components/layout/SearchPanel.tsx:139-158`, `Sidebar.tsx:184-210`
-- **Problem:** `openLightbox` called with ALL `folder.items` including text pages. When navigation reaches `itemType === 'page'`, `Lightbox.tsx:38-45` closes itself (guard clause)
-- **Impact:** Users think lightbox is broken when next/prev buttons suddenly exit
-- **Risk Level:** MEDIUM-HIGH
-- **Action:** Filter to `item.itemType === 'work'` before invoking `openLightbox`; only show navigation when ≥2 images exist
+#### ~~5.1 Lightbox receives non-image entries~~
+- **Fix:** SearchPanel and Sidebar now build galleries with `item.itemType === 'work'` via the new `getImageGallery` helper before calling `openLightbox`, so navigation never ejects on text slides.
+  - **Files:** `src/components/layout/SearchPanel.tsx`, `src/components/layout/Sidebar.tsx`, `src/utils/workItems.ts`
 
-#### 5.2 Crosshair ESC guard ineffective
-- **Location:** `useCrosshair.ts:93-121`
-- **Problem:** Tries to detect open modals by querying `.lightbox`. CSS modules rename classes (see `Lightbox.module.css`), so selector never matches
-- **Impact:** Pressing Esc while Search/Lightbox open still toggles crosshair, causing accessibility issues
-- **Risk Level:** MEDIUM
-- **Action:** Add stable hook (`data-overlay="lightbox"` or `aria-modal="true"`) and query that instead
+#### ~~5.2 Crosshair ESC guard ineffective~~
+- **Fix:** Lightbox advertises `role="dialog"` plus `data-overlay="lightbox"`, and `useCrosshair` checks those selectors before toggling, so ESC no longer disables overlays accidentally.
+  - **Files:** `src/components/overlay/Lightbox.tsx`, `src/hooks/useCrosshair.ts`
 
-#### 5.3 Sidebar width renders unclamped value
-- **Location:** `Sidebar.tsx:575-583`
-- **Problem:** `SidebarContext` saves clamped width, but Sidebar passes raw `sidebarWidth` to inline style
-- **Impact:** If localStorage contains extreme value (900px), first render pushes content off screen before React updates state
-- **Risk Level:** MEDIUM
-- **Action:** Use `normalizedSidebarWidth` for rendering and sanitize localStorage before reading
+#### ~~5.3 Sidebar width renders unclamped value~~
+- **Fix:** `useLocalStorage` sanitizes persisted widths up front, `SidebarContext` debounces persistence, and `Sidebar.tsx` renders the normalized width so first paint never flashes a 900px sidebar.
+  - **Files:** `src/hooks/useLocalStorage.ts`, `src/contexts/SidebarContext.tsx`, `src/components/layout/Sidebar.tsx`
 
-#### 5.4 Search metadata shows unusable paths
-- **Location:** SearchPanel and Sidebar search results
-- **Problem:** Hard-coded as `lum.bio/${path.join('/')}` without `/folder/` or `/page/` prefixes
-- **Impact:** Copying hint or using screen reader yields invalid URL (e.g., `lum.bio/about` vs actual `/page/about`)
-- **Risk Level:** MEDIUM
-- **Action:** Compute URLs via `new URL(..., window.location.origin)` and prepend correct route segment
+#### ~~5.4 Search metadata shows unusable paths~~
+- **Fix:** Shared URL helpers now format search labels with absolute `/folder/...` or `/page/...` routes (respecting `BASE_URL`), so copied hints and screen readers match real navigation.
+  - **Files:** `src/utils/urlHelpers.ts`, `src/components/layout/SearchPanel.tsx`, `src/components/layout/Sidebar.tsx`
 
 ---
 
 ### 6. Race Conditions & Timing Issues
 
-#### 6.1 NavigationContext doesn't reinitialize on remount
-- **Location:** `src/contexts/NavigationContext.tsx:51, 84-124`
-- **Problem:** `isInitialized` set to `true` after first URL parse. If provider unmounts/remounts (React 18 StrictMode, HMR), initialization doesn't run again
-- **Impact:** URL parsing skipped on remount, navigation state may be incorrect
-- **Risk Level:** MEDIUM-HIGH
-- **Action:** Move initialization to useEffect with empty deps OR reset state on mount
+#### ~~6.1 NavigationContext doesn't reinitialize on remount~~
+- **Fix:** History sync now watches every `pathname` change with a pending-update guard, so remounts, back/forward, and concurrent renders always re-parse the URL before rendering.
+  - **File:** `src/contexts/NavigationContext.tsx`
 
-#### 6.2 Sidebar resize not throttled during drag
-- **Location:** `src/components/layout/Sidebar.tsx:220-258`
-- **Problem:** Calls `applySidebarWidth` on EVERY mouse/touch move (lines 226-236) without throttling
-- **Impact:** Performance degradation, excessive localStorage I/O on every pixel of movement
-- **Risk Level:** MEDIUM
-- **Action:** Throttle resize updates (requestAnimationFrame) and debounce localStorage writes
+#### ~~6.2 Sidebar resize not throttled during drag~~
+- **Fix:** Drag handlers batch pointer movements through `requestAnimationFrame` and `SidebarContext` debounces persistence, eliminating per-pixel `localStorage` writes during resizes.
+  - **Files:** `src/components/layout/Sidebar.tsx`, `src/contexts/SidebarContext.tsx`
 
 ---
 

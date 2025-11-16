@@ -16,7 +16,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult } from '@/types';
 import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG } from '@/config/constants';
-import { getSafeUrl } from '@/utils/urlHelpers';
+import { getSafeUrl, buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
+import { getImageGallery, isImageWorkItem } from '@/utils/workItems';
 import { FolderTreeItem } from './FolderTreeItem';
 import { ContextMenu } from './ContextMenu';
 import { Tooltip } from './Tooltip';
@@ -63,9 +64,10 @@ const Sidebar: React.FC = () => {
   const { folders, pages, socials } = mockData;
   const isMobile =
     width !== undefined && width < SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
-
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const resizeHandleRef = useRef<HTMLDivElement | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
+  const pendingDragWidthRef = useRef<number | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -181,6 +183,34 @@ const Sidebar: React.FC = () => {
     [setSidebarWidth]
   );
 
+  const flushDragWidth = useCallback(() => {
+    if (pendingDragWidthRef.current === null) {
+      return;
+    }
+    applySidebarWidth(pendingDragWidthRef.current);
+    pendingDragWidthRef.current = null;
+  }, [applySidebarWidth]);
+
+  const scheduleDragUpdate = useCallback(
+    (nextWidth: number) => {
+      pendingDragWidthRef.current = nextWidth;
+      if (typeof window === 'undefined') {
+        flushDragWidth();
+        return;
+      }
+
+      if (dragFrameRef.current !== null) {
+        return;
+      }
+
+      dragFrameRef.current = window.requestAnimationFrame(() => {
+        flushDragWidth();
+        dragFrameRef.current = null;
+      });
+    },
+    [flushDragWidth]
+  );
+
   const handleSearchResultSelect = useCallback(
     (result: SearchResult) => {
       if (result.type === 'folder') {
@@ -197,9 +227,11 @@ const Sidebar: React.FC = () => {
             content: 'content' in result.work ? result.work.content : '',
           };
           navigateTo(page, result.path);
-        } else {
-          const gallery = result.folder.items || [];
-          openLightbox(result.work, gallery);
+        } else if (isImageWorkItem(result.work)) {
+          const gallery = getImageGallery(result.folder);
+          if (gallery.length > 0) {
+            openLightbox(result.work, gallery);
+          }
         }
       }
       if (isMobile) {
@@ -220,11 +252,11 @@ const Sidebar: React.FC = () => {
   // Handle sidebar resize
   useEffect(() => {
     if (!isDragging) {
-      return;
+      return undefined;
     }
 
     const handleMouseMove = (event: MouseEvent) => {
-      applySidebarWidth(event.clientX);
+      scheduleDragUpdate(event.clientX);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
@@ -232,12 +264,17 @@ const Sidebar: React.FC = () => {
         return;
       }
       const touch = event.touches[0];
-      applySidebarWidth(touch.clientX);
+      scheduleDragUpdate(touch.clientX);
       event.preventDefault();
     };
 
     const stopDrag = () => {
       setIsDragging(false);
+      flushDragWidth();
+      if (dragFrameRef.current !== null && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(dragFrameRef.current);
+        dragFrameRef.current = null;
+      }
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -254,8 +291,12 @@ const Sidebar: React.FC = () => {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', stopDrag);
       document.removeEventListener('touchcancel', stopDrag);
+      if (dragFrameRef.current !== null && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(dragFrameRef.current);
+        dragFrameRef.current = null;
+      }
     };
-  }, [applySidebarWidth, isDragging]);
+  }, [flushDragWidth, isDragging, scheduleDragUpdate]);
 
   const handleResizeHandleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -546,15 +587,18 @@ const Sidebar: React.FC = () => {
     switch (result.type) {
       case 'folder':
         label = result.folder.name;
-        meta = `Folder • lum.bio/${result.path.join('/')}`;
+        meta = `Folder • ${buildFolderUrl(result.path)}`;
         break;
       case 'page':
         label = result.page.name;
-        meta = `Text • lum.bio/${result.page.id}`;
+        meta = `Text • ${buildPageUrl(result.page.id)}`;
         break;
       case 'work':
         label = result.work.filename;
-        meta = `${result.work.itemType === 'page' ? 'Text' : 'Image'} • lum.bio/${result.path.join('/')}`;
+        meta =
+          result.work.itemType === 'page'
+            ? `Text • ${buildPageUrl(result.work.id)}`
+            : `Image • ${buildFolderUrl(result.path)}`;
         break;
     }
 
@@ -578,7 +622,7 @@ const Sidebar: React.FC = () => {
       ref={sidebarRef}
       className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
       style={{
-        width: isMobile ? undefined : sidebarWidth,
+        width: isMobile ? undefined : normalizedSidebarWidth,
       }}
       aria-hidden={!isSidebarOpen}
       {...(supportsInert && !isSidebarOpen && { inert: true })}

@@ -8,7 +8,7 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
+import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface SidebarContextType {
@@ -53,12 +53,24 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(getInitialSidebarState);
-  const [sidebarWidth, setSidebarWidthRaw] = useLocalStorage<number>(
+  const [storedSidebarWidth, setStoredSidebarWidth] = useLocalStorage<number>(
     STORAGE_KEYS.SIDEBAR_WIDTH,
-    SIDEBAR_CONFIG.DEFAULT_WIDTH
+    SIDEBAR_CONFIG.DEFAULT_WIDTH,
+    {
+      sanitize: (value, fallback) => {
+        if (typeof value !== 'number' || Number.isNaN(value)) {
+          return fallback;
+        }
+        return clampSidebarWidthValue(value);
+      },
+    }
   );
-  const sidebarWidthSetterRef = useRef(setSidebarWidthRaw);
-  sidebarWidthSetterRef.current = setSidebarWidthRaw;
+  const [sidebarWidth, setSidebarWidthState] = useState(() =>
+    clampSidebarWidthValue(storedSidebarWidth)
+  );
+  const sidebarWidthRef = useRef(sidebarWidth);
+  sidebarWidthRef.current = sidebarWidth;
+  const persistTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedFolderIds, setExpandedFolderIds] = useLocalStorage<string[]>(
     STORAGE_KEYS.EXPANDED_FOLDERS,
     []
@@ -77,14 +89,49 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
   const normalizedSidebarWidth = clampSidebarWidthValue(sidebarWidth);
 
   useEffect(() => {
-    if (normalizedSidebarWidth !== sidebarWidth) {
-      sidebarWidthSetterRef.current(normalizedSidebarWidth);
-    }
-  }, [normalizedSidebarWidth, sidebarWidth]);
+    setSidebarWidthState(clampSidebarWidthValue(storedSidebarWidth));
+  }, [storedSidebarWidth]);
 
-  const setSidebarWidth = useCallback((nextWidth: number) => {
-    sidebarWidthSetterRef.current(clampSidebarWidthValue(nextWidth));
-  }, []);
+  useEffect(() => {
+    sidebarWidthRef.current = sidebarWidth;
+  }, [sidebarWidth]);
+
+  const flushPendingPersist = useCallback(() => {
+    if (persistTimeoutRef.current) {
+      clearTimeout(persistTimeoutRef.current);
+      persistTimeoutRef.current = null;
+      setStoredSidebarWidth(sidebarWidthRef.current);
+    }
+  }, [setStoredSidebarWidth]);
+
+  const schedulePersist = useCallback(
+    (value: number) => {
+      if (persistTimeoutRef.current) {
+        clearTimeout(persistTimeoutRef.current);
+      }
+      persistTimeoutRef.current = setTimeout(() => {
+        setStoredSidebarWidth(value);
+        persistTimeoutRef.current = null;
+      }, DEBOUNCE_DELAYS.RESIZE);
+    },
+    [setStoredSidebarWidth]
+  );
+
+  useEffect(
+    () => () => {
+      flushPendingPersist();
+    },
+    [flushPendingPersist]
+  );
+
+  const setSidebarWidth = useCallback(
+    (nextWidth: number) => {
+      const clamped = clampSidebarWidthValue(nextWidth);
+      setSidebarWidthState(prev => (prev === clamped ? prev : clamped));
+      schedulePersist(clamped);
+    },
+    [schedulePersist]
+  );
 
   const updateExpandedFolders = useCallback(
     (updater: (current: Set<string>) => void) => {
