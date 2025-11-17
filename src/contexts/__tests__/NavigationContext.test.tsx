@@ -429,7 +429,6 @@ describe('NavigationProvider', () => {
 
     expect(result.current.currentPath).toEqual(['home', 'mystery']);
   });
-
 });
 
 describe('useNavigation', () => {

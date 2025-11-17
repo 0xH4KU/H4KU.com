@@ -77,8 +77,7 @@ const Sidebar: React.FC = () => {
   } = useSidebarContext();
   const { openLightbox } = useLightbox();
   const { runSearch } = useSearchExecutor();
-  const { activePath, navigateTo, resetToHome, allFolders } =
-    useNavigation();
+  const { activePath, navigateTo, resetToHome, allFolders } = useNavigation();
   const { width } = useWindowSize();
   const { folders, pages, socials } = mockData;
   const isMobile =

@@ -30,7 +30,8 @@ export const LightboxProvider = ({ children }: { children: ReactNode }) => {
 
   const openLightbox = useCallback((image: WorkItem, gallery: WorkItem[]) => {
     const filteredGallery = getImageGallery({ items: gallery });
-    const targetGallery = filteredGallery.length > 0 ? filteredGallery : gallery;
+    const targetGallery =
+      filteredGallery.length > 0 ? filteredGallery : gallery;
     const index = targetGallery.findIndex(item => item.id === image.id);
     setLightboxGallery(targetGallery);
     setLightboxIndex(index >= 0 ? index : 0);
@@ -59,8 +60,7 @@ export const LightboxProvider = ({ children }: { children: ReactNode }) => {
     setLightboxGallery(currentGallery => {
       if (currentGallery.length === 0) return currentGallery;
       setLightboxIndex(prev => {
-        const next =
-          (prev - 1 + currentGallery.length) % currentGallery.length;
+        const next = (prev - 1 + currentGallery.length) % currentGallery.length;
         setLightboxImage(currentGallery[next]);
         return next;
       });
