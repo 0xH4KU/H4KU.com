@@ -34,7 +34,7 @@
     "postinstall": "npm run deps:prune"
   },
   "dependencies": {
-    "@sentry/browser": "^10.25.0",
+    "@sentry/browser": "^8.55.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.552.0",
     "react": "^19.2.0",

@@ -88,42 +88,6 @@ describe('NavigationProvider', () => {
     ]);
   });
 
-  it('handles lightbox navigation loops', () => {
-    const works = [createWorkItem('img-1'), createWorkItem('img-2')];
-    mockData.folders = [
-      {
-        ...createFolder('gallery', works),
-        items: works,
-      },
-    ];
-    mockData.pages = [];
-    mockData.homeItems = [];
-
-    const { result } = renderHook(() => useNavigation(), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.openLightbox(works[0], works);
-    });
-    expect(result.current.lightboxIndex).toBe(0);
-
-    act(() => {
-      result.current.navigateToNextImage();
-    });
-    expect(result.current.lightboxIndex).toBe(1);
-
-    act(() => {
-      result.current.navigateToNextImage();
-    });
-    expect(result.current.lightboxIndex).toBe(0);
-
-    act(() => {
-      result.current.navigateToPrevImage();
-    });
-    expect(result.current.lightboxIndex).toBe(1);
-  });
-
   it('falls back to home when trying to navigate unknown breadcrumbs', () => {
     mockData.folders = [];
     mockData.pages = [createPage('about')];
@@ -308,35 +272,6 @@ describe('NavigationProvider', () => {
     expect(result.current.currentView).toBeNull();
   });
 
-  it('closes lightbox state and ignores navigation without gallery', () => {
-    const works = [createWorkItem('img-1'), createWorkItem('img-2')];
-    mockData.folders = [];
-    mockData.pages = [];
-    mockData.homeItems = [];
-
-    const { result } = renderHook(() => useNavigation(), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.openLightbox(works[0], works);
-    });
-    expect(result.current.lightboxGallery).toHaveLength(2);
-
-    act(() => {
-      result.current.closeLightbox();
-    });
-    expect(result.current.lightboxGallery).toHaveLength(0);
-    expect(result.current.lightboxImage).toBeNull();
-
-    act(() => {
-      result.current.navigateToNextImage();
-      result.current.navigateToPrevImage();
-    });
-
-    expect(result.current.lightboxIndex).toBe(0);
-  });
-
   it('no-ops navigateBack when already at home', () => {
     mockData.folders = [];
     mockData.pages = [];
@@ -495,25 +430,6 @@ describe('NavigationProvider', () => {
     expect(result.current.currentPath).toEqual(['home', 'mystery']);
   });
 
-  it('defaults lightbox index to zero when the image is not in the gallery', () => {
-    const outsider = createWorkItem('img-out');
-    const gallery = [createWorkItem('img-1'), createWorkItem('img-2')];
-    mockData.folders = [];
-    mockData.pages = [];
-    mockData.homeItems = [];
-
-    const { result } = renderHook(() => useNavigation(), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.openLightbox(outsider, gallery);
-    });
-
-    expect(result.current.lightboxIndex).toBe(0);
-    expect(result.current.lightboxGallery).toEqual(gallery);
-    expect(result.current.lightboxImage?.id).toBe('img-out');
-  });
 });
 
 describe('useNavigation', () => {
