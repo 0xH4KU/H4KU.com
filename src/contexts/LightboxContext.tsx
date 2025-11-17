@@ -4,6 +4,8 @@ import {
   useContext,
   useMemo,
   useState,
+  useEffect,
+  useRef,
   ReactNode,
 } from 'react';
 import { WorkItem } from '@/types';
@@ -27,6 +29,11 @@ export const LightboxProvider = ({ children }: { children: ReactNode }) => {
   const [lightboxImage, setLightboxImage] = useState<WorkItem | null>(null);
   const [lightboxGallery, setLightboxGallery] = useState<WorkItem[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const galleryRef = useRef<WorkItem[]>([]);
+
+  useEffect(() => {
+    galleryRef.current = lightboxGallery;
+  }, [lightboxGallery]);
 
   const openLightbox = useCallback((image: WorkItem, gallery: WorkItem[]) => {
     const filteredGallery = getImageGallery({ items: gallery });
@@ -45,26 +52,26 @@ export const LightboxProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const navigateToNextImage = useCallback(() => {
-    setLightboxGallery(currentGallery => {
-      if (currentGallery.length === 0) return currentGallery;
-      setLightboxIndex(prev => {
-        const next = (prev + 1) % currentGallery.length;
-        setLightboxImage(currentGallery[next]);
-        return next;
-      });
-      return currentGallery;
+    setLightboxIndex(prev => {
+      const currentGallery = galleryRef.current;
+      if (currentGallery.length === 0) {
+        return prev;
+      }
+      const next = (prev + 1) % currentGallery.length;
+      setLightboxImage(currentGallery[next]);
+      return next;
     });
   }, []);
 
   const navigateToPrevImage = useCallback(() => {
-    setLightboxGallery(currentGallery => {
-      if (currentGallery.length === 0) return currentGallery;
-      setLightboxIndex(prev => {
-        const next = (prev - 1 + currentGallery.length) % currentGallery.length;
-        setLightboxImage(currentGallery[next]);
-        return next;
-      });
-      return currentGallery;
+    setLightboxIndex(prev => {
+      const currentGallery = galleryRef.current;
+      if (currentGallery.length === 0) {
+        return prev;
+      }
+      const next = (prev - 1 + currentGallery.length) % currentGallery.length;
+      setLightboxImage(currentGallery[next]);
+      return next;
     });
   }, []);
 
