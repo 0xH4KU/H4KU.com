@@ -5,6 +5,7 @@ import paperIcon from '@/assets/paper.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSortOrder } from '@/contexts/SortContext';
+import { useLightbox } from '@/contexts/LightboxContext';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
@@ -39,8 +40,9 @@ type NavigableItem = Folder | Page;
 const PRIORITY_IMAGE_COUNT = 2;
 
 const ContentView: React.FC = () => {
-  const { currentView, currentPath, navigateTo, openLightbox, navigateBack } =
+  const { currentView, currentPath, navigateTo, navigateBack } =
     useNavigation();
+  const { openLightbox } = useLightbox();
   const { theme } = useTheme();
   const { sortOrder, typeOrder } = useSortOrder();
   const prefersReducedMotion = useReducedMotion();

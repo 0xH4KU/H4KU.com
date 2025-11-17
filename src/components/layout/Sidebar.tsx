@@ -11,6 +11,7 @@ import folderIcon from '@/assets/folder.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSearchExecutor } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
+import { useLightbox } from '@/contexts/LightboxContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { useDebounce } from '@/hooks/useDebounce';
 import { mockData } from '@/data/mockData';
@@ -74,8 +75,9 @@ const Sidebar: React.FC = () => {
     sidebarWidth,
     setSidebarWidth,
   } = useSidebarContext();
+  const { openLightbox } = useLightbox();
   const { runSearch } = useSearchExecutor();
-  const { activePath, navigateTo, openLightbox, resetToHome, allFolders } =
+  const { activePath, navigateTo, resetToHome, allFolders } =
     useNavigation();
   const { width } = useWindowSize();
   const { folders, pages, socials } = mockData;

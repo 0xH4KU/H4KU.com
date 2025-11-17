@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from 'react';
 import { mockData } from '@/data/mockData';
-import { Folder, Page, ViewType, WorkItem } from '@/types';
+import { Folder, Page, ViewType } from '@/types';
 import {
   findFolderById,
   findFolderByPath,
@@ -23,9 +23,6 @@ import { useHistoryNavigation } from '@/hooks/useHistoryNavigation';
 interface NavigationContextValue {
   currentPath: string[];
   currentView: ViewType | null;
-  lightboxImage: WorkItem | null;
-  lightboxGallery: WorkItem[];
-  lightboxIndex: number;
   allFolders: ReturnType<typeof flattenFolders>;
   breadcrumbSegments: Array<{ id: string; label: string }>;
   activePath: string;
@@ -33,10 +30,6 @@ interface NavigationContextValue {
   navigateBack: () => void;
   resetToHome: () => void;
   handleBreadcrumbSelect: (id: string, index: number) => void;
-  openLightbox: (image: WorkItem, gallery: WorkItem[]) => void;
-  closeLightbox: () => void;
-  navigateToNextImage: () => void;
-  navigateToPrevImage: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextValue | undefined>(
@@ -47,9 +40,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const { pathname, navigate: updateHistory } = useHistoryNavigation();
   const [currentPath, setCurrentPath] = useState<string[]>(['home']);
   const [currentView, setCurrentView] = useState<ViewType | null>(null);
-  const [lightboxImage, setLightboxImage] = useState<WorkItem | null>(null);
-  const [lightboxGallery, setLightboxGallery] = useState<WorkItem[]>([]);
-  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
   const pendingHistoryPathRef = useRef<string | null>(null);
   const currentPathRef = useRef(currentPath);
   const currentViewRef = useRef<ViewType | null>(currentView);
@@ -271,42 +261,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const openLightbox = (image: WorkItem, gallery: WorkItem[]) => {
-    const index = gallery.findIndex(item => item.id === image.id);
-    setLightboxImage(image);
-    setLightboxGallery(gallery);
-    setLightboxIndex(index >= 0 ? index : 0);
-  };
-
-  const closeLightbox = () => {
-    setLightboxImage(null);
-    setLightboxGallery([]);
-    setLightboxIndex(0);
-  };
-
-  const navigateToNextImage = () => {
-    if (lightboxGallery.length === 0) return;
-    const nextIndex = (lightboxIndex + 1) % lightboxGallery.length;
-    setLightboxIndex(nextIndex);
-    setLightboxImage(lightboxGallery[nextIndex]);
-  };
-
-  const navigateToPrevImage = () => {
-    if (lightboxGallery.length === 0) return;
-    const prevIndex =
-      (lightboxIndex - 1 + lightboxGallery.length) % lightboxGallery.length;
-    setLightboxIndex(prevIndex);
-    setLightboxImage(lightboxGallery[prevIndex]);
-  };
-
   return (
     <NavigationContext.Provider
       value={{
         currentPath,
         currentView,
-        lightboxImage,
-        lightboxGallery,
-        lightboxIndex,
         allFolders,
         breadcrumbSegments,
         activePath,
@@ -314,10 +273,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         navigateBack,
         resetToHome,
         handleBreadcrumbSelect,
-        openLightbox,
-        closeLightbox,
-        navigateToNextImage,
-        navigateToPrevImage,
       }}
     >
       {children}

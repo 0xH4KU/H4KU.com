@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { useSearchResults, useSearchUI } from '@/contexts/SearchContext';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { useLightbox } from '@/contexts/LightboxContext';
 import { SearchResult } from '@/types';
 import { buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
 import { SEARCH_PANEL_ID } from '@/config/accessibility';
@@ -53,7 +54,8 @@ const SearchPanel: React.FC = () => {
   const { searchOpen, searchQuery, setSearchQuery, closeSearch } =
     useSearchUI();
   const { searchResults } = useSearchResults();
-  const { navigateTo, openLightbox } = useNavigation();
+  const { navigateTo } = useNavigation();
+  const { openLightbox } = useLightbox();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
