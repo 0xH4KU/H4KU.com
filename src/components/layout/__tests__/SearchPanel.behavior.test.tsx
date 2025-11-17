@@ -52,7 +52,11 @@ type MockSearchResult = FolderResult | PageResult | WorkResult;
 
 const navigationMock = {
   navigateTo: vi.fn(),
+};
+const lightboxMock = {
   openLightbox: vi.fn(),
+  navigateToNextImage: vi.fn(),
+  navigateToPrevImage: vi.fn(),
 };
 
 const searchUIState = {
@@ -74,6 +78,9 @@ vi.mock('@/contexts/SearchContext', () => ({
 
 vi.mock('@/contexts/NavigationContext', () => ({
   useNavigation: () => navigationMock,
+}));
+vi.mock('@/contexts/LightboxContext', () => ({
+  useLightbox: () => lightboxMock,
 }));
 
 const folderResult: FolderResult = {
@@ -141,7 +148,7 @@ const getResultButtonByLabel = (label: string) => {
 describe('SearchPanel interactions', () => {
   beforeEach(() => {
     navigationMock.navigateTo.mockClear();
-    navigationMock.openLightbox.mockClear();
+    lightboxMock.openLightbox.mockClear();
     searchUIState.setSearchQuery.mockClear();
     searchUIState.closeSearch.mockClear();
     searchResultsState.searchResults = [...baseResults];
@@ -183,7 +190,7 @@ describe('SearchPanel interactions', () => {
     render(<SearchPanel />);
     const workButton = getResultButtonByLabel('work');
     await userEvent.click(workButton);
-    expect(navigationMock.openLightbox).toHaveBeenCalledWith(workResult.work, [
+    expect(lightboxMock.openLightbox).toHaveBeenCalledWith(workResult.work, [
       imageItem,
     ]);
   });

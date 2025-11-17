@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useId } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigation } from '@/contexts/NavigationContext';
+import { useLightbox } from '@/contexts/LightboxContext';
 import { ImageWorkItem } from '@/types';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import styles from './Lightbox.module.css';
@@ -13,7 +13,7 @@ const Lightbox: React.FC = () => {
     closeLightbox,
     navigateToNextImage,
     navigateToPrevImage,
-  } = useNavigation();
+  } = useLightbox();
   const lightboxRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const titleId = useId();

@@ -2,6 +2,7 @@ import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
+import { LightboxProvider } from '@/contexts/LightboxContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 
 /**
@@ -15,7 +16,9 @@ export function renderWithProviders(
     return (
       <ThemeProvider>
         <NavigationProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <LightboxProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </LightboxProvider>
         </NavigationProvider>
       </ThemeProvider>
     );

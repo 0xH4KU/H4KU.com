@@ -14,6 +14,7 @@ import { NavigationProvider } from '@/contexts/NavigationContext';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
 import { SortProvider } from '@/contexts/SortContext';
+import { LightboxProvider } from '@/contexts/LightboxContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { use100vh } from '@/hooks/use100vh';
 import {
@@ -151,11 +152,13 @@ function App() {
     <ThemeProvider>
       <SortProvider>
         <NavigationProvider>
-          <SearchProvider>
-            <SidebarProvider>
-              <AppContent />
-            </SidebarProvider>
-          </SearchProvider>
+          <LightboxProvider>
+            <SearchProvider>
+              <SidebarProvider>
+                <AppContent />
+              </SidebarProvider>
+            </SearchProvider>
+          </LightboxProvider>
         </NavigationProvider>
       </SortProvider>
     </ThemeProvider>
