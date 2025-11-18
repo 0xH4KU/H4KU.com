@@ -61,7 +61,11 @@ describe('ThemeProvider', () => {
     });
     expect(result.current.theme).toBe('dark');
     expect(result.current.hasStoredTheme).toBe(true);
-    expect(window.localStorage.getItem(STORAGE_KEYS.THEME)).toBe('"dark"');
+    const persistedTheme = window.localStorage.getItem(STORAGE_KEYS.THEME);
+    expect(persistedTheme).not.toBeNull();
+    expect(JSON.parse(persistedTheme as string)).toMatchObject({
+      value: 'dark',
+    });
 
     act(() => {
       result.current.toggleTheme();

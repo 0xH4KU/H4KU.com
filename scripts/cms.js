@@ -12,12 +12,15 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const CONTENT_SOURCE = path.join(ROOT_DIR, 'public', 'content');
+const OPTIMIZED_OUTPUT_ROOT = path.join(CONTENT_SOURCE, '_optimized');
+const OPTIMIZED_PUBLIC_PREFIX = '/content/_optimized';
 const OUTPUT_FOLDERS = path.join(ROOT_DIR, 'src', 'content', 'folders');
 const OUTPUT_IMAGES = path.join(ROOT_DIR, 'src', 'content', 'images');
 const OUTPUT_PAGES = path.join(ROOT_DIR, 'src', 'content', 'pages');
@@ -25,8 +28,255 @@ const CACHE_DIR = path.join(ROOT_DIR, '.cache');
 const BACKUP_ROOT = path.join(CACHE_DIR, 'cms-backups');
 
 // Supported file extensions
-const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'];
+const IMAGE_EXTENSIONS = [
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.webp',
+  '.gif',
+  '.svg',
+  '.avif',
+];
 const TEXT_EXTENSIONS = ['.txt', '.md'];
+
+const HTTP_OR_DATA_PROTOCOL = /^(https?:|data:)/i;
+
+const toPublicPath = absolutePath => {
+  const relativePath = path.relative(CONTENT_SOURCE, absolutePath);
+  if (relativePath.startsWith('..')) {
+    return null;
+  }
+  return `/content/${relativePath.replace(/\\/g, '/')}`;
+};
+
+const resolveAssetReference = (baseDir, targetPath) => {
+  if (typeof targetPath !== 'string') {
+    return null;
+  }
+
+  const trimmed = targetPath.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (HTTP_OR_DATA_PROTOCOL.test(trimmed)) {
+    return {
+      publicPath: trimmed,
+      filePath: null,
+    };
+  }
+
+  if (trimmed.startsWith('/content/')) {
+    const relativePath = trimmed.replace(/^\/content\//, '');
+    return {
+      publicPath: trimmed,
+      filePath: path.join(CONTENT_SOURCE, relativePath),
+    };
+  }
+
+  if (trimmed.startsWith('/')) {
+    return {
+      publicPath: trimmed,
+      filePath: null,
+    };
+  }
+
+  const absoluteCandidate = path.resolve(baseDir, trimmed);
+  const publicPath = toPublicPath(absoluteCandidate);
+  if (!publicPath) {
+    return {
+      publicPath: trimmed,
+      filePath: null,
+    };
+  }
+
+  return {
+    publicPath,
+    filePath: absoluteCandidate,
+  };
+};
+
+const markFileConsumed = (consumedSet, filePath) => {
+  if (!filePath) {
+    return;
+  }
+  consumedSet.add(path.resolve(filePath));
+};
+
+const findSiblingAsset = (baseDir, basename, extension) => {
+  const candidatePath = path.join(baseDir, `${basename}${extension}`);
+  if (!fs.existsSync(candidatePath)) {
+    return null;
+  }
+
+  const publicPath = toPublicPath(candidatePath);
+  if (!publicPath) {
+    return null;
+  }
+
+  return {
+    publicPath,
+    filePath: candidatePath,
+  };
+};
+
+const normalizeMetadataSources = (rawSources, baseDir, consumedSet) => {
+  if (!Array.isArray(rawSources)) {
+    return null;
+  }
+
+  const normalized = [];
+
+  rawSources.forEach(source => {
+    if (!source || typeof source !== 'object') {
+      return;
+    }
+    const resolved = resolveAssetReference(baseDir, source.srcSet);
+    if (!resolved?.publicPath) {
+      return;
+    }
+
+    normalized.push({
+      type: typeof source.type === 'string' ? source.type : undefined,
+      srcSet: resolved.publicPath,
+      media: typeof source.media === 'string' ? source.media : undefined,
+    });
+
+    if (resolved.filePath) {
+      markFileConsumed(consumedSet, resolved.filePath);
+    }
+  });
+
+  return normalized.length > 0 ? normalized : null;
+};
+
+const isGeneratableSource = extension =>
+  extension === '.png' || extension === '.jpg' || extension === '.jpeg';
+
+const buildOptimizedPath = (relativeDir, basename, format) => {
+  const safeDir = relativeDir ? relativeDir.replace(/\\/g, '/') : '';
+  const targetDir = path.join(OPTIMIZED_OUTPUT_ROOT, safeDir);
+  const filename = `${basename}.${format}`;
+  const filePath = path.join(targetDir, filename);
+  const publicPath = `${OPTIMIZED_PUBLIC_PREFIX}/${safeDir}/${filename}`.replace(
+    /\/{2,}/g,
+    '/'
+  );
+  return { filePath, publicPath, targetDir };
+};
+
+const ensureOptimizedVariant = async ({
+  inputPath,
+  relativeDir,
+  basename,
+  format,
+}) => {
+  const { filePath, publicPath, targetDir } = buildOptimizedPath(
+    relativeDir,
+    basename,
+    format
+  );
+
+  if (fs.existsSync(filePath)) {
+    return publicPath;
+  }
+
+  fs.mkdirSync(targetDir, { recursive: true });
+
+  const quality =
+    format === 'avif'
+      ? { quality: 45, speed: 6 }
+      : { quality: 82, effort: 5 };
+
+  await sharp(inputPath)
+    .rotate()
+    .toFormat(format, quality)
+    .toFile(filePath);
+
+  return publicPath;
+};
+
+const collectAlternateFormats = async ({
+  baseDir,
+  basename,
+  extension,
+  itemMeta,
+  consumedSet,
+  sourcePath,
+  relativeDir,
+}) => {
+  const alternates = {
+    avif: null,
+    webp: null,
+    sources: null,
+  };
+
+  const metaAvif = resolveAssetReference(baseDir, itemMeta?.avif);
+  if (metaAvif) {
+    alternates.avif = metaAvif.publicPath;
+    markFileConsumed(consumedSet, metaAvif.filePath);
+  } else if (extension !== '.avif') {
+    const siblingAvif = findSiblingAsset(baseDir, basename, '.avif');
+    if (siblingAvif) {
+      alternates.avif = siblingAvif.publicPath;
+      markFileConsumed(consumedSet, siblingAvif.filePath);
+    }
+  }
+
+  const metaWebp = resolveAssetReference(baseDir, itemMeta?.webp);
+  if (metaWebp) {
+    alternates.webp = metaWebp.publicPath;
+    markFileConsumed(consumedSet, metaWebp.filePath);
+  } else if (extension !== '.webp') {
+    const siblingWebp = findSiblingAsset(baseDir, basename, '.webp');
+    if (siblingWebp) {
+      alternates.webp = siblingWebp.publicPath;
+      markFileConsumed(consumedSet, siblingWebp.filePath);
+    }
+  }
+
+  const allowGeneration =
+    itemMeta?.generateAlternates === undefined ||
+    itemMeta?.generateAlternates === true;
+
+  if (
+    allowGeneration &&
+    isGeneratableSource(extension) &&
+    fs.existsSync(sourcePath)
+  ) {
+    try {
+      if (!alternates.avif) {
+        alternates.avif = await ensureOptimizedVariant({
+          inputPath: sourcePath,
+          relativeDir,
+          basename,
+          format: 'avif',
+        });
+      }
+      if (!alternates.webp) {
+        alternates.webp = await ensureOptimizedVariant({
+          inputPath: sourcePath,
+          relativeDir,
+          basename,
+          format: 'webp',
+        });
+      }
+    } catch (error) {
+      console.warn(
+        `⚠️  Failed to generate WebP/AVIF for ${basename}${extension}:`,
+        error?.message ?? error
+      );
+    }
+  }
+
+  alternates.sources = normalizeMetadataSources(
+    itemMeta?.sources,
+    baseDir,
+    consumedSet
+  );
+
+  return alternates;
+};
 
 function throwReadableFsError(action, targetPath, error) {
   const code = error && typeof error === 'object' ? error.code : null;
@@ -44,7 +294,7 @@ function throwReadableFsError(action, targetPath, error) {
 
 // Ensure output directories exist
 function ensureDirectories() {
-  [OUTPUT_FOLDERS, OUTPUT_IMAGES, OUTPUT_PAGES].forEach(dir => {
+  [OUTPUT_FOLDERS, OUTPUT_IMAGES, OUTPUT_PAGES, OPTIMIZED_OUTPUT_ROOT].forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -80,6 +330,12 @@ function cleanDirectory(dir) {
   }
   fs.mkdirSync(dir, { recursive: true });
 }
+const cleanOptimizedOutput = () => {
+  if (fs.existsSync(OPTIMIZED_OUTPUT_ROOT)) {
+    fs.rmSync(OPTIMIZED_OUTPUT_ROOT, { recursive: true, force: true });
+  }
+  fs.mkdirSync(OPTIMIZED_OUTPUT_ROOT, { recursive: true });
+};
 
 function createBackup() {
   const backupPath = path.join(BACKUP_ROOT, `backup-${Date.now()}`);
@@ -177,7 +433,12 @@ function isTextFile(filename) {
 }
 
 // Scan directory and collect folders and files
-function scanDirectory(dirPath, currentPath = [], parentId = null) {
+async function scanDirectory(
+  dirPath,
+  currentPath = [],
+  parentId = null,
+  consumedFiles = new Set()
+) {
   const folders = [];
   const works = [];
   const pages = [];
@@ -191,7 +452,7 @@ function scanDirectory(dirPath, currentPath = [], parentId = null) {
 
   // Process subdirectories (folders)
   const subdirs = entries.filter(entry => entry.isDirectory());
-  subdirs.forEach((dir, index) => {
+  for (const [index, dir] of subdirs.entries()) {
     const subDirPath = path.join(dirPath, dir.name);
     const subPath = [...currentPath, dir.name];
     const folderId = generateFolderId(subPath);
@@ -220,21 +481,30 @@ function scanDirectory(dirPath, currentPath = [], parentId = null) {
     folders.push(folder);
 
     // Recursively scan subdirectory
-    const subResults = scanDirectory(subDirPath, subPath, folderId);
+    const subResults = await scanDirectory(
+      subDirPath,
+      subPath,
+      folderId,
+      consumedFiles
+    );
     folders.push(...subResults.folders);
     works.push(...subResults.works);
     pages.push(...subResults.pages);
-  });
+  }
 
   // Process files in current directory
   const files = entries.filter(
     entry => entry.isFile() && entry.name !== 'metadata.json'
   );
 
-  files.forEach((file, index) => {
+  for (const [index, file] of files.entries()) {
     const filename = file.name;
     const basename = path.basename(filename, path.extname(filename));
     const filePath = path.join(dirPath, filename);
+    const resolvedFilePath = path.resolve(filePath);
+    if (consumedFiles.has(resolvedFilePath)) {
+      return;
+    }
     const relativePath = path.relative(CONTENT_SOURCE, filePath);
     const publicPath = '/content/' + relativePath.replace(/\\/g, '/');
 
@@ -255,6 +525,30 @@ function scanDirectory(dirPath, currentPath = [], parentId = null) {
         thumb: publicPath,
         full: publicPath,
       };
+
+      const extension = getExtension(filename);
+      const relativeDir = path
+        .relative(CONTENT_SOURCE, dirPath)
+        .replace(/\\/g, '/');
+      const alternates = await collectAlternateFormats({
+        baseDir: dirPath,
+        basename,
+        extension,
+        itemMeta,
+        consumedSet: consumedFiles,
+        sourcePath: filePath,
+        relativeDir,
+      });
+
+      if (alternates.avif) {
+        work.avif = alternates.avif;
+      }
+      if (alternates.webp) {
+        work.webp = alternates.webp;
+      }
+      if (alternates.sources) {
+        work.sources = alternates.sources;
+      }
 
       if (itemMeta.title) work.title = itemMeta.title;
       if (itemMeta.description) work.description = itemMeta.description;
@@ -295,7 +589,7 @@ function scanDirectory(dirPath, currentPath = [], parentId = null) {
       // can attach them to folders later.
       pages.push(page);
     }
-  });
+  }
 
   return { folders, works, pages };
 }
@@ -306,11 +600,12 @@ function writeJson(filePath, data) {
 }
 
 // Main function
-function main() {
+async function main() {
   console.log('🚀 Starting CMS content sync...\n');
 
   // Ensure directories exist
   ensureDirectories();
+  cleanOptimizedOutput();
 
   // Clean existing files
   cleanOutputDirectories();
@@ -326,7 +621,7 @@ function main() {
     throw error;
   }
 
-  const results = scanDirectory(homepagePath);
+  const results = await scanDirectory(homepagePath, [], null, new Set());
 
   // Write folder definitions
   console.log(`\n📁 Found ${results.folders.length} folders`);
@@ -378,7 +673,7 @@ async function run() {
   const backupPath = createBackup();
 
   try {
-    main();
+    await main();
     await runBuildData();
     removeBackup(backupPath);
     console.log('\n✨ All done! Your content is ready.\n');

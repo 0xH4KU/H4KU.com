@@ -40,6 +40,12 @@
     <meta name="theme-color" content="#e8e8e8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
 
+    <!-- Fallback CSP for environments that ignore /public/_headers (mirrors header rules) -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com https://api.lum.bio https://*.sentry.io https://*.ingest.sentry.io; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+    />
+
     <!-- Preload Critical Resources -->
     <link rel="preload" href="/fonts/ProFont.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/fonts/ProFont-Bold.woff2" as="font" type="font/woff2" crossorigin>
@@ -48,31 +54,7 @@
       Minimal pre-hydration theme setup to prevent flash.
       ThemeContext handles all meta tag updates after React mounts.
     -->
-    <script>
-      (function () {
-        try {
-          const storedTheme = localStorage.getItem('lum.bio.theme');
-          const theme =
-            storedTheme === 'light' || storedTheme === 'dark'
-              ? storedTheme
-              : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-
-          document.documentElement.setAttribute('data-theme', theme);
-        } catch (e) {
-          // localStorage access may fail in private mode
-        }
-
-        const setInitialVh = () => {
-          const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-          document.documentElement.style.setProperty(
-            '--vh',
-            `${viewportHeight * 0.01}px`
-          );
-        };
-
-        setInitialVh();
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
 
     <!-- Critical CSS for faster First Contentful Paint -->
     <style>

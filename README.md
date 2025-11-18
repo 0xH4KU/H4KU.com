@@ -250,6 +250,7 @@ npx wrangler pages deploy --project-name lum-bio dist
 
 - Adjust `pages_build_output_dir` or `name` inside `wrangler.toml` if your project slug differs.
 - Set `VITE_CONTACT_ENDPOINT` (and any optional vars) through the Cloudflare Pages dashboard or by editing the `[vars]` block before deploying.
+- Security headers (CSP, HSTS, Permissions-Policy, etc.) live in `public/_headers`. Update the `connect-src` directive there if your contact endpoint uses a different domain.
 
 `vite-plugin-sitemap` runs during `vite build`, generating a fresh `dist/sitemap.xml` from the aggregated content so you no longer need to maintain a static `public/sitemap.xml`.
 

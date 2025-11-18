@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { IMAGE_CONFIG } from '@/config/constants';
+import type { ImageSource } from '@/types';
 
 const TRANSPARENT_PLACEHOLDER =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -70,6 +71,8 @@ interface LazyImageProps {
   srcSet?: string;
   /** Optional sizes attribute for responsive images */
   sizes?: string;
+  /** Optional sources for picture element (e.g. AVIF/WebP) */
+  sources?: ImageSource[];
   /** Elevate loading priority for hero / LCP imagery */
   priority?: boolean;
   /** Fine-grained control over the fetchpriority hint */
@@ -83,12 +86,23 @@ export function LazyImage({
   placeholder,
   srcSet,
   sizes,
+  sources,
   priority = false,
   fetchPriority = 'auto',
 }: LazyImageProps) {
   const resolvedPlaceholder = placeholder ?? TRANSPARENT_PLACEHOLDER;
+  const normalizedSources = useMemo(
+    () =>
+      sources?.filter(
+        source => Boolean(source?.srcSet) && typeof source?.srcSet === 'string'
+      ),
+    [sources]
+  );
   const [imageSrc, setImageSrc] = useState<string>(resolvedPlaceholder);
   const [imageSrcSet, setImageSrcSet] = useState<string | undefined>(undefined);
+  const [activeSources, setActiveSources] = useState<ImageSource[] | undefined>(
+    priority ? normalizedSources : undefined
+  );
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -103,6 +117,7 @@ export function LazyImage({
     setHasError(false);
     setImageSrc(priority ? src : resolvedPlaceholder);
     setImageSrcSet(priority ? srcSet : undefined);
+    setActiveSources(priority ? normalizedSources : undefined);
 
     if (!src) {
       return;
@@ -117,6 +132,9 @@ export function LazyImage({
       if (srcSet) {
         setImageSrcSet(srcSet);
       }
+      if (normalizedSources) {
+        setActiveSources(normalizedSources);
+      }
     });
 
     return () => {
@@ -124,7 +142,7 @@ export function LazyImage({
         unobserveNode(node);
       }
     };
-  }, [src, srcSet, resolvedPlaceholder, priority]);
+  }, [src, srcSet, resolvedPlaceholder, priority, normalizedSources]);
 
   const handleError = () => {
     if (!hasError && imageSrc === src) {
@@ -143,7 +161,9 @@ export function LazyImage({
 
   const isLoading = Boolean(src) && !isLoaded && !hasError;
 
-  return (
+  const pictureSources = activeSources ?? [];
+
+  const imageElement = (
     <img
       ref={imgRef}
       src={imageSrc}
@@ -163,5 +183,23 @@ export function LazyImage({
         transition: priority ? 'none' : 'opacity 0.3s ease-in-out',
       }}
     />
+  );
+
+  if (pictureSources.length === 0) {
+    return imageElement;
+  }
+
+  return (
+    <picture>
+      {pictureSources.map(source => (
+        <source
+          key={`${source.type ?? 'image'}-${source.media ?? 'all'}-${source.srcSet}`}
+          type={source.type}
+          srcSet={source.srcSet}
+          media={source.media}
+        />
+      ))}
+      {imageElement}
+    </picture>
   );
 }

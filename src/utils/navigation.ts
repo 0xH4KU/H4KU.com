@@ -123,7 +123,11 @@ export const findFolderPathById = (
   );
 
   while (stack.length) {
-    const current = stack.pop()!;
+    const current = stack.pop();
+    /* istanbul ignore next */
+    if (!current) {
+      continue;
+    }
     const { folder, path } = current;
     if (folder.id === targetId) {
       return path;
@@ -159,7 +163,11 @@ export const findFolderById = (
   const stack = [...folders];
 
   while (stack.length) {
-    const folder = stack.pop()!;
+    const folder = stack.pop();
+    /* istanbul ignore next */
+    if (!folder) {
+      continue;
+    }
     if (folder.id === targetId) {
       return folder;
     }

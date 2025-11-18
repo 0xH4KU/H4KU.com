@@ -10,7 +10,7 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-initializeMonitoring();
+void initializeMonitoring();
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>

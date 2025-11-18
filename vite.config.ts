@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import sitemap from 'vite-plugin-sitemap';
+import ViteSRI from 'vite-plugin-sri';
 
 type AggregatedFolderRecord = {
   id?: string;
@@ -160,7 +161,6 @@ const getDynamicRoutes = (): string[] => {
 };
 
 const chunkAliasMap: Record<string, string> = {
-  index: 'main',
   'react-vendor': 'rv',
   'animation-vendor': 'anim',
   'icons-vendor': 'icons',
@@ -217,6 +217,7 @@ const buildFingerprintMeta = {
 export default defineConfig({
   plugins: [
     react(),
+    ViteSRI(),
     ...(isVitest
       ? []
       : [
@@ -258,6 +259,9 @@ export default defineConfig({
           if (process.env.NODE_ENV !== 'production') {
             return 'assets/[name]-[hash].js';
           }
+          if (chunkInfo.name === 'index') {
+            return 'assets/main-[hash].js';
+          }
           const alias = getChunkAlias(chunkInfo.name);
           return alias ? `assets/${alias}-[hash].js` : 'assets/entry-[hash].js';
         },
@@ -268,7 +272,7 @@ export default defineConfig({
       },
     },
     // Configure chunk size warning threshold
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 300,
     sourcemap: process.env.NODE_ENV !== 'production',
     minify: 'terser',
     terserOptions: {

@@ -4,6 +4,7 @@ import {
   findFolderByPath,
   findFolderPathById,
   findFolderById,
+  buildNavigationMap,
 } from '../navigation';
 import type { Folder } from '@/types';
 
@@ -181,6 +182,18 @@ describe('navigation utils', () => {
       expect(result).not.toBeNull();
       expect(result?.[0]).toBe('dup');
     });
+
+    it('uses navigation map when provided', () => {
+      const navMap = buildNavigationMap(mockFolders);
+      const result = findFolderPathById(mockFolders, 'feb', navMap);
+      expect(result).toEqual(['2024', 'feb']);
+    });
+
+    it('returns null from navigation map when id is missing', () => {
+      const navMap = buildNavigationMap(mockFolders);
+      const result = findFolderPathById(mockFolders, 'missing', navMap);
+      expect(result).toBeNull();
+    });
   });
 
   describe('findFolderById', () => {
@@ -240,6 +253,12 @@ describe('navigation utils', () => {
         expect(result).not.toBeNull();
         expect(result?.id).toBe(id);
       });
+    });
+
+    it('uses navigation map for O(1) lookup', () => {
+      const navMap = buildNavigationMap(mockFolders);
+      const result = findFolderById(mockFolders, 'mar', navMap);
+      expect(result?.id).toBe('mar');
     });
   });
 

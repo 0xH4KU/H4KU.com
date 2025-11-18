@@ -9,12 +9,8 @@ import {
 } from '@/components';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { CopyrightWarning } from '@/components/common/CopyrightWarning';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { NavigationProvider } from '@/contexts/NavigationContext';
-import { SearchProvider } from '@/contexts/SearchContext';
-import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
-import { SortProvider } from '@/contexts/SortContext';
-import { LightboxProvider } from '@/contexts/LightboxContext';
+import { AppProviders } from '@/contexts/AppProviders';
+import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { use100vh } from '@/hooks/use100vh';
 import {
@@ -149,19 +145,9 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
-    <ThemeProvider>
-      <SortProvider>
-        <NavigationProvider>
-          <LightboxProvider>
-            <SearchProvider>
-              <SidebarProvider>
-                <AppContent />
-              </SidebarProvider>
-            </SearchProvider>
-          </LightboxProvider>
-        </NavigationProvider>
-      </SortProvider>
-    </ThemeProvider>
+    <AppProviders>
+      <AppContent />
+    </AppProviders>
   );
 }
 

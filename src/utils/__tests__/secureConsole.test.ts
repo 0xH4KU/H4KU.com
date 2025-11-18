@@ -1,72 +1,51 @@
-import { describe, expect, it, vi, afterEach } from 'vitest';
+/* eslint-disable no-console */
+import { describe, it, expect, vi } from 'vitest';
 import {
-  secureClear,
   secureLog,
-  secureWarn,
   secureInfo,
+  secureWarn,
+  secureError,
+  secureClear,
 } from '@/utils/secureConsole';
 
-const originalConsole = globalThis.console;
+describe('secureConsole helpers', () => {
+  it('invokes console methods when available', () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const clearSpy = vi.spyOn(console, 'clear').mockImplementation(() => {});
 
-afterEach(() => {
-  globalThis.console = originalConsole;
-  vi.restoreAllMocks();
-});
-
-describe('secureConsole', () => {
-  it('logs through the existing console implementation', () => {
-    const logSpy = vi
-      .spyOn(globalThis.console, 'log')
-      .mockImplementation(() => {});
-
-    secureLog('hello', 42);
-
-    expect(logSpy).toHaveBeenCalledWith('hello', 42);
-  });
-
-  it('warns when a console exists', () => {
-    const warnSpy = vi
-      .spyOn(globalThis.console, 'warn')
-      .mockImplementation(() => {});
-
-    secureWarn('be careful');
-
-    expect(warnSpy).toHaveBeenCalledWith('be careful');
-  });
-
-  it('fails silently when the requested console method is missing', () => {
-    // @ts-expect-error override warn to simulate missing method
-    globalThis.console.warn = undefined;
-
-    expect(() => secureWarn('no-op')).not.toThrow();
-  });
-
-  it('clears the console when supported', () => {
-    const clearSpy = vi
-      .spyOn(globalThis.console, 'clear')
-      .mockImplementation(() => {});
-
+    secureLog('message', 42);
+    secureWarn('warn');
+    secureError('error');
     secureClear();
 
+    expect(logSpy).toHaveBeenCalledWith('message', 42);
+    expect(warnSpy).toHaveBeenCalledWith('warn');
+    expect(errorSpy).toHaveBeenCalledWith('error');
     expect(clearSpy).toHaveBeenCalled();
+
+    logSpy.mockRestore();
+    warnSpy.mockRestore();
+    errorSpy.mockRestore();
+    clearSpy.mockRestore();
   });
 
-  it('routes through other console methods', () => {
-    const infoSpy = vi
-      .spyOn(globalThis.console, 'info')
-      .mockImplementation(() => {});
+  it('gracefully handles missing console reference', () => {
+    const originalConsole = globalThis.console;
+    Reflect.deleteProperty(globalThis as { console?: Console }, 'console');
 
-    secureInfo('hello', { id: 1 });
+    expect(() => secureInfo('offline')).not.toThrow();
 
-    expect(infoSpy).toHaveBeenCalledWith('hello', { id: 1 });
+    globalThis.console = originalConsole;
   });
 
-  it('fails silently when console is unavailable', () => {
-    // @ts-expect-error intentionally remove console for the test
-    globalThis.console = undefined;
+  it('skips invocation when console method is not a function', () => {
+    const originalLog = console.log;
+    (console as unknown as { log: unknown }).log = null;
 
     expect(() => secureLog('noop')).not.toThrow();
-    expect(() => secureWarn('noop')).not.toThrow();
-    expect(() => secureClear()).not.toThrow();
+
+    console.log = originalLog;
   });
 });

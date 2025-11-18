@@ -9,11 +9,18 @@ interface BaseWorkItem {
   order?: number;
 }
 
+export interface ImageSource {
+  type?: string;
+  srcSet: string;
+  media?: string;
+}
+
 // Image work item
 export interface ImageWorkItem extends BaseWorkItem {
   itemType: 'work';
   thumb: string;
   full: string;
+  sources?: ImageSource[];
 }
 
 // Text page work item (shown as .txt in folder)
