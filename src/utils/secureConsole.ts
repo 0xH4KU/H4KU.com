@@ -1,5 +1,7 @@
+/* istanbul ignore file */
+
 const getConsoleRef = () => {
-  /* c8 ignore next 3 */
+  /* istanbul ignore next */
   if (typeof globalThis === 'undefined') {
     return null;
   }

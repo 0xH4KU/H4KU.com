@@ -1,4 +1,4 @@
-import { MockData, Folder, Page, Social, WorkItem } from '@/types';
+import { MockData, Folder, Page, Social, WorkItem, ImageSource } from '@/types';
 // Import aggregated data (built at build time by scripts/build-data.js)
 import aggregatedData from '@/content/_aggregated.json';
 import {
@@ -47,6 +47,13 @@ interface ImageFile {
   thumb?: string;
   full?: string;
   content?: string;
+  avif?: string;
+  webp?: string;
+  sources?: {
+    type?: string;
+    srcSet: string;
+    media?: string;
+  }[];
 }
 
 interface AggregatedContent {
@@ -115,6 +122,42 @@ const pagesData = (integrityPayload.pages ?? []) as PageFile[];
 const socialsData = (integrityPayload.socials ?? []) as Social[];
 
 const ORDER_FALLBACK = Number.MAX_SAFE_INTEGER;
+
+type SourceEntry = NonNullable<ImageFile['sources']>[number];
+
+const isValidSourceEntry = (
+  entry: SourceEntry
+): entry is SourceEntry & {
+  srcSet: string;
+} => Boolean(entry?.srcSet && typeof entry.srcSet === 'string');
+
+const buildOptimizedSources = (image: ImageFile) => {
+  const sources: ImageSource[] = [];
+
+  if (image.avif) {
+    sources.push({
+      type: 'image/avif',
+      srcSet: image.avif,
+    });
+  }
+  if (image.webp) {
+    sources.push({
+      type: 'image/webp',
+      srcSet: image.webp,
+    });
+  }
+  image.sources?.forEach(source => {
+    if (isValidSourceEntry(source)) {
+      sources.push({
+        type: source.type,
+        srcSet: source.srcSet,
+        media: source.media,
+      });
+    }
+  });
+
+  return sources.length > 0 ? sources : undefined;
+};
 
 const normalizeId = (value: string | null | undefined) => {
   if (typeof value !== 'string') {
@@ -269,6 +312,7 @@ images.forEach(work => {
       date: work.date,
       thumb: work.thumb ?? imageSource,
       full: imageSource,
+      sources: buildOptimizedSources(work),
       title: work.title,
       description: work.description,
       tags: work.tags,

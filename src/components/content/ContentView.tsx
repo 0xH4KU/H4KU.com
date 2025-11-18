@@ -290,6 +290,9 @@ const ContentView: React.FC = () => {
                         className={styles['file-thumb']}
                         src={'thumb' in item ? item.thumb : ''}
                         alt={item.filename}
+                        sources={
+                          item.itemType === 'work' ? item.sources : undefined
+                        }
                         sizes={IMAGE_CONFIG.GRID_SIZES}
                         priority={shouldPrioritize}
                         fetchPriority={shouldPrioritize ? 'high' : 'auto'}
@@ -381,6 +384,9 @@ const ContentView: React.FC = () => {
                     className={styles['work-thumb']}
                     src={'thumb' in item ? item.thumb : ''}
                     alt={item.filename}
+                    sources={
+                      item.itemType === 'work' ? item.sources : undefined
+                    }
                     sizes={IMAGE_CONFIG.GRID_SIZES}
                     priority={shouldPrioritize}
                     fetchPriority={shouldPrioritize ? 'high' : 'auto'}

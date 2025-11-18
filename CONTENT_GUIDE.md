@@ -70,8 +70,38 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 
 ## Supported File Types
 
-- Images: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`
+- Images: `.png`, `.jpg`, `.jpeg`, `.webp`, `.avif`, `.gif`, `.svg`
 - Text: `.txt` (rendered as text files), `.md` (converted to plain text)
+
+## Optimised Image Formats (WebP / AVIF)
+
+All gallery items now support multiple source formats so modern browsers can load AVIF/WebP while older ones fall back to PNG/JPEG. The CMS will attempt to generate both formats automatically (using [Sharp](https://sharp.pixelplumbing.com/)) any time it finds a PNG/JPEG/JPG source without matching `.avif`/`.webp` siblings. The generated files are dropped under `.cache/cms-optimized` and referenced transparently—nothing new needs to be committed.
+
+You can still provide your own optimised assets for art-directed crops or specialised pipelines:
+
+1. **Drop sibling files** – place `artwork.jpg` next to `artwork.avif` and/or `artwork.webp`. The CMS pairs them so only one gallery entry is created.
+2. **Explicit metadata overrides** – add custom filenames under the matching entry:
+
+```json
+{
+  "items": {
+    "artwork.jpg": {
+      "title": "Character Design",
+      "avif": "artwork-custom.avif",
+      "webp": "optimised/artwork.webp",
+      "sources": [
+        {
+          "type": "image/avif",
+          "srcSet": "artwork@2x.avif",
+          "media": "(min-width: 1024px)"
+        }
+      ]
+    }
+  }
+}
+```
+
+`avif`, `webp`, and every `sources[].srcSet` entry accepts paths relative to the folder (`optimised/artwork.webp`), `/content/...` URLs, or fully-qualified HTTPS URLs. Local files referenced this way will not be duplicated as separate works. Remember to rerun `npm run cms && npm run build:data` after adding new formats. To opt out of auto-generation for a given asset, drop a `metadata` entry with `"generateAlternates": false`.
 
 ## Frequently Used Commands
 

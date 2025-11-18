@@ -5,6 +5,15 @@
 /dist
 /coverage
 .cache/
+.cache/**
+.cache
+.cache/cms-optimized/
+.cache/cms-optimized/**
+.cache/**
+/public/content/_optimized/
+.cache/cms-backups/
+.cache/cms-backups/**
+.cache/**/*
 .build-manifest.json
 .env.production.local
 

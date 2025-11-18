@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  deserializePersistedState,
+  serializePersistedState,
+} from '@/services/statePersistence';
 
 const isBrowser = () => typeof window !== 'undefined' && !!window.localStorage;
 
@@ -30,23 +34,33 @@ export function useLocalStorage<T>(
     [key, sanitize]
   );
 
-  const persistSanitizedValue = (original: unknown, sanitized: T) => {
-    if (!sanitize || !isBrowser()) {
-      return;
-    }
-
-    if (Object.is(original as T, sanitized)) {
+  const persistValue = (valueToPersist: unknown) => {
+    if (!isBrowser()) {
       return;
     }
 
     try {
-      window.localStorage.setItem(key, JSON.stringify(sanitized));
+      const serialized = serializePersistedState(key, valueToPersist);
+      window.localStorage.setItem(key, serialized);
     } catch (error) {
-      console.error(
-        `Error persisting sanitized localStorage key "${key}":`,
-        error
-      );
+      console.error(`Error setting localStorage key "${key}":`, error);
     }
+  };
+
+  const persistSanitizedValue = (
+    original: unknown,
+    sanitized: T,
+    forceRewrite = false
+  ) => {
+    if (!sanitize) {
+      return;
+    }
+
+    if (!forceRewrite && Object.is(original as T, sanitized)) {
+      return;
+    }
+
+    persistValue(sanitized);
   };
 
   const readValue = () => {
@@ -59,9 +73,21 @@ export function useLocalStorage<T>(
       if (!item) {
         return initialValue;
       }
-      const parsed = JSON.parse(item) as unknown;
-      const sanitized = applySanitizer(parsed, initialValue);
-      persistSanitizedValue(parsed, sanitized);
+
+      const { value, needsHydration, isCorrupted } = deserializePersistedState(
+        key,
+        item,
+        initialValue
+      );
+      const sanitized = applySanitizer(value, initialValue);
+      if (isCorrupted) {
+        console.error(
+          `[useLocalStorage] Corrupted value detected for key "${key}", resetting to fallback.`
+        );
+        persistValue(sanitized);
+        return sanitized;
+      }
+      persistSanitizedValue(value, sanitized, needsHydration);
       return sanitized;
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error);
@@ -79,15 +105,7 @@ export function useLocalStorage<T>(
     const sanitizedValue = applySanitizer(nextValue, initialValueRef.current);
     setStoredValue(sanitizedValue);
 
-    if (!isBrowser()) {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(key, JSON.stringify(sanitizedValue));
-    } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
-    }
+    persistValue(sanitizedValue);
   };
 
   useEffect(() => {
@@ -105,8 +123,27 @@ export function useLocalStorage<T>(
           setStoredValue(initialValueRef.current);
           return;
         }
-        const parsed = JSON.parse(event.newValue) as unknown;
-        setStoredValue(applySanitizer(parsed, initialValueRef.current));
+        const { value, isCorrupted } = deserializePersistedState<T>(
+          key,
+          event.newValue,
+          initialValueRef.current
+        );
+        if (isCorrupted) {
+          console.error(
+            `[useLocalStorage] Corrupted storage event for key "${key}", resetting to fallback.`
+          );
+          setStoredValue(initialValueRef.current);
+          try {
+            window.localStorage.removeItem(key);
+          } catch (cleanupError) {
+            console.warn(
+              `Unable to clear corrupted localStorage key "${key}":`,
+              cleanupError
+            );
+          }
+          return;
+        }
+        setStoredValue(applySanitizer(value, initialValueRef.current));
       } catch (error) {
         console.error(`Error parsing storage event for key "${key}":`, error);
         setStoredValue(initialValueRef.current);

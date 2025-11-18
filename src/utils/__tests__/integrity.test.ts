@@ -48,6 +48,12 @@ describe('integrity utilities', () => {
     expect(hashA).toBe(hashB);
   });
 
+  it('exercises SHA-256 padding for longer blocks', () => {
+    const longPayload = 'a'.repeat(60);
+    const hash = computeSHA256HashSync(longPayload);
+    expect(hash).toHaveLength(64);
+  });
+
   it('verifies SHA-256 payloads', () => {
     const payload = { foo: 'secure' };
     const checksum = computeSHA256HashSync(payload);

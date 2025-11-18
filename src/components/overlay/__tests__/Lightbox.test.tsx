@@ -5,6 +5,7 @@ import {
   fireEvent,
   waitFor,
   cleanup,
+  act,
 } from '@testing-library/react';
 import { useEffect, StrictMode } from 'react';
 import Lightbox from '@/components/overlay/Lightbox';
@@ -149,7 +150,9 @@ describe('Lightbox navigation', () => {
       expect(screen.getByAltText('img-2.png')).toBeInTheDocument()
     );
 
-    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    });
     await waitFor(() =>
       expect(screen.getByAltText('img-1.png')).toBeInTheDocument()
     );
@@ -170,6 +173,22 @@ describe('Lightbox navigation', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
 
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('navigates backward with ArrowLeft keys', async () => {
+    const gallery = [createWorkItem('img-1'), createWorkItem('img-2')];
+
+    renderLightbox(gallery, { initialIndex: 1 });
+
+    await waitFor(() =>
+      expect(screen.getByAltText('img-2.png')).toBeInTheDocument()
+    );
+
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+
+    await waitFor(() =>
+      expect(screen.getByAltText('img-1.png')).toBeInTheDocument()
+    );
   });
 
   it('initially renders nothing until an image is selected', () => {
@@ -210,5 +229,57 @@ describe('Lightbox navigation', () => {
     expect(closeLightbox).toHaveBeenCalledTimes(1);
 
     useLightboxSpy.mockRestore();
+  });
+
+  it('renders picture sources when provided', async () => {
+    const gallery = [
+      {
+        ...createWorkItem('img-src'),
+        sources: [
+          { type: 'image/avif', srcSet: '/img-src.avif' },
+          {
+            type: 'image/webp',
+            srcSet: '/img-src.webp',
+            media: '(max-width: 900px)',
+          },
+        ],
+      },
+    ];
+
+    renderLightbox(gallery);
+
+    await waitFor(() =>
+      expect(screen.getByAltText('img-src.png')).toBeInTheDocument()
+    );
+
+    const sources = document.querySelectorAll('source');
+    expect(sources).toHaveLength(2);
+    expect(sources[0].getAttribute('type')).toBe('image/avif');
+    expect(sources[1].getAttribute('media')).toBe('(max-width: 900px)');
+  });
+
+  it('invokes previous navigation on ArrowLeft key press', () => {
+    const navigateToPrevImage = vi.fn();
+    const useLightboxSpy = vi
+      .spyOn(LightboxContextModule, 'useLightbox')
+      .mockReturnValue({
+        lightboxImage: createWorkItem('img-key'),
+        lightboxGallery: [createWorkItem('img-key'), createWorkItem('img-2')],
+        lightboxIndex: 1,
+        openLightbox: vi.fn(),
+        closeLightbox: vi.fn(),
+        navigateToNextImage: vi.fn(),
+        navigateToPrevImage,
+      } as unknown as ReturnType<typeof LightboxContextModule.useLightbox>);
+
+    render(<Lightbox />);
+
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+
+    return waitFor(() =>
+      expect(navigateToPrevImage).toHaveBeenCalledTimes(1)
+    ).finally(() => {
+      useLightboxSpy.mockRestore();
+    });
   });
 });

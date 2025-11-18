@@ -160,7 +160,8 @@ describe('useSidebar', () => {
     // Check localStorage
     const stored = localStorage.getItem('lum.bio.sidebar.width');
     expect(stored).not.toBeNull();
-    expect(JSON.parse(stored as string)).toBe(280);
+    const parsed = JSON.parse(stored as string);
+    expect(parsed).toMatchObject({ value: 280 });
   });
 
   it('should not respond to mouse move when not dragging', () => {

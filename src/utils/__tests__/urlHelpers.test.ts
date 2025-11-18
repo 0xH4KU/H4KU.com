@@ -94,7 +94,6 @@ describe('buildAppUrl', () => {
     const origin = getOrigin();
     const originalUrlCtor = OriginalURL;
     class ThrowingURL {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       constructor(..._args: ConstructorParameters<typeof URL>) {
         throw new Error('fail');
       }

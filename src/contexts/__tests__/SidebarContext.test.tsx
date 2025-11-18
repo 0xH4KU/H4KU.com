@@ -88,11 +88,13 @@ describe('SidebarContext', () => {
     const { result } = renderHook(() => useSidebarContext(), { wrapper });
 
     expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.MAX_WIDTH);
-    await waitFor(() =>
-      expect(localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH)).toBe(
-        JSON.stringify(SIDEBAR_CONFIG.MAX_WIDTH)
-      )
-    );
+    await waitFor(() => {
+      const stored = localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH);
+      expect(stored).not.toBeNull();
+      expect(JSON.parse(stored as string)).toMatchObject({
+        value: SIDEBAR_CONFIG.MAX_WIDTH,
+      });
+    });
   });
 
   it('clamps width updates to configured bounds', () => {
@@ -109,9 +111,11 @@ describe('SidebarContext', () => {
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_WIDTH, JSON.stringify('oops'));
     const { result } = renderHook(() => useSidebarContext(), { wrapper });
     expect(result.current.sidebarWidth).toBe(SIDEBAR_CONFIG.DEFAULT_WIDTH);
-    expect(localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH)).toBe(
-      JSON.stringify(SIDEBAR_CONFIG.DEFAULT_WIDTH)
-    );
+    const stored = localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH);
+    expect(stored).not.toBeNull();
+    expect(JSON.parse(stored as string)).toMatchObject({
+      value: SIDEBAR_CONFIG.DEFAULT_WIDTH,
+    });
   });
 
   it('resets to default width when a non-finite value is provided', () => {
@@ -123,7 +127,11 @@ describe('SidebarContext', () => {
   });
 
   it('clears pending persistence timers before scheduling new ones', () => {
-    const timers: Array<{ id: number; cleared: boolean }> = [];
+    const timers: Array<{
+      id: number;
+      cleared: boolean;
+      callback?: () => void;
+    }> = [];
     const originalSetTimeout = globalThis.setTimeout;
     const originalClearTimeout = globalThis.clearTimeout;
     const originalWindowSetTimeout = window.setTimeout;
@@ -133,7 +141,15 @@ describe('SidebarContext', () => {
       .fn<typeof setTimeout>((cb, delay, ...args) => {
         if (typeof cb === 'function' && delay === DEBOUNCE_DELAYS.RESIZE) {
           const id = timers.length + 1;
-          timers.push({ id, cleared: false });
+          timers.push({
+            id,
+            cleared: false,
+            callback: () => {
+              if (typeof cb === 'function') {
+                cb(...args);
+              }
+            },
+          });
           return id as unknown as ReturnType<typeof setTimeout>;
         }
         return originalSetTimeout(cb as TimerHandler, delay as number, ...args);
@@ -165,6 +181,8 @@ describe('SidebarContext', () => {
 
       expect(timers.length).toBe(2);
       expect(timers[0].cleared).toBe(true);
+
+      timers[1]?.callback?.();
     } finally {
       globalThis.setTimeout = originalSetTimeout;
       window.setTimeout = originalWindowSetTimeout;
