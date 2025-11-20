@@ -12,12 +12,12 @@ import styles from './CopyrightWarning.module.css';
 
 interface CopyrightWarningProps {
   currentDomain: string;
-  authorizedDomains?: string[];
+  allowedDomains?: string[];
 }
 
 export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
   currentDomain,
-  authorizedDomains = [],
+  allowedDomains = [],
 }) => {
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -67,8 +67,8 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
           <div className={styles.section}>
             <h2>✅ Authorized Domains</h2>
             <p>This application is only licensed to run on:</p>
-            <ul className={styles.authorizedList}>
-              {authorizedDomains.map(domain => (
+            <ul className={styles.allowedList}>
+              {allowedDomains.map(domain => (
                 <li key={domain}>
                   <code>{domain}</code>
                 </li>

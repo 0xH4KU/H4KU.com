@@ -177,9 +177,7 @@ const getChunkAlias = (name?: string): string | null => {
 const dynamicRoutes = getDynamicRoutes();
 const isVitest = process.env.VITEST === 'true';
 const buildVersion =
-  process.env.VITE_APP_VERSION ||
-  process.env['npm_package_version'] ||
-  '1.0.0';
+  process.env.VITE_APP_VERSION || process.env['npm_package_version'] || '1.0.0';
 const cachedFingerprintPath = path.join(rootDir, '.cache', 'build-meta.json');
 
 const readCachedFingerprint = () => {
@@ -218,18 +216,18 @@ const buildFingerprintMeta = {
 export default defineConfig({
   plugins: [
     react(),
-    ViteSRI(),
+    // ViteSRI(), // Disabled to prevent warnings about external resources
     ...(isVitest
       ? []
       : [
-        sitemap({
-          hostname: 'https://lum.bio',
-          dynamicRoutes,
-          readable: true,
-          // CF Pages serves robots.txt from /public so avoid clobbering it here.
-          generateRobotsTxt: false,
-        }),
-      ]),
+          sitemap({
+            hostname: 'https://lum.bio',
+            dynamicRoutes,
+            readable: true,
+            // CF Pages serves robots.txt from /public so avoid clobbering it here.
+            generateRobotsTxt: false,
+          }),
+        ]),
   ],
   resolve: {
     alias: {

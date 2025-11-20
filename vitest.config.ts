@@ -12,7 +12,15 @@ export default mergeConfig(
       css: true,
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'json', 'json-summary', 'html', 'lcov', 'cobertura', 'text-summary'],
+        reporter: [
+          'text',
+          'json',
+          'json-summary',
+          'html',
+          'lcov',
+          'cobertura',
+          'text-summary',
+        ],
         exclude: [
           'node_modules/',
           'src/tests/',
@@ -56,5 +64,5 @@ export default mergeConfig(
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
-  }),
+  })
 );

@@ -4,10 +4,10 @@ _Summary of the deterrents currently shipping with Lum.bio._
 
 ## Layers
 
-1) **Integrity verification** – Dual hashes (FNV-1a + SHA-256) on `src/content/_aggregated.json`, validated at runtime.
-2) **Digital fingerprinting** – Build metadata injected into the DOM (comment + `meta[name="build-id"]` + `data-build-id` attributes) and exposed via `window.__LUM_BUILD_FINGERPRINT__`.
-3) **Code hardening** – Production bundles use Terser with toplevel mangling, debugger removal, and console stripping (whitelisted via `secureConsole` when needed).
-4) **Domain verification** – Allowlist (strings, wildcards, regex) with a blocking overlay and console notice on unauthorized hosts.
+1. **Integrity verification** – Dual hashes (FNV-1a + SHA-256) on `src/content/_aggregated.json`, validated at runtime.
+2. **Digital fingerprinting** – Build metadata injected into the DOM (comment + `meta[name="build-id"]` + `data-build-id` attributes) and exposed via `window.__LUM_BUILD_FINGERPRINT__`.
+3. **Code hardening** – Production bundles use Terser with toplevel mangling, debugger removal, and console stripping (whitelisted via `secureConsole` when needed).
+4. **Domain verification** – Allowlist (strings, wildcards, regex) with a blocking overlay and console notice on unauthorized hosts.
 
 ## Integrity
 

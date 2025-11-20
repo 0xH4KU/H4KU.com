@@ -76,8 +76,12 @@ function main() {
   const result = verifyIntegrityDual(payload, expectedFnv, expectedSha);
 
   log(`Checking ${path.relative(process.cwd(), file)}`);
-  log(`Legacy checksum (FNV-1a): ${expectedFnv ?? 'missing'} -> ${result.fnv1a.actual}`);
-  log(`SHA-256 checksum: ${expectedSha ?? 'missing'} -> ${result.sha256.actual}`);
+  log(
+    `Legacy checksum (FNV-1a): ${expectedFnv ?? 'missing'} -> ${result.fnv1a.actual}`
+  );
+  log(
+    `SHA-256 checksum: ${expectedSha ?? 'missing'} -> ${result.sha256.actual}`
+  );
 
   if (result.isFullyValid) {
     log('✅ Integrity verified – no action needed.');

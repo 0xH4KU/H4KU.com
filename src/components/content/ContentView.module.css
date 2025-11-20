@@ -121,6 +121,14 @@
   box-shadow: 0 8px 16px rgba(232, 119, 34, 0.2);
 }
 
+.txt-title {
+  font-size: 1rem;
+  font-weight: normal;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+
 .txt-viewer-wrapper {
   width: 100%;
   display: flex;

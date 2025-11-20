@@ -3,17 +3,17 @@ import { secureLog, secureWarn } from '@/utils/secureConsole';
 /**
  * Domain Verification Utility
  *
- * Validates that the application is running on an authorized domain.
+ * Validates that the application is running on an allowed domain.
  * Displays warnings on unauthorized deployments to deter theft.
  */
 
 /**
- * Authorized domains whitelist
+ * Allowed domains whitelist
  * Add your production and development domains here
  */
 type DomainMatcher = string | RegExp;
 
-const DEFAULT_AUTHORIZED_DOMAINS: DomainMatcher[] = [
+const DEFAULT_ALLOWED_DOMAINS: DomainMatcher[] = [
   'localhost',
   '127.0.0.1',
   '0.0.0.0',
@@ -74,9 +74,9 @@ const getEnvironmentDomains = (): DomainMatcher[] => {
     .filter((value): value is DomainMatcher => value !== null);
 };
 
-const AUTHORIZED_DOMAINS: DomainMatcher[] = [
+const ALLOWED_DOMAINS: DomainMatcher[] = [
   ...getEnvironmentDomains(),
-  ...DEFAULT_AUTHORIZED_DOMAINS,
+  ...DEFAULT_ALLOWED_DOMAINS,
 ];
 
 const isProdEnv = () =>
@@ -105,19 +105,19 @@ const isDomainLockEnabled = () => {
 /**
  * Check if a domain matches the whitelist
  */
-const isDomainAuthorized = (hostname: string): boolean =>
-  AUTHORIZED_DOMAINS.some(authorized => {
-    if (typeof authorized === 'string') {
-      return hostname === authorized;
+const isDomainAllowed = (hostname: string): boolean =>
+  ALLOWED_DOMAINS.some(allowed => {
+    if (typeof allowed === 'string') {
+      return hostname === allowed;
     }
-    return authorized.test(hostname);
+    return allowed.test(hostname);
   });
 
 /**
  * Domain verification result
  */
 export interface DomainCheckResult {
-  isAuthorized: boolean;
+  isAllowed: boolean;
   currentDomain: string;
   message?: string;
   shouldBlock: boolean;
@@ -129,21 +129,21 @@ export interface DomainCheckResult {
 export const verifyDomain = (): DomainCheckResult => {
   if (typeof window === 'undefined') {
     return {
-      isAuthorized: true,
+      isAllowed: true,
       currentDomain: 'server',
       shouldBlock: false,
     };
   }
 
   const hostname = window.location.hostname;
-  const isAuthorized = isDomainAuthorized(hostname);
+  const isAllowed = isDomainAllowed(hostname);
   const enforcementEnabled = isDomainLockEnabled();
 
   return {
-    isAuthorized,
+    isAllowed,
     currentDomain: hostname,
-    shouldBlock: enforcementEnabled ? !isAuthorized : false,
-    message: isAuthorized
+    shouldBlock: enforcementEnabled ? !isAllowed : false,
+    message: isAllowed
       ? undefined
       : `Unauthorized deployment detected on domain: ${hostname}`,
   };
@@ -153,7 +153,7 @@ export const verifyDomain = (): DomainCheckResult => {
  * Log domain verification to console
  */
 export const logDomainVerification = (result: DomainCheckResult): void => {
-  if (result.isAuthorized) {
+  if (result.isAllowed) {
     if (import.meta.env.DEV) {
       secureLog(`✅ Domain verified: ${result.currentDomain}`);
     }
@@ -179,10 +179,10 @@ export const logDomainVerification = (result: DomainCheckResult): void => {
 };
 
 /**
- * Get the authorized domain list (for display purposes)
+ * Get the allowed domain list (for display purposes)
  */
-export const getAuthorizedDomains = (): string[] => {
-  return AUTHORIZED_DOMAINS.filter(d => typeof d === 'string') as string[];
+export const getAllowedDomains = (): string[] => {
+  return ALLOWED_DOMAINS.filter(d => typeof d === 'string') as string[];
 };
 
 /**
@@ -190,7 +190,7 @@ export const getAuthorizedDomains = (): string[] => {
  * Returns the verification result and a warning flag
  */
 export const useDomainCheck = (): {
-  isAuthorized: boolean;
+  isAllowed: boolean;
   shouldShowWarning: boolean;
   shouldBlockRendering: boolean;
   domain: string;
@@ -198,8 +198,8 @@ export const useDomainCheck = (): {
   const result = verifyDomain();
 
   return {
-    isAuthorized: result.isAuthorized,
-    shouldShowWarning: !result.isAuthorized,
+    isAllowed: result.isAllowed,
+    shouldShowWarning: !result.isAllowed,
     shouldBlockRendering: result.shouldBlock,
     domain: result.currentDomain,
   };

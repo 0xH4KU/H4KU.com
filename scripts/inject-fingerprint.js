@@ -155,7 +155,7 @@ function generateBuildFingerprint() {
 
 /**
  * Ensure cache directory exists for build metadata
-*/
+ */
 const ensureCacheDir = () => {
   if (!fs.existsSync(CACHE_DIR)) {
     fs.mkdirSync(CACHE_DIR, { recursive: true });

@@ -16,7 +16,7 @@ import { use100vh } from '@/hooks/use100vh';
 import {
   verifyDomain,
   logDomainVerification,
-  getAuthorizedDomains,
+  getAllowedDomains,
   type DomainCheckResult,
 } from '@/utils/domainCheck';
 import { injectAllFingerprints } from '@/utils/fingerprint';
@@ -35,7 +35,7 @@ const AppContent: React.FC = () => {
   const { width } = useWindowSize();
   const [domainCheckResult, setDomainCheckResult] = useState<DomainCheckResult>(
     {
-      isAuthorized: true,
+      isAllowed: true,
       currentDomain: '',
       shouldBlock: false,
     }
@@ -84,10 +84,10 @@ const AppContent: React.FC = () => {
         }`}
       >
         {/* Show copyright warning overlay on unauthorized domains */}
-        {!domainCheckResult.isAuthorized && (
+        {!domainCheckResult.isAllowed && (
           <CopyrightWarning
             currentDomain={domainCheckResult.currentDomain}
-            authorizedDomains={getAuthorizedDomains()}
+            allowedDomains={getAllowedDomains()}
           />
         )}
         <a href="#main-content" className="skip-link">

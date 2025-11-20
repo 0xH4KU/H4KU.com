@@ -57,11 +57,13 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 ### Field reference
 
 **folder**
+
 - `name` – Display name (defaults to folder name)
 - `description` – Short blurb shown in the UI
 - `order` – Sorting weight (lower numbers appear first)
 
 **items**
+
 - `title` – Artwork/page title (defaults to filename)
 - `description` – Optional caption
 - `date` – ISO date (`YYYY-MM-DD`)
@@ -105,13 +107,13 @@ You can still provide your own optimised assets for art-directed crops or specia
 
 ## Frequently Used Commands
 
-| Command | Purpose |
-| --- | --- |
-| `npm run cms` | Scan `public/content/` → regenerate `src/content/{folders,images,pages,socials}` |
-| `npm run sync` | Alias of `npm run cms` |
-| `npm run build:data` | Bundle `src/content/**` into `_aggregated.json` with hashes |
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Production build (CMS + fingerprint + Vite; does **not** run build:data) |
+| Command              | Purpose                                                                          |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `npm run cms`        | Scan `public/content/` → regenerate `src/content/{folders,images,pages,socials}` |
+| `npm run sync`       | Alias of `npm run cms`                                                           |
+| `npm run build:data` | Bundle `src/content/**` into `_aggregated.json` with hashes                      |
+| `npm run dev`        | Start the Vite dev server                                                        |
+| `npm run build`      | Production build (CMS + fingerprint + Vite; does **not** run build:data)         |
 
 ## Integrity Tag
 
@@ -143,11 +145,11 @@ You can still provide your own optimised assets for art-directed crops or specia
 
 ## Troubleshooting
 
-| Symptom | Fix |
-| --- | --- |
-| Content not showing up | Run `npm run cms` after adding files. |
-| Image missing | Ensure it lives under `public/content/homepage/`, uses a supported extension, and rerun `npm run cms`. |
-| Removing content | Delete the file/folder from `public/content/homepage/` **and** rerun `npm run cms`. |
+| Symptom                  | Fix                                                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Content not showing up   | Run `npm run cms` after adding files.                                                                                 |
+| Image missing            | Ensure it lives under `public/content/homepage/`, uses a supported extension, and rerun `npm run cms`.                |
+| Removing content         | Delete the file/folder from `public/content/homepage/` **and** rerun `npm run cms`.                                   |
 | Live reload not updating | Manual `npm run cms` is still required, but Vite watches `_aggregated.json` so the browser refreshes once it changes. |
 
 ## How the Pipeline Works
@@ -163,6 +165,7 @@ React UI renders the data
 ```
 
 Generated files:
+
 - `src/content/folders/*.json` – Folder metadata
 - `src/content/images/*.json` – Image/work entries
 - `src/content/pages/*.json` – Standalone text pages

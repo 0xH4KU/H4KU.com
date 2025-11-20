@@ -133,7 +133,7 @@ const ContentView: React.FC = () => {
                 width="36"
                 height="36"
               />
-              <span>{currentView.data.name}</span>
+              <h1 className={styles['txt-title']}>{currentView.data.name}</h1>
               <m.button
                 onClick={handleCloseTextView}
                 className={styles['close-btn']}
