@@ -43,7 +43,7 @@
     <!-- Fallback CSP for environments that ignore /public/_headers (mirrors header rules) -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com https://api.lum.bio https://*.sentry.io https://*.ingest.sentry.io; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com https://api.lum.bio https://*.workers.dev https://*.sentry.io https://*.ingest.sentry.io; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
     />
 
     <!-- Preload Critical Resources -->
