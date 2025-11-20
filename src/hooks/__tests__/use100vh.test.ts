@@ -126,11 +126,13 @@ describe('use100vh', () => {
 
     expect(addEventListenerMock).toHaveBeenCalledWith(
       'resize',
-      expect.any(Function)
+      expect.any(Function),
+      expect.objectContaining({ passive: true })
     );
     expect(addEventListenerMock).toHaveBeenCalledWith(
       'scroll',
-      expect.any(Function)
+      expect.any(Function),
+      expect.objectContaining({ passive: true })
     );
   });
 

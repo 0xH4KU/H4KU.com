@@ -171,7 +171,7 @@ export function LazyImage({
       sizes={sizes}
       alt={alt}
       className={className}
-      loading={priority ? 'eager' : 'lazy'}
+      loading={priority ? 'eager' : undefined}
       decoding={priority ? 'sync' : 'async'}
       fetchPriority={priority ? 'high' : fetchPriority}
       onLoad={handleLoad}
