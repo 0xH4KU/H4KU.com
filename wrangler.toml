@@ -2,7 +2,8 @@ name = "lum-bio"
 pages_build_output_dir = "dist"
 
 [vars]
-VITE_CONTACT_ENDPOINT = "https://api.example.com/contact"
+# Default to same-origin route handled by a Cloudflare Email Worker (or Pages Function).
+VITE_CONTACT_ENDPOINT = "/api/contact"
 # Optional overrides
 VITE_CONTACT_TIMEOUT = "10000"
 VITE_APP_ENV = "production"

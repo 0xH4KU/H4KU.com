@@ -144,6 +144,13 @@ export function ContactForm() {
       setFormData({ name: '', email: '', message: '' });
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
+        // Treat aborted/timeout requests as a safe recoverable state
+        setStatus({
+          type: 'error',
+          message: 'The request was canceled. Please try again.',
+        });
+        activeRequestRef.current = null;
+        setFormStartTime(Date.now());
         return;
       }
       const fallbackMessage =

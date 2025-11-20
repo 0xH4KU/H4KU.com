@@ -16,11 +16,14 @@ type DomainMatcher = string | RegExp;
 const DEFAULT_AUTHORIZED_DOMAINS: DomainMatcher[] = [
   'localhost',
   '127.0.0.1',
+  '0.0.0.0',
+  '::1',
   'lum.bio',
   'www.lum.bio',
   'lum-bio.pages.dev',
   /.*\.lum-bio\.pages\.dev$/,
   /^192\.168\.\d{1,3}\.\d{1,3}$/,
+  /^.+\.localhost$/,
 ];
 
 const escapeRegExp = (value: string) =>
@@ -76,6 +79,29 @@ const AUTHORIZED_DOMAINS: DomainMatcher[] = [
   ...DEFAULT_AUTHORIZED_DOMAINS,
 ];
 
+const isProdEnv = () =>
+  typeof import.meta !== 'undefined' &&
+  typeof import.meta.env?.PROD === 'boolean' &&
+  import.meta.env.PROD;
+
+/**
+ * Domain lock is enforced only in production by default.
+ * Opt-out by setting VITE_ENFORCE_DOMAIN_LOCK=false.
+ */
+const isDomainLockEnabled = () => {
+  const raw =
+    (typeof import.meta !== 'undefined' &&
+      import.meta.env &&
+      import.meta.env.VITE_ENFORCE_DOMAIN_LOCK) ||
+    undefined;
+
+  if (typeof raw === 'string') {
+    return raw.trim().toLowerCase() !== 'false';
+  }
+
+  return isProdEnv();
+};
+
 /**
  * Check if a domain matches the whitelist
  */
@@ -111,11 +137,12 @@ export const verifyDomain = (): DomainCheckResult => {
 
   const hostname = window.location.hostname;
   const isAuthorized = isDomainAuthorized(hostname);
+  const enforcementEnabled = isDomainLockEnabled();
 
   return {
     isAuthorized,
     currentDomain: hostname,
-    shouldBlock: !isAuthorized,
+    shouldBlock: enforcementEnabled ? !isAuthorized : false,
     message: isAuthorized
       ? undefined
       : `Unauthorized deployment detected on domain: ${hostname}`,

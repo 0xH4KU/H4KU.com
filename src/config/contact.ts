@@ -1,5 +1,6 @@
 // Contact endpoint configuration
-// Provide VITE_CONTACT_ENDPOINT to route submissions through a server-side handler.
+// Defaults to a relative Pages/Workers route so Cloudflare Email Worker deployments
+// work out of the box on the same domain.
 
 const normalizeEndpoint = (value?: string | null) => {
   if (typeof value !== 'string') {
@@ -15,7 +16,10 @@ const normalizeEndpoint = (value?: string | null) => {
 };
 
 export const CONTACT_CONFIG = {
-  ENDPOINT: normalizeEndpoint(import.meta.env.VITE_CONTACT_ENDPOINT),
+  // Prefer env override; fall back to a same-origin Pages/Workers route
+  ENDPOINT: normalizeEndpoint(
+    import.meta.env.VITE_CONTACT_ENDPOINT ?? '/api/contact'
+  ),
   TIMEOUT_MS: (() => {
     const parsed = Number.parseInt(
       import.meta.env.VITE_CONTACT_TIMEOUT ?? '15000',

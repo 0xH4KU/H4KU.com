@@ -177,7 +177,7 @@ Development server runs at `http://localhost:5173`
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_CONTACT_ENDPOINT` | Server-side endpoint that handles contact form submissions. |
+| `VITE_CONTACT_ENDPOINT` | Server-side endpoint that handles contact form submissions. Defaults to `/api/contact` (Cloudflare Email Worker or Pages Function on same domain). |
 | `VITE_CONTACT_TIMEOUT` | (Optional) Timeout in milliseconds for contact submissions. |
 | `VITE_SENTRY_DSN` | (Optional) Enables production crash reporting via Sentry. |
 | `VITE_APP_VERSION` | (Optional) Overrides the release tag reported to monitoring. |
@@ -290,6 +290,15 @@ For questions, collaboration, or licensing inquiries:
 
 - **Email:** hi@lum.bio
 - **Issues:** [GitHub](https://github.com/cwlum/lum.bio/issues) / [GitLab](https://gitlab.com/lummuu/lum.bio/-/issues)
+
+### Cloudflare Email Worker setup (recommended)
+
+Deploy a CF Worker (or Pages Function) that accepts `POST /api/contact` and sends email using the Email Worker binding. Keeping it on the same domain keeps CSP/CORS simple.
+
+1. Map the Worker route to `/api/contact` on your Pages domain (or use `https://<subdomain>.workers.dev/contact`).
+2. Set `VITE_CONTACT_ENDPOINT` accordingly; default `/api/contact` already works for same-domain routes.
+3. If you use a workers.dev hostname, CSP already allows `https://*.workers.dev`.
+4. Optional: adjust `VITE_CONTACT_TIMEOUT` (ms) to your SLA.
 
 ---
 
