@@ -136,10 +136,11 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   white-space: nowrap;
+  font-weight: 700;
 }
 
 .integrity-indicator--valid {
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .integrity-indicator--invalid {
@@ -151,8 +152,10 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   white-space: nowrap;
-  color: var(--color-primary);
-  text-decoration: none;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1.5px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -160,7 +163,7 @@
 
 .license-link:hover,
 .license-link:focus-visible {
-  text-decoration: underline;
+  text-decoration-thickness: 2px;
 }
 
 .integrity-warning {
