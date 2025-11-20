@@ -1,6 +1,8 @@
 .file-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  /* auto-fit lets items stretch to fill the row when there are only a few,
+     preventing the empty ghost columns that left a huge blank area on desktop */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 24px;
 }
 
@@ -59,7 +61,7 @@
 
 .works-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 24px;
 }
 
@@ -119,8 +121,18 @@
   box-shadow: 0 8px 16px rgba(232, 119, 34, 0.2);
 }
 
+.txt-viewer-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-inline: clamp(16px, 4vw, 96px);
+  box-sizing: border-box;
+}
+
 .txt-viewer {
-  max-width: 800px;
+  width: 100%;
+  /* Let the desktop page width scale with the viewport so it doesn't hug the left edge */
+  max-width: clamp(600px, 80vw, 1400px);
   margin: 0 auto;
   border: 2px solid var(--color-text);
   background: var(--color-background);
@@ -155,7 +167,7 @@
 }
 
 .txt-content {
-  padding: 24px;
+  padding: clamp(20px, 3vw, 40px);
 }
 
 .txt-content pre {
@@ -205,11 +217,11 @@
 
 @media (max-width: 768px) {
   .file-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 16px;
   }
 
   .works-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 }
