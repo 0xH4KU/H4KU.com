@@ -1,21 +1,33 @@
 import { useEffect, useState } from 'react';
 
+/**
+ * Keeps motion disabled until after React hydrates so the first paint
+ * can happen without any intro animations delaying LCP/FCP on slower devices.
+ */
 export function useReducedMotion(): boolean {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    return mediaQuery.matches;
-  });
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (
+      typeof window === 'undefined' ||
+      typeof window.matchMedia !== 'function'
+    ) {
+      return;
+    }
 
-    const handleChange = (event: MediaQueryListEvent) => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = (
+      event: MediaQueryList | MediaQueryListEvent
+    ): void => {
       setPrefersReducedMotion(event.matches);
     };
 
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    // Sync to the real preference immediately after hydration
+    updatePreference(mediaQuery);
+
+    const listener = (event: MediaQueryListEvent) => updatePreference(event);
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
   }, []);
 
   return prefersReducedMotion;

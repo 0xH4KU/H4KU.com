@@ -11,6 +11,8 @@ let isInitialized = false;
 let monitoringEnabled = false;
 let sentryClient: SentryClient | null = null;
 let sentryClientPromise: Promise<SentryClient> | null = null;
+let monitoringInitPromise: Promise<SentryClient | null> | null = null;
+let idleInitScheduled = false;
 
 const getEnv = (key: string) => {
   const value = (import.meta.env as Record<string, string | undefined>)[key];
@@ -37,6 +39,77 @@ const loadSentryClient = async (): Promise<SentryClient> => {
   return sentryClientPromise;
 };
 
+const beginMonitoringInit = async (): Promise<SentryClient | null> => {
+  if (monitoringInitPromise) {
+    return monitoringInitPromise;
+  }
+  monitoringInitPromise = loadSentryClient()
+    .then(Sentry => {
+      Sentry.init({
+        dsn: SENTRY_DSN,
+        release: APP_VERSION,
+        environment: APP_ENV,
+        tracesSampleRate: 0.05,
+        replaysSessionSampleRate: 0.0,
+        integrations: [],
+        beforeSend(event) {
+          if (event.request?.headers) {
+            delete event.request.headers['authorization'];
+          }
+          return event;
+        },
+      });
+      monitoringEnabled = true;
+      return Sentry;
+    })
+    .catch(error => {
+      if (import.meta.env.DEV) {
+        console.warn('[monitoring] Failed to load Sentry:', error);
+      }
+      monitoringEnabled = false;
+      monitoringInitPromise = null;
+      sentryClientPromise = null;
+      sentryClient = null;
+      return null;
+    });
+  return monitoringInitPromise;
+};
+
+const scheduleMonitoringInit = () => {
+  if (
+    idleInitScheduled ||
+    monitoringEnabled ||
+    monitoringInitPromise ||
+    typeof window === 'undefined'
+  ) {
+    return;
+  }
+  idleInitScheduled = true;
+
+  const runInit = () => {
+    idleInitScheduled = false;
+    void beginMonitoringInit();
+  };
+
+  const idleWindow = window as typeof window & {
+    requestIdleCallback?: (
+      callback: IdleRequestCallback,
+      options?: IdleRequestOptions
+    ) => number;
+  };
+
+  if (typeof idleWindow.requestIdleCallback === 'function') {
+    idleWindow.requestIdleCallback(
+      () => {
+        runInit();
+      },
+      { timeout: 2500 }
+    );
+  } else {
+    window.setTimeout(runInit, 1200);
+  }
+};
+
 export const initializeMonitoring = async (): Promise<boolean> => {
   if (isInitialized) {
     return monitoringEnabled;
@@ -48,34 +121,8 @@ export const initializeMonitoring = async (): Promise<boolean> => {
     return false;
   }
 
-  try {
-    const Sentry = await loadSentryClient();
-    Sentry.init({
-      dsn: SENTRY_DSN,
-      release: APP_VERSION,
-      environment: APP_ENV,
-      tracesSampleRate: 0.05,
-      replaysSessionSampleRate: 0.0,
-      integrations: [],
-      beforeSend(event) {
-        // Ensure we never leak user input fields.
-        if (event.request?.headers) {
-          delete event.request.headers['authorization'];
-        }
-        return event;
-      },
-    });
-    monitoringEnabled = true;
-    return true;
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[monitoring] Failed to load Sentry:', error);
-    }
-    monitoringEnabled = false;
-    sentryClientPromise = null;
-    sentryClient = null;
-    return false;
-  }
+  scheduleMonitoringInit();
+  return true;
 };
 
 export const reportError = (
@@ -91,7 +138,11 @@ export const reportError = (
     error instanceof Error ? error : new Error(String(error));
 
   const sendToSentry = async () => {
-    const client = sentryClient ?? (await sentryClientPromise);
+    const ongoingInit = monitoringInitPromise;
+    const client =
+      sentryClient ??
+      (ongoingInit ? await ongoingInit : null) ??
+      (await beginMonitoringInit());
     if (!client) {
       return;
     }

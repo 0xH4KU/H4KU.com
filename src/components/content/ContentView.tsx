@@ -130,6 +130,8 @@ const ContentView: React.FC = () => {
                 className={styles['txt-icon']}
                 src={paperIcon}
                 alt="Text file icon"
+                width="36"
+                height="36"
               />
               <span>{currentView.data.name}</span>
               <m.button
@@ -235,12 +237,13 @@ const ContentView: React.FC = () => {
                       onClick={() => handleNavigate(child)}
                       whileHover={createHoverAnimation(prefersReducedMotion)}
                       whileTap={createTapAnimation(prefersReducedMotion)}
-                      aria-label={`Open folder ${child.name}`}
                     >
                       <img
                         className={styles['file-icon']}
                         src={folderIcon}
                         alt="Folder icon"
+                        width="96"
+                        height="96"
                       />
                       <div className={styles['file-name']}>{child.name}</div>
                     </m.button>
@@ -264,12 +267,13 @@ const ContentView: React.FC = () => {
                       }}
                       whileHover={createHoverAnimation(prefersReducedMotion)}
                       whileTap={createTapAnimation(prefersReducedMotion)}
-                      aria-label={`Open page ${item.filename}`}
                     >
                       <img
                         className={styles['file-icon']}
                         src={paperIcon}
                         alt="Text file icon"
+                        width="96"
+                        height="96"
                       />
                       <div className={styles['file-name']}>{item.filename}</div>
                     </m.button>
@@ -286,7 +290,6 @@ const ContentView: React.FC = () => {
                       onClick={() => handleOpenLightbox(item, workItems)}
                       whileHover={createHoverAnimation(prefersReducedMotion)}
                       whileTap={createTapAnimation(prefersReducedMotion)}
-                      aria-label={`Open work ${item.filename}`}
                     >
                       <LazyImage
                         className={styles['file-thumb']}
@@ -361,9 +364,6 @@ const ContentView: React.FC = () => {
                 }
               : () => handleOpenLightbox(item, sortedHomeWorkItems);
 
-            const ariaLabel = isTextPage
-              ? `Open page ${item.filename}`
-              : `Open work ${item.filename}`;
             return (
               <m.button
                 key={item.id}
@@ -373,7 +373,6 @@ const ContentView: React.FC = () => {
                 onClick={handleClick}
                 whileHover={createHoverAnimation(prefersReducedMotion)}
                 whileTap={createTapAnimation(prefersReducedMotion)}
-                aria-label={ariaLabel}
               >
                 {isTextPage ? (
                   <img
@@ -432,7 +431,6 @@ const ContentView: React.FC = () => {
                     onClick={() => handleNavigate(folder)}
                     whileHover={createHoverAnimation(prefersReducedMotion)}
                     whileTap={createTapAnimation(prefersReducedMotion)}
-                    aria-label={`Open folder ${folder.name}`}
                   >
                     <img
                       className={styles['file-icon']}
@@ -451,7 +449,6 @@ const ContentView: React.FC = () => {
                     onClick={() => handleNavigate(page)}
                     whileHover={createHoverAnimation(prefersReducedMotion)}
                     whileTap={createTapAnimation(prefersReducedMotion)}
-                    aria-label={`Open page ${page.name}`}
                   >
                     <img
                       className={styles['file-icon']}

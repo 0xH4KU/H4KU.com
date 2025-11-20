@@ -164,6 +164,7 @@ const chunkAliasMap: Record<string, string> = {
   'react-vendor': 'rv',
   'animation-vendor': 'anim',
   'icons-vendor': 'icons',
+  'monitoring-vendor': 'mon',
 };
 
 const getChunkAlias = (name?: string): string | null => {
@@ -247,6 +248,8 @@ export default defineConfig({
           'animation-vendor': ['framer-motion'],
           // Split icon library
           'icons-vendor': ['lucide-react'],
+          // Split Sentry monitoring
+          'monitoring-vendor': ['@sentry/browser'],
         },
         chunkFileNames: chunkInfo => {
           if (process.env.NODE_ENV !== 'production') {
@@ -283,12 +286,18 @@ export default defineConfig({
         passes: 3,
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        ecma: 2020,
       },
       format: {
         comments: false,
       },
     },
     target: 'es2020',
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+    // Enable asset inlining threshold
+    assetsInlineLimit: 4096,
   },
   // Define global constants (fingerprint will be injected here)
   define: {
