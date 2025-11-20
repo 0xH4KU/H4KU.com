@@ -269,7 +269,6 @@ const Sidebar: React.FC = () => {
       }
       const touch = event.touches[0];
       scheduleDragUpdate(touch.clientX);
-      event.preventDefault();
     };
 
     const stopDrag = () => {
@@ -284,10 +283,10 @@ const Sidebar: React.FC = () => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', stopDrag);
     document.addEventListener('touchmove', handleTouchMove, {
-      passive: false,
+      passive: true,
     });
-    document.addEventListener('touchend', stopDrag);
-    document.addEventListener('touchcancel', stopDrag);
+    document.addEventListener('touchend', stopDrag, { passive: true });
+    document.addEventListener('touchcancel', stopDrag, { passive: true });
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);

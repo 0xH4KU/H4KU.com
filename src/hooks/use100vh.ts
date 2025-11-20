@@ -38,11 +38,15 @@ export function use100vh() {
     };
 
     setVh();
-    window.addEventListener('resize', setVh);
-    window.addEventListener('orientationchange', setVh);
+    window.addEventListener('resize', setVh, { passive: true });
+    window.addEventListener('orientationchange', setVh, { passive: true });
     window.addEventListener('pageshow', handlePageShow);
-    window.visualViewport?.addEventListener('resize', setVh);
-    window.visualViewport?.addEventListener('scroll', setVhThrottled);
+    window.visualViewport?.addEventListener('resize', setVh, {
+      passive: true,
+    });
+    window.visualViewport?.addEventListener('scroll', setVhThrottled, {
+      passive: true,
+    });
 
     return () => {
       window.removeEventListener('resize', setVh);
