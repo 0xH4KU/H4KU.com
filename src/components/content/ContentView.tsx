@@ -112,61 +112,63 @@ const ContentView: React.FC = () => {
 
       return (
         <m.div
-          className={`${styles['txt-viewer']} ${theme}`}
+          className={styles['txt-viewer-wrapper']}
           variants={pageVariants}
           initial="initial"
           animate="animate"
           exit="exit"
           key={`txt-${currentView.data.id}`}
         >
-          <m.div
-            className={styles['txt-header']}
-            initial={headerAnimation.initial}
-            animate={headerAnimation.animate}
-            transition={headerAnimation.transition}
-          >
-            <img
-              className={styles['txt-icon']}
-              src={paperIcon}
-              alt="Text file icon"
-            />
-            <span>{currentView.data.name}</span>
-            <m.button
-              onClick={handleCloseTextView}
-              className={styles['close-btn']}
-              {...closeButtonAnimation}
+          <div className={`${styles['txt-viewer']} ${theme}`}>
+            <m.div
+              className={styles['txt-header']}
+              initial={headerAnimation.initial}
+              animate={headerAnimation.animate}
+              transition={headerAnimation.transition}
             >
-              ×
-            </m.button>
-          </m.div>
-          <m.div
-            className={styles['txt-content']}
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{
-              delay: 0.15,
-              duration: 0.3,
-              ease: DEFAULT_EASE,
-            }}
-          >
-            <pre>{currentView.data.content}</pre>
-            {currentView.data.id === 'contact' && (
-              <ErrorBoundary
-                key={contactRetryKey}
-                fallback={contactFormFallback}
+              <img
+                className={styles['txt-icon']}
+                src={paperIcon}
+                alt="Text file icon"
+              />
+              <span>{currentView.data.name}</span>
+              <m.button
+                onClick={handleCloseTextView}
+                className={styles['close-btn']}
+                {...closeButtonAnimation}
               >
-                <Suspense
-                  fallback={
-                    <div className={styles['contact-loading']} role="status">
-                      Loading secure contact form…
-                    </div>
-                  }
+                ×
+              </m.button>
+            </m.div>
+            <m.div
+              className={styles['txt-content']}
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{
+                delay: 0.15,
+                duration: 0.3,
+                ease: DEFAULT_EASE,
+              }}
+            >
+              <pre>{currentView.data.content}</pre>
+              {currentView.data.id === 'contact' && (
+                <ErrorBoundary
+                  key={contactRetryKey}
+                  fallback={contactFormFallback}
                 >
-                  <ContactForm />
-                </Suspense>
-              </ErrorBoundary>
-            )}
-          </m.div>
+                  <Suspense
+                    fallback={
+                      <div className={styles['contact-loading']} role="status">
+                        Loading secure contact form…
+                      </div>
+                    }
+                  >
+                    <ContactForm />
+                  </Suspense>
+                </ErrorBoundary>
+              )}
+            </m.div>
+          </div>
         </m.div>
       );
     }
