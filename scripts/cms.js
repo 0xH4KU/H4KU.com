@@ -158,10 +158,8 @@ const buildOptimizedPath = (relativeDir, basename, format) => {
   const targetDir = path.join(OPTIMIZED_OUTPUT_ROOT, safeDir);
   const filename = `${basename}.${format}`;
   const filePath = path.join(targetDir, filename);
-  const publicPath = `${OPTIMIZED_PUBLIC_PREFIX}/${safeDir}/${filename}`.replace(
-    /\/{2,}/g,
-    '/'
-  );
+  const publicPath =
+    `${OPTIMIZED_PUBLIC_PREFIX}/${safeDir}/${filename}`.replace(/\/{2,}/g, '/');
   return { filePath, publicPath, targetDir };
 };
 
@@ -184,14 +182,9 @@ const ensureOptimizedVariant = async ({
   fs.mkdirSync(targetDir, { recursive: true });
 
   const quality =
-    format === 'avif'
-      ? { quality: 45, speed: 6 }
-      : { quality: 82, effort: 5 };
+    format === 'avif' ? { quality: 45, speed: 6 } : { quality: 82, effort: 5 };
 
-  await sharp(inputPath)
-    .rotate()
-    .toFormat(format, quality)
-    .toFile(filePath);
+  await sharp(inputPath).rotate().toFormat(format, quality).toFile(filePath);
 
   return publicPath;
 };
@@ -294,11 +287,13 @@ function throwReadableFsError(action, targetPath, error) {
 
 // Ensure output directories exist
 function ensureDirectories() {
-  [OUTPUT_FOLDERS, OUTPUT_IMAGES, OUTPUT_PAGES, OPTIMIZED_OUTPUT_ROOT].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  [OUTPUT_FOLDERS, OUTPUT_IMAGES, OUTPUT_PAGES, OPTIMIZED_OUTPUT_ROOT].forEach(
+    dir => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
     }
-  });
+  );
 
   if (!fs.existsSync(BACKUP_ROOT)) {
     fs.mkdirSync(BACKUP_ROOT, { recursive: true });

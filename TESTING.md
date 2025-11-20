@@ -34,14 +34,15 @@ Keep tests next to the code they validate inside a `__tests__` folder. Name file
 
 ## 3. Commands
 
-| Command | Description |
-| --- | --- |
-| `npm test` | Watch mode (ideal for TDD) |
-| `npm run test:run` | Single CI-friendly pass |
+| Command                 | Description                         |
+| ----------------------- | ----------------------------------- |
+| `npm test`              | Watch mode (ideal for TDD)          |
+| `npm run test:run`      | Single CI-friendly pass             |
 | `npm run test:coverage` | Generates reports under `coverage/` |
-| `npm run test:ui` | Launches the Vitest UI dashboard |
+| `npm run test:ui`       | Launches the Vitest UI dashboard    |
 
 Additional CLI tips (watch mode):
+
 ```
 a – rerun all tests
 f – rerun failed tests
@@ -107,7 +108,9 @@ import { buildNavigationMap } from '../navigation';
 
 describe('buildNavigationMap', () => {
   it('provides O(1) folder lookups', () => {
-    const map = buildNavigationMap([{ id: 'featured', name: 'Featured', type: 'folder' }]);
+    const map = buildNavigationMap([
+      { id: 'featured', name: 'Featured', type: 'folder' },
+    ]);
     expect(map.byId.get('featured')?.name).toBe('Featured');
   });
 });
@@ -126,11 +129,11 @@ describe('buildNavigationMap', () => {
 
 ## 6. Troubleshooting
 
-| Symptom | Fix |
-| --- | --- |
+| Symptom          | Fix                                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
 | Tests hang on CI | Ensure no `setTimeout` is left unresolved; use `vi.useFakeTimers()` and advance appropriately. |
-| Random failures | Avoid relying on animation delays—prefer deterministic `act()` patterns. |
-| DOM not updating | Wrap state updates in `act()` when manually triggering hook callbacks. |
-| Coverage drop | Run `npm run test:coverage` and inspect `coverage/coverage-summary.json` for culprits. |
+| Random failures  | Avoid relying on animation delays—prefer deterministic `act()` patterns.                       |
+| DOM not updating | Wrap state updates in `act()` when manually triggering hook callbacks.                         |
+| Coverage drop    | Run `npm run test:coverage` and inspect `coverage/coverage-summary.json` for culprits.         |
 
 For deeper architectural context or CI details, refer to `DEVELOPMENT.md` and `docs/CI_GUIDE.md`.

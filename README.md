@@ -141,18 +141,18 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Framework** | React 19.2 |
-| **Routing** | Custom NavigationContext (History API observers) |
-| **Language** | TypeScript 5.4 (strict mode) |
-| **Build Tool** | Vite 7 |
-| **Styling** | CSS Modules + global tokens |
-| **Animation** | Framer Motion (reduced-motion aware) |
-| **Testing** | Vitest 4 + React Testing Library (95% global threshold) |
-| **Linting** | ESLint + Prettier |
-| **CI/CD** | GitLab CI + Cloudflare Pages |
-| **Contact** | Server-side endpoint (`VITE_CONTACT_ENDPOINT`) |
+| Layer          | Technology                                              |
+| -------------- | ------------------------------------------------------- |
+| **Framework**  | React 19.2                                              |
+| **Routing**    | Custom NavigationContext (History API observers)        |
+| **Language**   | TypeScript 5.4 (strict mode)                            |
+| **Build Tool** | Vite 7                                                  |
+| **Styling**    | CSS Modules + global tokens                             |
+| **Animation**  | Framer Motion (reduced-motion aware)                    |
+| **Testing**    | Vitest 4 + React Testing Library (95% global threshold) |
+| **Linting**    | ESLint + Prettier                                       |
+| **CI/CD**      | GitLab CI + Cloudflare Pages                            |
+| **Contact**    | Server-side endpoint (`VITE_CONTACT_ENDPOINT`)          |
 
 ## Development
 
@@ -175,41 +175,41 @@ Development server runs at `http://localhost:5173`
 
 #### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
+| Variable                | Description                                                                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `VITE_CONTACT_ENDPOINT` | Server-side endpoint that handles contact form submissions. Defaults to `/api/contact` (Cloudflare Email Worker or Pages Function on same domain). |
-| `VITE_CONTACT_TIMEOUT` | (Optional) Timeout in milliseconds for contact submissions. |
-| `VITE_SENTRY_DSN` | (Optional) Enables production crash reporting via Sentry. |
-| `VITE_APP_VERSION` | (Optional) Overrides the release tag reported to monitoring. |
-| `VITE_APP_ENV` | (Optional) Sets the monitoring environment label (`prod`, `staging`, etc.). |
+| `VITE_CONTACT_TIMEOUT`  | (Optional) Timeout in milliseconds for contact submissions.                                                                                        |
+| `VITE_SENTRY_DSN`       | (Optional) Enables production crash reporting via Sentry.                                                                                          |
+| `VITE_APP_VERSION`      | (Optional) Overrides the release tag reported to monitoring.                                                                                       |
+| `VITE_APP_ENV`          | (Optional) Sets the monitoring environment label (`prod`, `staging`, etc.).                                                                        |
 
 ### Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with HMR |
-| `npm run build` | Production build orchestrator (CMS → fingerprint → Vite) |
-| `npm run build:fast` | Skip CMS + fingerprint for quick UI builds (`--skip=cms,fingerprint`) |
-| `npm run build:data` | Aggregate content JSON into `_aggregated.json` |
-| `npm run preview` | Preview production build locally |
-| `npm test` | Run tests in watch mode |
-| `npm run test:run` | Run tests once (CI mode) |
-| `npm run test:coverage` | Generate coverage report (95% global threshold) |
-| `npm run test:ui` | Open Vitest UI dashboard |
-| `npm run lint` | Check code style |
-| `npm run lint:fix` | Fix auto-fixable lint issues |
-| `npm run format` | Format code with Prettier |
-| `npm run format:check` | Check code formatting |
-| `npm run type-check` | Verify TypeScript types |
-| `npm run deps:prune` | Remove extraneous packages (runs after install) |
-| `npm run size` | Check bundle size against limits |
-| `npm run size:analyze` | Detailed bundle analysis |
-| `npm run integrity:check` | Verify or update `_aggregated.json` checksums |
-| `npm run ci` | Run all CI checks locally |
-| `npm run ci:quality` | Run quality checks (lint, format, types) |
-| `npm run ci:coverage` | Run tests with coverage reporting |
-| `npm run ci:security` | Run security scans |
-| `npm run ci:bundle` | Build and check bundle size |
+| Command                   | Description                                                           |
+| ------------------------- | --------------------------------------------------------------------- |
+| `npm run dev`             | Start development server with HMR                                     |
+| `npm run build`           | Production build orchestrator (CMS → fingerprint → Vite)              |
+| `npm run build:fast`      | Skip CMS + fingerprint for quick UI builds (`--skip=cms,fingerprint`) |
+| `npm run build:data`      | Aggregate content JSON into `_aggregated.json`                        |
+| `npm run preview`         | Preview production build locally                                      |
+| `npm test`                | Run tests in watch mode                                               |
+| `npm run test:run`        | Run tests once (CI mode)                                              |
+| `npm run test:coverage`   | Generate coverage report (95% global threshold)                       |
+| `npm run test:ui`         | Open Vitest UI dashboard                                              |
+| `npm run lint`            | Check code style                                                      |
+| `npm run lint:fix`        | Fix auto-fixable lint issues                                          |
+| `npm run format`          | Format code with Prettier                                             |
+| `npm run format:check`    | Check code formatting                                                 |
+| `npm run type-check`      | Verify TypeScript types                                               |
+| `npm run deps:prune`      | Remove extraneous packages (runs after install)                       |
+| `npm run size`            | Check bundle size against limits                                      |
+| `npm run size:analyze`    | Detailed bundle analysis                                              |
+| `npm run integrity:check` | Verify or update `_aggregated.json` checksums                         |
+| `npm run ci`              | Run all CI checks locally                                             |
+| `npm run ci:quality`      | Run quality checks (lint, format, types)                              |
+| `npm run ci:coverage`     | Run tests with coverage reporting                                     |
+| `npm run ci:security`     | Run security scans                                                    |
+| `npm run ci:bundle`       | Build and check bundle size                                           |
 
 ### Content Management
 
@@ -229,6 +229,7 @@ After editing any of the above, run `npm run build:data` and commit the refreshe
 - Coverage: 95% global thresholds for lines/branches/functions/statements
 
 Focus areas:
+
 - Context providers (navigation, search, sidebar, theme)
 - Hooks with side effects (storage, focus trapping, debounced resize)
 - Utilities (navigation maps, integrity hashing, URL helpers)

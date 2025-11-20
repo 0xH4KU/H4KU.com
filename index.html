@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -11,16 +11,29 @@
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
 
     <!-- DNS Prefetch & Preconnect for external resources -->
-    <link rel="dns-prefetch" href="https://api.lum.bio">
-    <link rel="preconnect" href="https://api.lum.bio" crossorigin>
-    <link rel="dns-prefetch" href="https://o4508532177068032.ingest.us.sentry.io">
-    <link rel="preconnect" href="https://o4508532177068032.ingest.us.sentry.io" crossorigin>
+    <link rel="dns-prefetch" href="https://api.lum.bio" />
+    <link rel="preconnect" href="https://api.lum.bio" crossorigin />
+    <link
+      rel="dns-prefetch"
+      href="https://o4508532177068032.ingest.us.sentry.io"
+    />
+    <link
+      rel="preconnect"
+      href="https://o4508532177068032.ingest.us.sentry.io"
+      crossorigin
+    />
 
     <!-- Primary Meta Tags -->
     <title>lum (@lummuu_)</title>
     <meta name="title" content="lum (@lummuu_)" />
-    <meta name="description" content="Portfolio of Lum (lummuu_) - Freelance anime-style illustrator and character designer. View commission works and original art." />
-    <meta name="keywords" content="lum, lummuu, lummuu_, anime art, anime illustration, character design, digital art, illustration, commission art, freelance illustrator, anime artist" />
+    <meta
+      name="description"
+      content="Portfolio of Lum (lummuu_) - Freelance anime-style illustrator and character designer. View commission works and original art."
+    />
+    <meta
+      name="keywords"
+      content="lum, lummuu, lummuu_, anime art, anime illustration, character design, digital art, illustration, commission art, freelance illustrator, anime artist"
+    />
     <meta name="author" content="Lum" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://lum.bio" />
@@ -28,23 +41,43 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://lum.bio" />
-    <meta property="og:title" content="Lum - Anime Illustration & Character Design" />
-    <meta property="og:description" content="Portfolio of Lum (lummuu_) - Freelance anime-style illustrator and character designer." />
+    <meta
+      property="og:title"
+      content="Lum - Anime Illustration & Character Design"
+    />
+    <meta
+      property="og:description"
+      content="Portfolio of Lum (lummuu_) - Freelance anime-style illustrator and character designer."
+    />
     <meta property="og:image" content="https://lum.bio/og-image.jpg" />
     <meta property="og:site_name" content="Lum Portfolio" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://lum.bio" />
-    <meta name="twitter:title" content="Lum - Anime Illustration & Character Design" />
-    <meta name="twitter:description" content="Portfolio of Lum (lummuu_) - Freelance anime-style illustrator and character designer." />
+    <meta
+      name="twitter:title"
+      content="Lum - Anime Illustration & Character Design"
+    />
+    <meta
+      name="twitter:description"
+      content="Portfolio of Lum (lummuu_) - Freelance anime-style illustrator and character designer."
+    />
     <meta name="twitter:image" content="https://lum.bio/og-image.jpg" />
     <meta name="twitter:site" content="@lummuu_" />
     <meta name="twitter:creator" content="@lummuu_" />
 
     <!-- Theme Color (managed by ThemeContext after hydration) -->
-    <meta name="theme-color" content="#e8e8e8" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
+    <meta
+      name="theme-color"
+      content="#e8e8e8"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0f0f0f"
+      media="(prefers-color-scheme: dark)"
+    />
 
     <!-- Fallback CSP for environments that ignore /public/_headers (mirrors header rules) -->
     <meta
@@ -53,8 +86,20 @@
     />
 
     <!-- Preload Critical Resources -->
-    <link rel="preload" href="/fonts/ProFont.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="/fonts/ProFont-Bold.woff2" as="font" type="font/woff2" crossorigin>
+    <link
+      rel="preload"
+      href="/fonts/ProFont.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/ProFont-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
 
     <!--
       Minimal pre-hydration theme setup to prevent flash.
@@ -76,7 +121,8 @@
         }
 
         const setInitialVh = () => {
-          const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+          const viewportHeight =
+            window.visualViewport?.height ?? window.innerHeight;
           document.documentElement.style.setProperty(
             '--vh',
             `${viewportHeight * 0.01}px`
@@ -106,7 +152,9 @@
       }
 
       /* CSS Reset */
-      *, *::before, *::after {
+      *,
+      *::before,
+      *::after {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
@@ -114,7 +162,9 @@
 
       /* CSS Variables */
       :root {
-        --font-primary: 'ProFont', ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas, monospace;
+        --font-primary:
+          'ProFont', ui-monospace, 'Cascadia Code', Menlo, Monaco, Consolas,
+          monospace;
         --font-size-base: 16px;
         --topbar-height: 64px;
         --statusbar-height: 64px;
@@ -124,10 +174,18 @@
         --color-secondary: #e87722;
         --layout-top-offset: env(safe-area-inset-top, 0px);
         --layout-bottom-offset: env(safe-area-inset-bottom, 0px);
-        --sidebar-top-offset: calc(var(--topbar-height) + env(safe-area-inset-top, 0px));
-        --sidebar-bottom-offset: calc(var(--statusbar-height) + env(safe-area-inset-bottom, 0px));
-        --content-padding-top: calc(var(--topbar-height) + 32px + env(safe-area-inset-top, 0px));
-        --content-padding-bottom: calc(var(--statusbar-height) + 32px + env(safe-area-inset-bottom, 0px));
+        --sidebar-top-offset: calc(
+          var(--topbar-height) + env(safe-area-inset-top, 0px)
+        );
+        --sidebar-bottom-offset: calc(
+          var(--statusbar-height) + env(safe-area-inset-bottom, 0px)
+        );
+        --content-padding-top: calc(
+          var(--topbar-height) + 32px + env(safe-area-inset-top, 0px)
+        );
+        --content-padding-bottom: calc(
+          var(--statusbar-height) + 32px + env(safe-area-inset-bottom, 0px)
+        );
         --color-background: #f5f5f5;
         --color-foreground: #1a1a1a;
         --color-border: #d0d0d0;

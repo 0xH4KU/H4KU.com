@@ -178,9 +178,15 @@ export class ErrorBoundary extends Component<Props, State> {
                   <code>npm run integrity:check</code>.
                 </li>
               </ol>
-              <p className={styles['error-footnote']}>
-                Still stuck? Email <a href="mailto:hi@lum.bio">hi@lum.bio</a>{' '}
-                and include the reference code above so we can investigate.
+              <p className={styles.helpText}>
+                Still stuck? Email{' '}
+                <a
+                  href="mailto:hi@lum.bio"
+                  aria-label="Email support at hi@lum.bio"
+                >
+                  hi@lum.bio
+                </a>{' '}
+                for help.
               </p>
             </div>
           </div>
