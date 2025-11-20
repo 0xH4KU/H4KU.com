@@ -42,7 +42,7 @@ const TopBar: React.FC = () => {
   );
 
   return (
-    <div className={styles['top-bar']}>
+    <header className={styles['top-bar']}>
       <div className={styles['nav-buttons']}>
         <button
           className={`${styles['nav-btn']} ${styles['sidebar-toggle']}`}
@@ -87,7 +87,7 @@ const TopBar: React.FC = () => {
       >
         {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
       </button>
-    </div>
+    </header>
   );
 };
 

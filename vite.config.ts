@@ -222,14 +222,14 @@ export default defineConfig({
     ...(isVitest
       ? []
       : [
-          sitemap({
-            hostname: 'https://lum.bio',
-            dynamicRoutes,
-            readable: true,
-            // CF Pages serves robots.txt from /public so avoid clobbering it here.
-            generateRobotsTxt: false,
-          }),
-        ]),
+        sitemap({
+          hostname: 'https://lum.bio',
+          dynamicRoutes,
+          readable: true,
+          // CF Pages serves robots.txt from /public so avoid clobbering it here.
+          generateRobotsTxt: false,
+        }),
+      ]),
   ],
   resolve: {
     alias: {
@@ -293,7 +293,11 @@ export default defineConfig({
         comments: false,
       },
     },
-    target: 'es2020',
+    target: 'esnext',
+    // Disable module preload polyfill for modern browsers
+    modulePreload: {
+      polyfill: false,
+    },
     // Enable CSS code splitting
     cssCodeSplit: true,
     // Enable asset inlining threshold

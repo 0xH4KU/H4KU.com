@@ -591,6 +591,8 @@ const Sidebar: React.FC = () => {
           className={styles['sidebar-icon']}
           src={isFolder ? folderIcon : paperIcon}
           alt={isFolder ? 'Folder icon' : 'Text file icon'}
+          width="20"
+          height="20"
         />
         <span className={styles['folder-name']}>{item.name}</span>
         {isPinned && showPin && (
@@ -638,7 +640,7 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div
+    <nav
       id="app-sidebar"
       ref={sidebarRef}
       className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
@@ -831,7 +833,7 @@ const Sidebar: React.FC = () => {
           onOpenInNewTab={() => handleOpenInNewTab(contextMenu.item)}
         />
       )}
-    </div>
+    </nav>
   );
 };
 
