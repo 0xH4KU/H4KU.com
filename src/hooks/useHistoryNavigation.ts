@@ -2,6 +2,16 @@ import { useState, useCallback, useEffect } from 'react';
 
 const DEFAULT_PATH = '/';
 
+// Normalize BASE_URL (e.g., "/my-app/") into a leading-slash, no-trailing-slash segment
+const getBasePath = () => {
+  const raw =
+    (typeof import.meta !== 'undefined' &&
+      (import.meta.env?.BASE_URL as string | undefined)) ||
+    '/';
+  if (!raw || raw === '/') return '';
+  return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+};
+
 const normalizePath = (value?: string) => {
   if (!value || value === '') {
     return DEFAULT_PATH;
@@ -9,12 +19,27 @@ const normalizePath = (value?: string) => {
   return value.startsWith('/') ? value : `/${value}`;
 };
 
+const stripBasePath = (pathname: string, basePath: string) => {
+  if (!basePath) return pathname;
+  return pathname.startsWith(basePath)
+    ? pathname.slice(basePath.length) || '/'
+    : pathname;
+};
+
+const applyBasePath = (pathname: string, basePath: string) => {
+  if (!basePath) return pathname;
+  if (pathname === '/') return `${basePath}/`;
+  return `${basePath}${pathname}`;
+};
+
 const getCurrentPath = () => {
   /* c8 ignore next */
   if (typeof window === 'undefined' || !window.location) {
     return DEFAULT_PATH;
   }
-  return normalizePath(window.location.pathname);
+  const basePath = getBasePath();
+  const relative = stripBasePath(window.location.pathname, basePath);
+  return normalizePath(relative);
 };
 
 export interface NavigateOptions {
@@ -22,11 +47,13 @@ export interface NavigateOptions {
 }
 
 export function useHistoryNavigation() {
+  const basePath = getBasePath();
   const [pathname, setPathname] = useState<string>(() => getCurrentPath());
 
   const navigate = useCallback(
     (targetPath: string, options?: NavigateOptions) => {
       const nextPath = normalizePath(targetPath);
+      const resolvedPath = applyBasePath(nextPath, basePath);
 
       /* c8 ignore next */
       if (typeof window === 'undefined' || !window.history) {
@@ -38,9 +65,9 @@ export function useHistoryNavigation() {
       const currentPath = getCurrentPath();
 
       if (shouldReplace) {
-        window.history.replaceState(null, '', nextPath);
+        window.history.replaceState(null, '', resolvedPath);
       } else if (currentPath !== nextPath) {
-        window.history.pushState(null, '', nextPath);
+        window.history.pushState(null, '', resolvedPath);
       }
 
       if (currentPath !== nextPath) {
@@ -49,7 +76,7 @@ export function useHistoryNavigation() {
         setPathname(nextPath);
       }
     },
-    []
+    [basePath]
   );
 
   useEffect(() => {

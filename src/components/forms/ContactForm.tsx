@@ -21,8 +21,8 @@ interface FormStatus {
 const EMAIL_VALIDATION_OPTIONS: IsEmailOptions = {
   allow_display_name: false,
   allow_utf8_local_part: true,
-  allow_ip_domain: true,
-  require_tld: false,
+  allow_ip_domain: false,
+  require_tld: true,
 };
 
 const isValidEmailAddress = (email: string) =>

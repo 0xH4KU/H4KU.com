@@ -109,6 +109,10 @@ if (!integrityResults.isFullyValid) {
     integrityResults.sha256.expected ?? 'missing',
     integrityResults.sha256.actual
   );
+  // Fail fast to avoid rendering potentially tampered content
+  throw new Error(
+    'Content integrity verification failed. The bundled data may be tampered; aborting render.'
+  );
 }
 
 /**
