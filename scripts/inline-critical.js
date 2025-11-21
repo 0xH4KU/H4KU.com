@@ -124,6 +124,11 @@ const addMainPreload = html => {
   };
 };
 
+const stripModulePreloads = html => {
+  // Remove modulepreload hints for non-critical dynamic chunks to cut unused JS downloads
+  return html.replace(/^\s*<link\s+rel=["']modulepreload["'][^>]*>\s*$/gim, '');
+};
+
 const injectHashIntoCsp = (policy, hash) => {
   if (!hash) return policy;
   if (policy.includes(hash)) return policy;
@@ -171,6 +176,8 @@ const run = () => {
 
   const preloadResult = addMainPreload(html);
   html = preloadResult.html;
+
+  html = stripModulePreloads(html);
 
   html = updateCspMeta(html, themeHash);
 
