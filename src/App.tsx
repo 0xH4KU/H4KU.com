@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { LazyMotion, domAnimation } from 'framer-motion';
+import { LazyMotion } from 'framer-motion';
 import {
   ContentView,
   Crosshair,
@@ -93,7 +93,12 @@ const AppContent: React.FC = () => {
   }, [showOverlay]);
 
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion
+      features={() =>
+        import('@/utils/motionFeatures').then(module => module.domAnimation)
+      }
+      strict
+    >
       <div
         className={`${styles.app} ${
           domainCheckResult.shouldBlock ? styles.appLocked : ''
