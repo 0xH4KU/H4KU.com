@@ -137,7 +137,7 @@ const addSelectiveModulePreloads = html => {
   const pick = prefix =>
     files.find(name => name.startsWith(`${prefix}-`) && name.endsWith('.js'));
 
-  const critical = ['anim', 'rv']
+  const critical = ['anim', 'rv', 'icons']
     .map(prefix => pick(prefix))
     .filter(Boolean);
 
@@ -158,6 +158,22 @@ const addSelectiveModulePreloads = html => {
 
   const replacement = `${linkTags}\n    ${scriptMatch[0]}`;
   return html.replace(scriptMatch[0], replacement);
+};
+
+const addCssPreloads = html => {
+  const assetsDir = path.join(DIST_DIR, 'assets');
+  if (!fs.existsSync(assetsDir)) return html;
+
+  const files = fs.readdirSync(assetsDir);
+  const cssFiles = files.filter(name => /^(Da7-LbzW|BudktrIZ).*\.css$/.test(name));
+  if (!cssFiles.length) return html;
+
+  const links = cssFiles
+    .map(file => `<link rel="preload" href="/assets/${file}" as="style">`)
+    .join('\n    ');
+
+  const marker = '<!-- Critical CSS for faster First Contentful Paint -->';
+  return html.replace(marker, `${marker}\n    ${links}`);
 };
 
 const injectHashIntoCsp = (policy, hash) => {
@@ -210,6 +226,7 @@ const run = () => {
 
   html = stripModulePreloads(html);
   html = addSelectiveModulePreloads(html);
+  html = addCssPreloads(html);
 
   html = updateCspMeta(html, themeHash);
 
