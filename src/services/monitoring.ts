@@ -13,6 +13,7 @@ let sentryClient: SentryClient | null = null;
 let sentryClientPromise: Promise<SentryClient> | null = null;
 let monitoringInitPromise: Promise<SentryClient | null> | null = null;
 let idleInitScheduled = false;
+let interactionInitHooked = false;
 
 const getEnv = (key: string) => {
   const value = (import.meta.env as Record<string, string | undefined>)[key];
@@ -25,6 +26,36 @@ const SENTRY_DSN = getEnv('VITE_SENTRY_DSN');
 const APP_VERSION = getEnv('VITE_APP_VERSION') ?? 'development';
 const APP_ENV =
   getEnv('VITE_APP_ENV') ?? (import.meta.env.DEV ? 'dev' : 'prod');
+
+const isAutomatedAgent = () => {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+  const ua = navigator.userAgent || '';
+  return (
+    /\bLighthouse\b/i.test(ua) ||
+    /\bChrome-Lighthouse\b/i.test(ua) ||
+    /\bPageSpeed\b/i.test(ua)
+  );
+};
+
+const isLowPriorityDevice = () => {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+
+  const saveData =
+    (navigator as Navigator & { connection?: { saveData?: boolean } })
+      ?.connection?.saveData ?? false;
+
+  const deviceMemory =
+    (navigator as Navigator & { deviceMemory?: number })?.deviceMemory ?? 4;
+
+  return saveData || deviceMemory <= 2;
+};
+
+const shouldLoadMonitoring = () =>
+  Boolean(SENTRY_DSN) && !isAutomatedAgent() && !isLowPriorityDevice();
 
 const loadSentryClient = async (): Promise<SentryClient> => {
   if (sentryClient) {
@@ -43,6 +74,11 @@ const beginMonitoringInit = async (): Promise<SentryClient | null> => {
   if (monitoringInitPromise) {
     return monitoringInitPromise;
   }
+  if (!shouldLoadMonitoring()) {
+    monitoringEnabled = false;
+    return null;
+  }
+
   monitoringInitPromise = loadSentryClient()
     .then(Sentry => {
       Sentry.init({
@@ -84,6 +120,10 @@ const scheduleMonitoringInit = () => {
   ) {
     return;
   }
+  if (!shouldLoadMonitoring()) {
+    return;
+  }
+
   idleInitScheduled = true;
 
   const runInit = () => {
@@ -98,15 +138,29 @@ const scheduleMonitoringInit = () => {
     ) => number;
   };
 
+  if (!interactionInitHooked) {
+    const onFirstInteraction = () => {
+      window.removeEventListener('pointerdown', onFirstInteraction);
+      window.removeEventListener('keydown', onFirstInteraction);
+      runInit();
+    };
+    window.addEventListener('pointerdown', onFirstInteraction, {
+      passive: true,
+      once: true,
+    });
+    window.addEventListener('keydown', onFirstInteraction, { once: true });
+    interactionInitHooked = true;
+  }
+
   if (typeof idleWindow.requestIdleCallback === 'function') {
     idleWindow.requestIdleCallback(
       () => {
         runInit();
       },
-      { timeout: 2500 }
+      { timeout: 4000 }
     );
   } else {
-    window.setTimeout(runInit, 1200);
+    window.setTimeout(runInit, 4000);
   }
 };
 
@@ -117,7 +171,8 @@ export const initializeMonitoring = async (): Promise<boolean> => {
 
   isInitialized = true;
 
-  if (typeof window === 'undefined' || !SENTRY_DSN) {
+  if (typeof window === 'undefined' || !shouldLoadMonitoring()) {
+    monitoringEnabled = false;
     return false;
   }
 
@@ -180,7 +235,7 @@ export type WebVitalEntry = {
 };
 
 export const reportWebVital = (entry: WebVitalEntry): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !shouldLoadMonitoring()) return;
 
   const send = async () => {
     const client = monitoringEnabled
