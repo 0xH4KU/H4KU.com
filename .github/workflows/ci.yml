@@ -138,7 +138,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || 'https://example.com/contact' }}
+      VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || '/api/contact' }}
+      VITE_CONTACT_TIMEOUT: 10000
     steps:
       - name: Checkout
         uses: actions/checkout@v4
