@@ -212,11 +212,39 @@ const buildFingerprintMeta = {
   ...(cachedFingerprint ?? {}),
 };
 
+const performanceBudgetPlugin = () => {
+  const MAX_JS = 420 * 1024; // ~410KB
+  const MAX_CSS = 220 * 1024; // ~215KB
+  return {
+    name: 'performance-budget',
+    generateBundle(_: unknown, bundle: Record<string, { type: string; code?: string; source?: string; name?: string }>) {
+      const offenses: string[] = [];
+      Object.entries(bundle).forEach(([fileName, chunk]) => {
+        if (chunk.type !== 'chunk' && chunk.type !== 'asset') return;
+        const size = Buffer.byteLength(chunk.code ?? chunk.source ?? '', 'utf8');
+        if (fileName.endsWith('.js') && size > MAX_JS) {
+          offenses.push(`${fileName} exceeds JS budget (${Math.round(size / 1024)}KB > ${Math.round(MAX_JS / 1024)}KB)`);
+        }
+        if (fileName.endsWith('.css') && size > MAX_CSS) {
+          offenses.push(`${fileName} exceeds CSS budget (${Math.round(size / 1024)}KB > ${Math.round(MAX_CSS / 1024)}KB)`);
+        }
+      });
+      if (offenses.length) {
+        this.error(`Performance budget exceeded:\n${offenses.join('\n')}`);
+      }
+    },
+  };
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    // ViteSRI(), // Disabled to prevent warnings about external resources
+    ViteSRI({
+      // Apply SRI to JS and CSS assets; external resources are not in use.
+      algorithms: ['sha384'],
+    }),
+    ...(process.env.VITEST === 'true' ? [] : [performanceBudgetPlugin()]),
     ...(isVitest
       ? []
       : [

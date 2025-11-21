@@ -171,3 +171,42 @@ export const reportError = (
 
   void sendToSentry();
 };
+
+export type WebVitalEntry = {
+  name: 'LCP' | 'FID' | 'CLS';
+  value: number;
+  rating: 'good' | 'needs-improvement' | 'poor';
+  navigationType?: string;
+};
+
+export const reportWebVital = (entry: WebVitalEntry): void => {
+  if (typeof window === 'undefined') return;
+
+  const send = async () => {
+    const client = monitoringEnabled
+      ? (sentryClient ??
+        (monitoringInitPromise
+          ? await monitoringInitPromise
+          : await beginMonitoringInit()))
+      : null;
+
+    if (client) {
+      client.captureEvent({
+        message: `web-vital:${entry.name}`,
+        level: 'info',
+        tags: {
+          vital: entry.name,
+          vital_rating: entry.rating,
+          nav_type: entry.navigationType ?? 'unknown',
+        },
+        extra: {
+          value: entry.value,
+        },
+      });
+    } else if (import.meta.env.DEV) {
+      console.warn('[monitoring:web-vitals]', entry);
+    }
+  };
+
+  void send();
+};

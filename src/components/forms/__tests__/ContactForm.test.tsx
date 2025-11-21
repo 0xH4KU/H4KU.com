@@ -19,6 +19,8 @@ const mockedSubmit = vi.mocked(
   await import('@/services/contact').then(m => m.submitContactRequest)
 );
 
+const { ContactSubmissionError } = await import('@/services/contact');
+
 describe('ContactForm', () => {
   const baseTime = new Date('2025-01-01T00:00:00.000Z').getTime();
   let now = baseTime;
@@ -32,6 +34,28 @@ describe('ContactForm', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
+
+  const fillValidForm = async (
+    overrides: Partial<Record<'name' | 'email' | 'message', string>> = {}
+  ) => {
+    const {
+      name = 'Tester',
+      email = 'user@example.com',
+      message = 'Hello',
+    } = overrides;
+    await userEvent.clear(screen.getByLabelText(/Name/i));
+    await userEvent.type(screen.getByLabelText(/Name/i), name);
+    await userEvent.clear(screen.getByLabelText(/Email/i));
+    await userEvent.type(screen.getByLabelText(/Email/i), email);
+    await userEvent.clear(screen.getByLabelText(/Message/i));
+    await userEvent.type(screen.getByLabelText(/Message/i), message);
+  };
+
+  const submit = async () => {
+    await userEvent.click(
+      screen.getByRole('button', { name: /send message/i })
+    );
+  };
 
   it('shows validation error for invalid email (requires TLD)', async () => {
     render(<ContactForm />);
@@ -83,5 +107,123 @@ describe('ContactForm', () => {
         screen.getByText(/Message sent successfully!.*ref-123/i)
       ).toBeInTheDocument()
     );
+  });
+
+  it('does not submit when required fields are missing', async () => {
+    render(<ContactForm />);
+
+    const form = screen
+      .getByRole('button', { name: /send message/i })
+      .closest('form');
+    if (!form) {
+      throw new Error('Form element not found');
+    }
+    form.setAttribute('novalidate', 'true');
+
+    now += 2000; // satisfy minimum fill time
+    await submit();
+
+    expect(
+      await screen.findByText(/Please fill in all fields/i)
+    ).toBeInTheDocument();
+    expect(mockedSubmit).not.toHaveBeenCalled();
+  });
+
+  it('blocks bot submissions via honeypot and fakes success', async () => {
+    render(<ContactForm />);
+
+    await fillValidForm();
+    await userEvent.type(
+      screen.getByLabelText(/Website \(please leave this field blank\)/i, {
+        selector: 'input',
+      }),
+      'https://spam.test'
+    );
+    now += 2000;
+
+    await submit();
+
+    expect(mockedSubmit).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/Message sent successfully!/i)
+    ).toBeInTheDocument();
+  });
+
+  it('enforces minimum fill time before submitting', async () => {
+    mockedSubmit.mockResolvedValueOnce({ success: true });
+    render(<ContactForm />);
+
+    await fillValidForm();
+    now += 500; // below 1s threshold
+
+    await submit();
+
+    expect(mockedSubmit).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/Please take your time filling out the form/i)
+    ).toBeInTheDocument();
+  });
+
+  it('rate limits submissions made within 60 seconds', async () => {
+    mockedSubmit.mockResolvedValue({ success: true });
+    render(<ContactForm />);
+
+    await fillValidForm();
+    now += 2000;
+    await submit();
+    await screen.findByText(/Message sent successfully!/i);
+
+    now = baseTime + 61000; // within cooldown window (< 60s since last submit at 2000)
+    await fillValidForm({ message: 'Second attempt' });
+    await submit();
+
+    expect(mockedSubmit).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText(/1 minute cooldown/i)).toBeInTheDocument();
+  });
+
+  it('surfaces ContactSubmissionError messages', async () => {
+    mockedSubmit.mockRejectedValueOnce(
+      new ContactSubmissionError('Endpoint misconfigured')
+    );
+
+    render(<ContactForm />);
+    await fillValidForm();
+    now += 2000;
+    await submit();
+
+    expect(
+      await screen.findByText(/Endpoint misconfigured/i)
+    ).toBeInTheDocument();
+  });
+
+  it('handles abort errors gracefully', async () => {
+    mockedSubmit.mockRejectedValueOnce(
+      new DOMException('Aborted', 'AbortError')
+    );
+
+    render(<ContactForm />);
+    await fillValidForm();
+    now += 2000;
+    await submit();
+
+    expect(
+      await screen.findByText(/The request was canceled. Please try again./i)
+    ).toBeInTheDocument();
+  });
+
+  it('falls back to a generic error message for unknown failures', async () => {
+    mockedSubmit.mockRejectedValueOnce(new Error('Network exploded'));
+
+    render(<ContactForm />);
+    await fillValidForm();
+    now += 2000;
+    await submit();
+
+    expect(mockedSubmit).toHaveBeenCalledTimes(1);
+    expect(
+      await screen.findByText(
+        /Failed to send message\. Please try again or email directly/i
+      )
+    ).toBeInTheDocument();
   });
 });

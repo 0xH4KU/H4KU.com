@@ -5,8 +5,7 @@ import { mockData, dataIntegrity } from '@/data/mockData';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
 
-const INTEGRITY_DOC_URL =
-  'https://gitlab.com/lummuu/lum.bio/-/blob/main/docs/INTEGRITY.md';
+const INTEGRITY_DOC_URL = 'https://gitlab.com/lummuu/lum.bio';
 
 const LICENSE_URL = 'https://gitlab.com/lummuu/lum.bio/-/blob/main/LICENSE.md';
 

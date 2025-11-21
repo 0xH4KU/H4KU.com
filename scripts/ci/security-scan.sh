@@ -33,12 +33,41 @@ else
 fi
 echo ""
 
+# License compliance
+echo "📜 Checking dependency licenses..."
+if npm run ci:license; then
+  echo -e "${GREEN}✓ License check passed${NC}"
+else
+  echo -e "${RED}✗ License check failed${NC}"
+  exit 1
+fi
+echo ""
+
+# Outdated dependencies (warn only)
+echo "📦 Checking for outdated dependencies..."
+if npm run ci:deps; then
+  echo -e "${GREEN}✓ Dependencies are up to date${NC}"
+else
+  echo -e "${YELLOW}⚠️  Outdated dependencies detected${NC}"
+  WARNINGS=1
+fi
+echo ""
+
 # Check for common security issues in code
 echo "🔍 Checking for common security patterns..."
 
 # Check for hardcoded secrets (basic check)
 echo "Checking for potential hardcoded secrets..."
-if grep -r -i -E "(api[_-]?key|secret|password|token|auth)" src/ --exclude-dir=tests --exclude="*.test.*" | grep -i "=" | grep -v "process.env" | grep -v "import" | head -5; then
+SECRET_MATCHES=$(
+  grep -r -i -E "(api[_-]?key|secret|password|token|auth)" src/ --exclude-dir=tests --exclude="*.test.*" \
+    | grep -i "=" \
+    | grep -v "process.env" \
+    | grep -v "import" \
+    || true
+)
+
+if [ -n "$SECRET_MATCHES" ]; then
+  echo "$SECRET_MATCHES" | head -5
   echo -e "${YELLOW}⚠️  Potential hardcoded secrets found - please review${NC}"
   WARNINGS=1
 else
@@ -54,3 +83,4 @@ if [ $WARNINGS -ne 0 ]; then
 fi
 
 echo -e "${GREEN}✅ All security checks passed!${NC}"
+echo ""
