@@ -6,8 +6,8 @@ _Testing philosophy, tooling, and expectations for Lum.bio._
 
 - **Runner**: Vitest 4 (jsdom)
 - **Library**: React Testing Library (`@testing-library/react` + `@testing-library/user-event`)
-- **Suite size**: ~25 spec files / ~273 tests (Nov 2025)
-- **Coverage**: 95% global thresholds (lines/branches/functions/statements)
+- **Suite size**: small smoke suite (expand as you add features)
+- **Coverage**: 75% global thresholds (lines/functions/statements), 70% branches
 - **Philosophy**: test behaviours, not implementation details; keep suites fast and deterministic.
 
 ## 2. Directory Layout
@@ -125,7 +125,7 @@ describe('buildNavigationMap', () => {
 5. **Respect accessibility** – when adding UI, tests should validate focus handling, ARIA labels, and keyboard flows.
 6. **Cover integrity checks** – when touching the content pipeline or tamper UX, update `src/utils/__tests__/integrity.test.ts` and `src/components/layout/__tests__/StatusBar.test.tsx` so checksum regressions are caught in CI.
 7. **Clean up timers** – if you call `vi.useFakeTimers()`, restore them in `afterEach`.
-8. **Mind coverage thresholds** – the suite enforces 95% globally; add focused tests instead of relaxing config.
+8. **Mind coverage thresholds** – the suite enforces ~75% globally; add focused tests rather than raising thresholds prematurely.
 
 ## 6. Troubleshooting
 
