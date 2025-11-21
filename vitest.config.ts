@@ -41,10 +41,10 @@ export default mergeConfig(
         ],
         // Global thresholds kept realistic with current suite
         thresholds: {
-          lines: 75,
-          functions: 75,
-          branches: 70,
-          statements: 75,
+          lines: 90,
+          functions: 90,
+          branches: 85,
+          statements: 90,
           perFile: false,
         },
         reportOnFailure: true,
@@ -52,7 +52,7 @@ export default mergeConfig(
         clean: true,
         skipFull: false,
       },
-      include: ['src/**/*.{test,spec}.{ts,tsx}'],
+      include: ['{src,tests}/**/*.{test,spec}.{ts,tsx}'],
       exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
     },
     resolve: {

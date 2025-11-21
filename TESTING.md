@@ -7,7 +7,8 @@ _Testing philosophy, tooling, and expectations for Lum.bio._
 - **Runner**: Vitest 4 (jsdom)
 - **Library**: React Testing Library (`@testing-library/react` + `@testing-library/user-event`)
 - **Suite size**: small smoke suite (expand as you add features)
-- **Coverage**: 75% global thresholds (lines/functions/statements), 70% branches
+- **Coverage**: 90% global thresholds (lines/functions/statements), 85% branches
+- **E2E**: Playwright smoke suite (`npm run test:e2e`) targets `/page/about` & `/page/contact` with mocked contact API; expand flows as you add features.
 - **Philosophy**: test behaviours, not implementation details; keep suites fast and deterministic.
 
 ## 2. Directory Layout
@@ -125,7 +126,7 @@ describe('buildNavigationMap', () => {
 5. **Respect accessibility** – when adding UI, tests should validate focus handling, ARIA labels, and keyboard flows.
 6. **Cover integrity checks** – when touching the content pipeline or tamper UX, update `src/utils/__tests__/integrity.test.ts` and `src/components/layout/__tests__/StatusBar.test.tsx` so checksum regressions are caught in CI.
 7. **Clean up timers** – if you call `vi.useFakeTimers()`, restore them in `afterEach`.
-8. **Mind coverage thresholds** – the suite enforces ~75% globally; add focused tests rather than raising thresholds prematurely.
+8. **Mind coverage thresholds** – the suite enforces 90% lines/functions/statements and 85% branches; add focused tests when expanding features to keep the bar green.
 
 ## 6. Troubleshooting
 
@@ -136,4 +137,4 @@ describe('buildNavigationMap', () => {
 | DOM not updating | Wrap state updates in `act()` when manually triggering hook callbacks.                         |
 | Coverage drop    | Run `npm run test:coverage` and inspect `coverage/coverage-summary.json` for culprits.         |
 
-For deeper architectural context or CI details, refer to `DEVELOPMENT.md` and `docs/CI_GUIDE.md`.
+For deeper architectural context or CI details, refer to `DEVELOPMENT.md`.

@@ -128,7 +128,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 - `npm run integrity:check` recomputes both hashes. Pass `-- --write` to update the stored values when you intentionally edit content JSON.
 - `src/data/mockData.ts` validates the hashes at runtime; the UI surfaces the status so tamper warnings aren’t silent.
 - Always run `npm run build:data` after changing anything under `src/content/` or after syncing with `npm run cms`, then commit the refreshed snapshot.
-- More detail lives in [`docs/INTEGRITY.md`](docs/INTEGRITY.md).
+- 更多細節可直接查看程式碼中的註解與 `src/data/mockData.ts`。
 
 ### Accessibility Features
 
@@ -149,7 +149,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 | **Build Tool** | Vite 7                                                  |
 | **Styling**    | CSS Modules + global tokens                             |
 | **Animation**  | Framer Motion (reduced-motion aware)                    |
-| **Testing**    | Vitest 4 + React Testing Library (95% global threshold) |
+| **Testing**    | Vitest 4 + React Testing Library (90%/85% global thresholds) |
 | **Linting**    | ESLint + Prettier                                       |
 | **CI/CD**      | GitLab CI + Cloudflare Pages                            |
 | **Contact**    | Server-side endpoint (`VITE_CONTACT_ENDPOINT`)          |
@@ -194,7 +194,8 @@ Development server runs at `http://localhost:5173`
 | `npm run preview`         | Preview production build locally                                      |
 | `npm test`                | Run tests in watch mode                                               |
 | `npm run test:run`        | Run tests once (CI mode)                                              |
-| `npm run test:coverage`   | Generate coverage report (95% global threshold)                       |
+| `npm run test:coverage`   | Generate coverage report (90% lines/functions/statements, 85% branches) |
+| `npm run test:e2e`        | Playwright E2E smoke tests (dev server auto-start)                     |
 | `npm run test:ui`         | Open Vitest UI dashboard                                              |
 | `npm run lint`            | Check code style                                                      |
 | `npm run lint:fix`        | Fix auto-fixable lint issues                                          |
@@ -210,6 +211,8 @@ Development server runs at `http://localhost:5173`
 | `npm run ci:coverage`     | Run tests with coverage reporting                                     |
 | `npm run ci:security`     | Run security scans                                                    |
 | `npm run ci:bundle`       | Build and check bundle size                                           |
+| `npm run ci:deps`         | Report outdated dependencies (writes coverage/npm-outdated.json)      |
+| `npm run ci:license`      | Check dependency licenses (writes coverage/licenses.csv)              |
 
 ### Content Management
 
@@ -226,7 +229,7 @@ After editing any of the above, run `npm run build:data` and commit the refreshe
 
 - Runner: Vitest 4 + Testing Library (jsdom)
 - Suite size: 25 spec files / ~273 tests as of Nov 2025
-- Coverage: 95% global thresholds for lines/branches/functions/statements
+- Coverage: 90% global thresholds (lines/functions/statements) and 85% for branches
 
 Focus areas:
 
@@ -273,9 +276,6 @@ Build artifacts retained for 7 days.
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)** – Architecture deep dive
 - **[TESTING.md](./TESTING.md)** – Testing guidelines
 - **[CONTENT_GUIDE.md](./CONTENT_GUIDE.md)** – Content authoring guide
-- **[docs/INTEGRITY.md](./docs/INTEGRITY.md)** – Checksum workflow
-- **[docs/ANTI_THEFT_PROTECTION.md](./docs/ANTI_THEFT_PROTECTION.md)** – Anti-tamper layers
-- **[docs/CI_GUIDE.md](./docs/CI_GUIDE.md)** – Combined CI/CD workflow and badge reference
 
 ## License
 

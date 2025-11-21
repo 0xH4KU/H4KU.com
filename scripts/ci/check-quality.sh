@@ -44,6 +44,16 @@ else
 fi
 echo ""
 
+# Content integrity check
+echo "🛡️  Verifying content integrity..."
+if npm run integrity:check; then
+  echo -e "${GREEN}✓ Integrity check passed${NC}"
+else
+  echo -e "${RED}✗ Integrity check failed${NC}"
+  FAILED=1
+fi
+echo ""
+
 # Exit with error if any check failed
 if [ $FAILED -ne 0 ]; then
   echo -e "${RED}❌ Some quality checks failed${NC}"
