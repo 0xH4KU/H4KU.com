@@ -10,6 +10,11 @@ echo ""
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Use workspace-local tmp to avoid sandboxed tmp issues
+TMPDIR="${TMPDIR:-$SCRIPT_DIR/../.tmp}"
+mkdir -p "$TMPDIR"
+export TMPDIR
+
 # Make scripts executable
 chmod +x "$SCRIPT_DIR"/*.sh
 
@@ -52,8 +57,30 @@ fi
 echo ""
 echo ""
 
+# Run E2E tests
+echo "4️⃣  E2E Tests"
+echo "============="
+# Ensure browsers are available
+echo "(Ensuring Playwright browsers are installed...)"
+if npx playwright install --with-deps chromium; then
+  echo "✅ Playwright browsers ready"
+else
+  echo "❌ Failed to install Playwright browsers"
+  exit 1
+fi
+echo ""
+
+if npm run test:e2e; then
+  echo "✅ E2E tests passed"
+else
+  echo "❌ E2E tests failed"
+  FAILED=1
+fi
+echo ""
+echo ""
+
 # Build and check bundle size
-echo "4️⃣  Build & Bundle Size"
+echo "5️⃣  Build & Bundle Size"
 echo "======================="
 if bash "$SCRIPT_DIR/check-bundle-size.sh"; then
   echo "✅ Build and bundle size check passed"

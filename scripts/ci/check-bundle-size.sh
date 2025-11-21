@@ -41,14 +41,11 @@ find dist/assets -type f -name "*.css" -exec du -h {} \; | sort -rh | while read
 done
 echo ""
 
-# Check if size-limit is available
-if command -v size-limit &> /dev/null; then
-  echo "🔍 Running size-limit checks..."
-  npm run size
-else
-  echo "⚠️  size-limit not installed, skipping size checks"
-  echo "   Install with: npm install --save-dev size-limit @size-limit/preset-app @size-limit/file"
-fi
+echo "🔍 Running size-limit checks..."
+npm run size || {
+  echo "⚠️  size-limit failed. Ensure devDependencies are installed: size-limit @size-limit/file" >&2
+  exit 1
+}
 
 echo ""
 echo "✅ Bundle analysis complete!"

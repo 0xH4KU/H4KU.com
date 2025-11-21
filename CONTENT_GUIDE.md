@@ -119,7 +119,7 @@ You can still provide your own optimised assets for art-directed crops or specia
 
 - The bundled snapshot stores `_integrity` (FNV-1a), `_integritySHA256`, and `_buildTime`. Regenerate them with `npm run build:data` after content changes.
 - `mockData` recomputes both hashes at runtime; the UI surfaces the status. Avoid hand-editing `_aggregated.json`.
-- `npm run integrity:check` (or `-- --write` for intentional edits) verifies these hashes without rebuilding content. See [`docs/INTEGRITY.md`](docs/INTEGRITY.md) for details.
+- `npm run integrity:check` (or `-- --write` for intentional edits) verifies these hashes without rebuilding content.
 
 ## Tips and Best Practices
 

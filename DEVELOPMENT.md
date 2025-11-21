@@ -96,7 +96,7 @@ When profiling, pay close attention to `NavigationContext` (URL synchronisation)
 
 - **Local build** – `npm run build` runs CMS sync (unless skipped), injects fingerprints, then runs `vite build`. Use `npm run build:fast` to skip CMS/fingerprint when iterating on UI.
 - **Content aggregation** – Run `npm run build:data` after changing `src/content/**` (or after `npm run cms`), then commit the refreshed `_aggregated.json`.
-- **CI** – `npm run ci` mirrors the GitLab pipeline: quality → coverage (95% global thresholds) → security scan → build + bundle-size check. Artifacts stay available for deploys.
+- **CI** – `npm run ci` mirrors the GitLab pipeline: quality → coverage (90% lines/functions/statements, 85% branches) → security scan → deps freshness (`ci:deps`) → license audit (`ci:license`) → build + bundle/perf budget check.
 - **Cloudflare Pages** – SPA redirect handled by `public/_redirects`; configure `VITE_CONTACT_ENDPOINT` via Pages settings.
 
 ## 5. Extending the Project
@@ -106,4 +106,4 @@ When profiling, pay close attention to `NavigationContext` (URL synchronisation)
 3. **Add animations** – Provide reduced-motion variants and keep transitions short (<300 ms) to match the existing interaction style.
 4. **Add routing** – Update `NavigationContext` so new sections remain in sync with URLs and breadcrumbs; remember to update `_redirects` if you add top-level routes.
 
-For deeper testing guidance or CI instructions, see `TESTING.md` and `docs/CI_GUIDE.md`.
+For deeper testing guidance or CI instructions, see `TESTING.md`.
