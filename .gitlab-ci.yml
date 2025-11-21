@@ -100,7 +100,8 @@ e2e-test:
   stage: quality
   image: mcr.microsoft.com/playwright:v1.56.1-jammy
   variables:
-    VITE_CONTACT_ENDPOINT: https://example.com/contact
+    VITE_CONTACT_ENDPOINT: /api/contact
+    VITE_CONTACT_TIMEOUT: "10000"
   before_script:
     - npm ci
     - npx playwright install --with-deps chromium

@@ -21,7 +21,8 @@ test.describe('Lum.bio smoke E2E', () => {
     await page.locator('form').evaluate(form => form.setAttribute('novalidate', 'true'));
 
     // Mock backend so the form can succeed without a real API.
-    await page.route('**/api/contact', async route => {
+    // Intercept contact submissions regardless of absolute/relative endpoint
+    await page.route('**/contact', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
