@@ -13,17 +13,7 @@ import { AppProviders } from '@/contexts/AppProviders';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { use100vh } from '@/hooks/use100vh';
-import {
-  verifyDomain,
-  logDomainVerification,
-  getAllowedDomains,
-  type DomainCheckResult,
-} from '@/utils/domainCheck';
-import { injectAllFingerprints } from '@/utils/fingerprint';
-import {
-  displayConsoleCopyright,
-  displayDevCopyright,
-} from '@/utils/consoleCopyright';
+import type { DomainCheckResult } from '@/utils/domainCheck';
 import styles from './App.module.css';
 
 // Lazy load heavy components
@@ -40,6 +30,7 @@ const AppContent: React.FC = () => {
       shouldBlock: false,
     }
   );
+  const [allowedDomains, setAllowedDomains] = useState<string[]>([]);
 
   use100vh();
   const isMobile = width !== undefined && width < 768;
@@ -47,20 +38,45 @@ const AppContent: React.FC = () => {
 
   // Security initialization: domain check, fingerprinting, and copyright notice
   useEffect(() => {
-    // Verify domain authorization
-    const result = verifyDomain();
-    setDomainCheckResult(result);
-    logDomainVerification(result);
+    let cancelled = false;
 
-    // Inject digital fingerprints into the DOM
-    injectAllFingerprints();
+    const initSecurity = async () => {
+      try {
+        const [
+          { verifyDomain, logDomainVerification, getAllowedDomains },
+          { injectAllFingerprints },
+          { displayConsoleCopyright, displayDevCopyright },
+        ] = await Promise.all([
+          import('@/utils/domainCheck'),
+          import('@/utils/fingerprint'),
+          import('@/utils/consoleCopyright'),
+        ]);
 
-    // Display copyright notice in console
-    if (import.meta.env.PROD) {
-      displayConsoleCopyright();
-    } else {
-      displayDevCopyright();
-    }
+        const result = verifyDomain();
+        if (cancelled) return;
+
+        setDomainCheckResult(result);
+        setAllowedDomains(getAllowedDomains());
+        logDomainVerification(result);
+        injectAllFingerprints();
+
+        if (import.meta.env.PROD) {
+          displayConsoleCopyright();
+        } else {
+          displayDevCopyright();
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('[security:init] failed', error);
+        }
+      }
+    };
+
+    void initSecurity();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -87,7 +103,7 @@ const AppContent: React.FC = () => {
         {!domainCheckResult.isAllowed && (
           <CopyrightWarning
             currentDomain={domainCheckResult.currentDomain}
-            allowedDomains={getAllowedDomains()}
+            allowedDomains={allowedDomains}
           />
         )}
         <a href="#main-content" className="skip-link">

@@ -59,6 +59,14 @@ const steps = [
     skipEnv: 'SKIP_VITE',
     skipFlag: '--skip-vite',
   },
+  {
+    id: 'inline',
+    name: 'Inline critical assets',
+    command: 'node',
+    args: [path.join(__dirname, 'inline-critical.js')],
+    skipEnv: 'SKIP_INLINE',
+    skipFlag: '--skip-inline',
+  },
 ];
 
 const cliArgs = process.argv.slice(2);
