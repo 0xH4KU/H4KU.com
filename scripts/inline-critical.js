@@ -129,6 +129,37 @@ const stripModulePreloads = html => {
   return html.replace(/^\s*<link\s+rel=["']modulepreload["'][^>]*>\s*$/gim, '');
 };
 
+const addSelectiveModulePreloads = html => {
+  const assetsDir = path.join(DIST_DIR, 'assets');
+  if (!fs.existsSync(assetsDir)) return html;
+
+  const files = fs.readdirSync(assetsDir);
+  const pick = prefix =>
+    files.find(name => name.startsWith(`${prefix}-`) && name.endsWith('.js'));
+
+  const critical = ['anim', 'rv']
+    .map(prefix => pick(prefix))
+    .filter(Boolean);
+
+  if (!critical.length) return html;
+
+  const scriptMatch =
+    /<script\s+[^>]*src=["']\/assets\/main-[^"']+\.js["'][^>]*><\/script>/i.exec(
+      html
+    );
+  if (!scriptMatch) return html;
+
+  const linkTags = critical
+    .map(
+      file =>
+        `<link rel="modulepreload" crossorigin href="/assets/${file}">`
+    )
+    .join('\n    ');
+
+  const replacement = `${linkTags}\n    ${scriptMatch[0]}`;
+  return html.replace(scriptMatch[0], replacement);
+};
+
 const injectHashIntoCsp = (policy, hash) => {
   if (!hash) return policy;
   if (policy.includes(hash)) return policy;
@@ -178,6 +209,7 @@ const run = () => {
   html = preloadResult.html;
 
   html = stripModulePreloads(html);
+  html = addSelectiveModulePreloads(html);
 
   html = updateCspMeta(html, themeHash);
 
