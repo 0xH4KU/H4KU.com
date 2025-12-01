@@ -83,7 +83,7 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
               please visit the official repositories.
             </p>
             <a
-              href="https://github.com/cwlum/lum.bio"
+              href="https://github.com/lum-muu/lum.bio"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.link}

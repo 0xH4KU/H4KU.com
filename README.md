@@ -164,7 +164,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 ### Setup
 
 ```bash
-git clone https://github.com/cwlum/lum.bio.git
+git clone https://github.com/lum-muu/lum.bio.git
 cd lum.bio
 npm install
 cp .env.example .env  # Configure VITE_CONTACT_ENDPOINT if needed
@@ -290,7 +290,7 @@ See [LICENSE.md](./LICENSE.md) for full terms.
 For questions, collaboration, or licensing inquiries:
 
 - **Email:** hi@lum.bio
-- **Issues:** [GitHub](https://github.com/cwlum/lum.bio/issues) / [GitLab](https://gitlab.com/lummuu/lum.bio/-/issues)
+- **Issues:** [GitHub](https://github.com/lum-muu/lum.bio/issues) / [GitLab](https://gitlab.com/lummuu/lum.bio/-/issues)
 
 ### Cloudflare Email Worker setup (recommended)
 
