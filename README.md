@@ -73,7 +73,6 @@ lum.bio/
 │   ├── content/             # Original content source
 │   ├── _redirects           # SPA routing config
 │   └── robots.txt
-├── .gitlab-ci.yml           # GitLab CI/CD pipeline
 ├── vite.config.ts           # Vite build configuration
 ├── vitest.config.ts         # Vitest test configuration
 └── tsconfig.json            # TypeScript compiler config
@@ -151,7 +150,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 | **Animation**  | Framer Motion (reduced-motion aware)                    |
 | **Testing**    | Vitest 4 + React Testing Library (90%/85% global thresholds) |
 | **Linting**    | ESLint + Prettier                                       |
-| **CI/CD**      | GitLab CI + Cloudflare Pages                            |
+| **CI/CD**      | GitHub Actions + Cloudflare Pages                       |
 | **Contact**    | Server-side endpoint (`VITE_CONTACT_ENDPOINT`)          |
 
 ## Development
@@ -260,7 +259,7 @@ npx wrangler pages deploy --project-name lum-bio dist
 
 ### CI/CD Pipeline
 
-GitLab CI automatically runs on every push:
+CI/CD can be configured to automatically run on every push:
 
 1. **Lint** – ESLint + Prettier
 2. **Type Check** – TypeScript compilation
@@ -290,7 +289,7 @@ See [LICENSE.md](./LICENSE.md) for full terms.
 For questions, collaboration, or licensing inquiries:
 
 - **Email:** hi@lum.bio
-- **Issues:** [GitHub](https://github.com/lum-muu/lum.bio/issues) / [GitLab](https://gitlab.com/lummuu/lum.bio/-/issues)
+- **Issues:** [GitHub](https://github.com/lum-muu/lum.bio/issues)
 
 ### Cloudflare Email Worker setup (recommended)
 

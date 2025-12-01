@@ -117,11 +117,7 @@ export const displayConsoleCopyright = (): void => {
     styles.info
   );
   secureLog(
-    '%c   GitHub: https://github.com/cwlum/lum.bio/issues',
-    styles.license
-  );
-  secureLog(
-    '%c   GitLab: https://gitlab.com/lummuu/lum.bio/-/issues',
+    '%c   GitHub: https://github.com/lum-muu/lum.bio/issues',
     styles.license
   );
 

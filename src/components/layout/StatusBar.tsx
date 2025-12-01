@@ -5,9 +5,9 @@ import { mockData, dataIntegrity } from '@/data/mockData';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
 
-const INTEGRITY_DOC_URL = 'https://gitlab.com/lummuu/lum.bio';
+const INTEGRITY_DOC_URL = 'https://github.com/lum-muu/lum.bio';
 
-const LICENSE_URL = 'https://gitlab.com/lummuu/lum.bio/-/blob/main/LICENSE.md';
+const LICENSE_URL = 'https://github.com/lum-muu/lum.bio/blob/main/LICENSE.md';
 
 const StatusBar: React.FC = () => {
   const { currentView } = useNavigation();

@@ -80,7 +80,7 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
             <h2>📄 License Information</h2>
             <p>
               For licensing inquiries or to report this unauthorized deployment,
-              please visit the official repositories.
+              please visit the official repository.
             </p>
             <a
               href="https://github.com/lum-muu/lum.bio"
@@ -89,14 +89,6 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
               className={styles.link}
             >
               GitHub Project <ExternalLink size={16} />
-            </a>
-            <a
-              href="https://gitlab.com/lummuu/lum.bio"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.link}
-            >
-              GitLab Mirror <ExternalLink size={16} />
             </a>
           </div>
         </div>
