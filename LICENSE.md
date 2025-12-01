@@ -12,7 +12,7 @@ not for cloning or redistribution.
 
 1. You may view, fork, and run the repository for personal evaluation on your own devices.
 2. You may quote short excerpts (≤ 50 contiguous lines) in articles or talks when you credit
-   `https://gitlab.com/lummuu/lum.bio`.
+   `https://github.com/lum-muu/lum.bio`.
 3. You may reference the architectural ideas in your own projects, provided you implement
    them independently.
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Unified quality check script for both GitHub Actions and GitLab CI
+# Unified quality check script for GitHub Actions CI
 set -e
 
 echo "🔍 Running quality checks..."
