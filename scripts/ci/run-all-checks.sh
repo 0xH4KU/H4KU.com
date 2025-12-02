@@ -60,9 +60,9 @@ echo ""
 # Run E2E tests
 echo "4️⃣  E2E Tests"
 echo "============="
-# Ensure browsers are available
-echo "(Ensuring Playwright browsers are installed...)"
-if npx playwright install --with-deps chromium; then
+# Ensure browsers are available (chromium + firefox so both Playwright projects can run)
+echo "(Ensuring Playwright browsers are installed: chromium, firefox ...)"
+if npx playwright install --with-deps chromium firefox; then
   echo "✅ Playwright browsers ready"
 else
   echo "❌ Failed to install Playwright browsers"
