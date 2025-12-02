@@ -12,6 +12,7 @@ _Architecture reference for contributors extending Lum.bio without regressing th
 | Routing      | Custom NavigationContext built on the History API (`/`, `/folder/<path>`, `/page/<id>`) with manual URL ↔ state synchronisation |
 | Animations   | Framer Motion variants with reduced-motion fallbacks                                                                             |
 | Assets       | Everything under `public/` (images, gifs, fonts) served verbatim by Vite                                                         |
+| Styling      | CSS Modules with CSS custom properties for dynamic styles (CSP-compliant, minimal inline styles)                                |
 
 ### Data Flow
 
@@ -61,6 +62,7 @@ public/content/**/* (source assets)
 
 - Uses a shared IntersectionObserver for non-priority images; priority items load eagerly.
 - Optional `srcSet`/`sizes` support; errors fall back to an inline placeholder to preserve layout.
+- Implements data-attribute based styling (`data-loaded`, `data-priority`) instead of inline styles for CSP compliance.
 
 ### Data Parser (`src/data/mockData.ts`)
 

@@ -5,28 +5,24 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import { Search, X, ChevronsDown, ChevronsUp, Pin } from 'lucide-react';
-import paperIcon from '@/assets/paper.gif';
-import folderIcon from '@/assets/folder.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSearchExecutor } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useLightbox } from '@/contexts/LightboxContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useSidebarKeyboardNavigation } from '@/hooks/useSidebarKeyboardNavigation';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult } from '@/types';
 import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG } from '@/config/constants';
-import {
-  getSafeUrl,
-  buildAppUrl,
-  buildFolderUrl,
-  buildPageUrl,
-} from '@/utils/urlHelpers';
+import { buildAppUrl, buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
 import { navigateFromSearchResult } from '@/utils/searchNavigation';
-import { FolderTreeItem } from './FolderTreeItem';
 import { ContextMenu } from './ContextMenu';
-import { Tooltip } from './Tooltip';
+import { SidebarHeader } from './SidebarHeader';
+import { SidebarFooter } from './SidebarFooter';
+import { SidebarFilter } from './SidebarFilter';
+import { SidebarSearchResults } from './SidebarSearchResults';
+import { SidebarSections } from './SidebarSections';
 import styles from './Sidebar.module.css';
 
 const KEYBOARD_RESIZE_STEP = 16;
@@ -47,18 +43,6 @@ const hasInertSupport = () => {
   return (
     'inert' in (HTMLElement.prototype as HTMLElement & { inert?: unknown })
   );
-};
-
-type KeybindingSnapshot = {
-  isSidebarOpen: boolean;
-  sidebarQuery: string;
-  sidebarResults: SearchResult[];
-  focusedIndex: number;
-  sidebarElement: HTMLDivElement | null;
-  handleSearchResultSelect: (result: SearchResult) => void;
-  handleNavigate: (item: SidebarEntry) => void;
-  setSidebarQuery: (value: string) => void;
-  allVisibleItems: SidebarEntry[];
 };
 
 const Sidebar: React.FC = () => {
@@ -86,7 +70,6 @@ const Sidebar: React.FC = () => {
   const resizeHandleRef = useRef<HTMLDivElement | null>(null);
   const dragFrameRef = useRef<number | null>(null);
   const pendingDragWidthRef = useRef<number | null>(null);
-  const keybindingStateRef = useRef<KeybindingSnapshot | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -448,196 +431,17 @@ const Sidebar: React.FC = () => {
     [getItemUrl]
   );
 
-  useEffect(() => {
-    keybindingStateRef.current = {
-      isSidebarOpen,
-      sidebarQuery,
-      sidebarResults,
-      focusedIndex,
-      sidebarElement: sidebarRef.current,
-      handleSearchResultSelect,
-      handleNavigate,
-      setSidebarQuery,
-      allVisibleItems,
-    };
-  }, [
+  useSidebarKeyboardNavigation({
     isSidebarOpen,
     sidebarQuery,
     sidebarResults,
+    allVisibleItems,
     focusedIndex,
+    setFocusedIndex,
     handleSearchResultSelect,
     handleNavigate,
-    setSidebarQuery,
-    allVisibleItems,
-  ]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const state = keybindingStateRef.current;
-      if (!state?.isSidebarOpen) {
-        return;
-      }
-
-      const target = event.target as HTMLElement | null;
-      if (
-        state.sidebarElement &&
-        target &&
-        !state.sidebarElement.contains(target)
-      ) {
-        return;
-      }
-
-      const isSearching =
-        state.sidebarQuery.trim().length > 0 && state.sidebarResults.length > 0;
-
-      if (isSearching) {
-        switch (event.key) {
-          case 'ArrowDown':
-            event.preventDefault();
-            setFocusedIndex(prev =>
-              prev < state.sidebarResults.length - 1 ? prev + 1 : prev
-            );
-            break;
-          case 'ArrowUp':
-            event.preventDefault();
-            setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
-            break;
-          case 'Enter':
-            if (
-              state.focusedIndex >= 0 &&
-              state.sidebarResults[state.focusedIndex]
-            ) {
-              state.handleSearchResultSelect(
-                state.sidebarResults[state.focusedIndex]
-              );
-            }
-            break;
-          case 'Escape':
-            state.setSidebarQuery('');
-            break;
-        }
-        return;
-      }
-
-      switch (event.key) {
-        case 'ArrowDown':
-          event.preventDefault();
-          setFocusedIndex(prev =>
-            prev < state.allVisibleItems.length - 1 ? prev + 1 : prev
-          );
-          break;
-        case 'ArrowUp':
-          event.preventDefault();
-          setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
-          break;
-        case 'Enter':
-          if (
-            state.focusedIndex >= 0 &&
-            state.allVisibleItems[state.focusedIndex]
-          ) {
-            state.handleNavigate(state.allVisibleItems[state.focusedIndex]);
-          }
-          break;
-        case 'Escape':
-          if (state.sidebarQuery) {
-            state.setSidebarQuery('');
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const renderItem = (item: SidebarEntry, showPin = false) => {
-    const isActive = activePathSegments.has(item.id);
-    const isPinned = pinnedItems.has(item.id);
-    const isFolder = item.type === 'folder';
-
-    if (isFolder) {
-      return (
-        <div
-          key={item.id}
-          onContextMenu={e => handleContextMenu(e, item)}
-          className={styles['item-wrapper']}
-        >
-          <FolderTreeItem
-            folder={item as Folder}
-            depth={0}
-            isExpanded={expandedFolders.has(item.id)}
-            activePathSegments={activePathSegments}
-            onToggle={toggleFolder}
-            onNavigate={handleNavigate}
-            expandedFolders={expandedFolders}
-            isPinned={isPinned}
-            onContextMenu={handleContextMenu}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <button
-        key={item.id}
-        type="button"
-        className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned && showPin ? styles['sidebar-item--pinned'] : ''}`}
-        onClick={() => handleNavigate(item)}
-        onContextMenu={e => handleContextMenu(e, item)}
-        aria-current={isActive ? 'page' : undefined}
-      >
-        <span className={styles['expand-icon-spacer']} />
-        <img
-          className={styles['sidebar-icon']}
-          src={isFolder ? folderIcon : paperIcon}
-          alt={isFolder ? 'Folder icon' : 'Text file icon'}
-          width="20"
-          height="20"
-        />
-        <span className={styles['folder-name']}>{item.name}</span>
-        {isPinned && showPin && (
-          <Pin size={14} className={styles['pin-indicator']} />
-        )}
-      </button>
-    );
-  };
-
-  const renderSearchResult = (result: SearchResult, index: number) => {
-    const isSelected = index === focusedIndex;
-    let label = '';
-    let meta = '';
-
-    switch (result.type) {
-      case 'folder':
-        label = result.folder.name;
-        meta = `Folder • ${buildFolderUrl(result.path)}`;
-        break;
-      case 'page':
-        label = result.page.name;
-        meta = `Text • ${buildPageUrl(result.page.id)}`;
-        break;
-      case 'work':
-        label = result.work.filename;
-        meta =
-          result.work.itemType === 'page'
-            ? `Text • ${buildPageUrl(result.work.id)}`
-            : `Image • ${buildFolderUrl(result.path)}`;
-        break;
-    }
-
-    return (
-      <button
-        key={`${result.type}-${result.id}`}
-        type="button"
-        className={`${styles['search-result']} ${isSelected ? styles['search-result--selected'] : ''}`}
-        onClick={() => handleSearchResultSelect(result)}
-        aria-selected={isSelected}
-      >
-        <div className={styles['search-result-label']}>{label}</div>
-        <div className={styles['search-result-meta']}>{meta}</div>
-      </button>
-    );
-  };
+    sidebarElement: sidebarRef.current,
+  });
 
   return (
     <nav
@@ -650,156 +454,43 @@ const Sidebar: React.FC = () => {
       aria-hidden={!isSidebarOpen}
       {...(supportsInert && !isSidebarOpen && { inert: true })}
     >
-      <div className={styles['sidebar-header']}>
-        <button
-          className={styles['logo-button']}
-          onClick={() => {
-            resetToHome();
-            if (isMobile) {
-              closeSidebar();
-            }
-          }}
-          aria-label="LUM.BIO, Go to home"
-        >
-          LUM.BIO
-        </button>
-        <div className={styles['header-controls']}>
-          <Tooltip
-            content={
-              allFoldersExpanded ? 'Collapse all folders' : 'Expand all folders'
-            }
-            position="bottom"
-          >
-            <button
-              className={`${styles['control-button']} ${allFoldersExpanded ? styles['control-button--active'] : ''}`}
-              onClick={handleToggleAll}
-              aria-label={
-                allFoldersExpanded
-                  ? 'Collapse all folders'
-                  : 'Expand all folders'
-              }
-            >
-              {allFoldersExpanded ? (
-                <ChevronsUp size={16} />
-              ) : (
-                <ChevronsDown size={16} />
-              )}
-            </button>
-          </Tooltip>
-        </div>
-      </div>
+      <SidebarHeader
+        allFoldersExpanded={allFoldersExpanded}
+        onToggleAll={handleToggleAll}
+        onLogoClick={() => {
+          resetToHome();
+          if (isMobile) {
+            closeSidebar();
+          }
+        }}
+      />
 
-      <div className={styles['search-container']}>
-        <Search size={16} className={styles['search-icon']} />
-        <input
-          type="text"
-          placeholder="Filter sidebar..."
-          value={sidebarQuery}
-          onChange={e => setSidebarQuery(e.target.value)}
-          className={styles['search-input']}
-          aria-label="Filter sidebar items"
-          aria-describedby="sidebar-filter-help"
-        />
-        {sidebarQuery && (
-          <button
-            className={styles['search-clear']}
-            onClick={() => setSidebarQuery('')}
-            aria-label="Clear filter"
-          >
-            <X size={16} />
-          </button>
-        )}
-        <span id="sidebar-filter-help" className={styles['sr-only']}>
-          Type to filter sidebar navigation. Use global search (top right) to
-          search all content.
-        </span>
-      </div>
+      <SidebarFilter query={sidebarQuery} onQueryChange={setSidebarQuery} />
 
       <div className={styles['sidebar-content']}>
         {sidebarQuery.trim() ? (
-          // Show search results
-          <>
-            {sidebarResults.length === 0 && (
-              <div className={styles['empty-state']}>
-                <Search size={32} />
-                <p>No results found</p>
-                <span>Try a different search term</span>
-              </div>
-            )}
-            {sidebarResults.length > 0 && (
-              <div className={styles['search-results-container']}>
-                {sidebarResults.map((result, index) =>
-                  renderSearchResult(result, index)
-                )}
-              </div>
-            )}
-          </>
+          <SidebarSearchResults
+            results={sidebarResults}
+            focusedIndex={focusedIndex}
+            onSelect={handleSearchResultSelect}
+          />
         ) : (
-          // Show normal sidebar
-          <>
-            {(pinnedFolders.length > 0 || pinnedPages.length > 0) && (
-              <div className={styles['sidebar-section']}>
-                <div className={styles['section-header']}>
-                  <Pin size={14} />
-                  <span>Pinned</span>
-                </div>
-                {pinnedFolders.map(folder => renderItem(folder, true))}
-                {pinnedPages.map(page => renderItem(page, true))}
-              </div>
-            )}
-
-            <div className={styles['sidebar-section']}>
-              {unpinnedFolders.map(folder => renderItem(folder))}
-            </div>
-
-            <div className={styles['sidebar-section']}>
-              {unpinnedPages.map(page => renderItem(page))}
-            </div>
-          </>
+          <SidebarSections
+            pinnedFolders={pinnedFolders}
+            pinnedPages={pinnedPages}
+            unpinnedFolders={unpinnedFolders}
+            unpinnedPages={unpinnedPages}
+            activePathSegments={activePathSegments}
+            expandedFolders={expandedFolders}
+            pinnedItems={pinnedItems}
+            onToggleFolder={toggleFolder}
+            onNavigate={handleNavigate}
+            onContextMenu={handleContextMenu}
+          />
         )}
       </div>
 
-      <div className={styles['sidebar-footer']}>
-        {socials.map(social => {
-          const safeUrl = getSafeUrl(social.url);
-
-          if (!safeUrl) {
-            return (
-              <button
-                key={social.code}
-                type="button"
-                className={`${styles['social-link']} ${styles['social-link--disabled']}`}
-                disabled
-                aria-disabled="true"
-                aria-label={`${social.name} unavailable`}
-              >
-                {social.code}
-              </button>
-            );
-          }
-
-          const ariaLabelParts = [`${social.code}, Open ${social.name}`];
-          if (safeUrl.isMailto) {
-            ariaLabelParts.push('(opens email client)');
-          }
-          if (safeUrl.isExternal) {
-            ariaLabelParts.push('(opens in new tab)');
-          }
-
-          return (
-            <a
-              key={social.code}
-              href={safeUrl.href}
-              className={styles['social-link']}
-              target={safeUrl.isExternal ? '_blank' : undefined}
-              rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
-              aria-label={ariaLabelParts.join(' ')}
-            >
-              {social.code}
-            </a>
-          );
-        })}
-      </div>
+      <SidebarFooter socials={socials} />
 
       <div
         ref={resizeHandleRef}

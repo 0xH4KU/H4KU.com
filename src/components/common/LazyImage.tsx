@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { IMAGE_CONFIG } from '@/config/constants';
 import type { ImageSource } from '@/types';
+import styles from './LazyImage.module.css';
 
 const TRANSPARENT_PLACEHOLDER =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -170,7 +171,7 @@ export function LazyImage({
       srcSet={imageSrcSet}
       sizes={sizes}
       alt={alt}
-      className={className}
+      className={`${styles.lazyImage} ${className || ''}`}
       loading={priority ? 'eager' : undefined}
       decoding={priority ? 'sync' : 'async'}
       fetchPriority={priority ? 'high' : fetchPriority}
@@ -178,10 +179,8 @@ export function LazyImage({
       onError={handleError}
       aria-busy={isLoading ? 'true' : 'false'}
       aria-live={!isLoading ? 'polite' : undefined}
-      style={{
-        opacity: isLoaded || priority ? 1 : 0.5,
-        transition: priority ? 'none' : 'opacity 0.3s ease-in-out',
-      }}
+      data-loaded={isLoaded || priority}
+      data-priority={priority}
     />
   );
 

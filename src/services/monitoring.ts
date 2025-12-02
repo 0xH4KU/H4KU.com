@@ -237,6 +237,39 @@ export type WebVitalEntry = {
 export const reportWebVital = (entry: WebVitalEntry): void => {
   if (typeof window === 'undefined' || !shouldLoadMonitoring()) return;
 
+  // Rough thresholds based on Core Web Vitals guidance.
+  // These are only used to tag events; sampling is still handled by Sentry.
+  const thresholds = {
+    LCP: { good: 2.5, poor: 4.0 },
+    FID: { good: 0.1, poor: 0.3 }, // seconds
+    CLS: { good: 0.1, poor: 0.25 },
+  } as const;
+
+  const getSeverityLevel = () => {
+    if (entry.rating === 'poor') {
+      return 'warning' as const;
+    }
+    if (entry.rating === 'needs-improvement') {
+      return 'info' as const;
+    }
+    return 'info' as const;
+  };
+
+  const getThresholdBucket = () => {
+    const metricThreshold = thresholds[entry.name];
+    if (!metricThreshold) return 'unknown';
+
+    const normalizedValue =
+      entry.name === 'FID' ? entry.value / 1000 : entry.value;
+
+    if (normalizedValue <= metricThreshold.good) return 'good';
+    if (normalizedValue >= metricThreshold.poor) return 'poor';
+    return 'needs-improvement';
+  };
+
+  const level = getSeverityLevel();
+  const thresholdBucket = getThresholdBucket();
+
   const send = async () => {
     const client = monitoringEnabled
       ? (sentryClient ??
@@ -248,11 +281,12 @@ export const reportWebVital = (entry: WebVitalEntry): void => {
     if (client) {
       client.captureEvent({
         message: `web-vital:${entry.name}`,
-        level: 'info',
+        level,
         tags: {
           vital: entry.name,
           vital_rating: entry.rating,
           nav_type: entry.navigationType ?? 'unknown',
+          vital_threshold_bucket: thresholdBucket,
         },
         extra: {
           value: entry.value,

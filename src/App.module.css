@@ -71,6 +71,7 @@
   padding: var(--content-padding-top) 64px var(--content-padding-bottom);
   position: relative;
   z-index: 10;
+  margin-left: var(--sidebar-margin, 0px);
   transition:
     transform var(--transition-normal),
     filter var(--transition-normal),

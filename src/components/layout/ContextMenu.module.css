@@ -1,5 +1,7 @@
 .context-menu {
   position: fixed;
+  left: var(--menu-x, 0);
+  top: var(--menu-y, 0);
   background: var(--color-surface);
   border: 2px solid var(--color-border);
   border-radius: 6px;

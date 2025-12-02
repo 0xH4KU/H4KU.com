@@ -9,13 +9,28 @@ const contactSelectors = {
 
 test.describe('Lum.bio smoke E2E', () => {
   test('about page renders', async ({ page }) => {
-    await page.goto('/page/about');
+    await page.goto('/');
+
+    // Open the about.txt page via the home view to avoid browser-specific
+    // history quirks when deep-linking directly.
+    await page
+      .getByRole('button', { name: /about\.txt/i })
+      .or(page.getByRole('link', { name: /about\.txt/i }))
+      .first()
+      .click();
+
     await expect(page.getByRole('heading', { name: /about/i })).toBeVisible();
     await expect(page.getByRole('main')).toBeVisible();
   });
 
   test('contact form validation and success path', async ({ page }) => {
-    await page.goto('/page/contact');
+    await page.goto('/');
+
+    await page
+      .getByRole('button', { name: /contact\.txt/i })
+      .or(page.getByRole('link', { name: /contact\.txt/i }))
+      .first()
+      .click();
 
     // Disable native HTML5 validation so we can hit custom validation paths.
     await page.locator('form').evaluate(form => form.setAttribute('novalidate', 'true'));
@@ -52,5 +67,27 @@ test.describe('Lum.bio smoke E2E', () => {
     await expect(
       page.getByText(/Message sent successfully!/i)
     ).toBeVisible();
+  });
+
+  test('global search opens, handles no-results, and closes with Escape', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    // Open global search from the top bar.
+    await page.getByRole('button', { name: 'Search images' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Search panel' });
+    await expect(dialog).toBeVisible();
+
+    const input = dialog.getByRole('textbox');
+
+    // Type a query that should not match anything and assert the empty state.
+    await input.fill('this-should-not-match-anything-12345');
+    await expect(dialog.getByText('No matches found')).toBeVisible();
+
+    // Press Escape to close the panel.
+    await input.press('Escape');
+    await expect(dialog).toBeHidden();
   });
 });

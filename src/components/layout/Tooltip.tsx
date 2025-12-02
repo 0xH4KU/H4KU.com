@@ -84,10 +84,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && (
         <div
           className={`${styles.tooltip} ${placement === 'bottom' ? styles['tooltip--bottom'] : ''}`}
-          style={{
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-          }}
+          style={
+            {
+              '--tooltip-x': `${position.x}px`,
+              '--tooltip-y': `${position.y}px`,
+            } as React.CSSProperties
+          }
         >
           {content}
         </div>

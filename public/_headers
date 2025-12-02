@@ -1,6 +1,11 @@
 # Security headers (Cloudflare Pages + Netlify compatible)
+# NOTE:
+# - We keep 'unsafe-inline' for styles because the UI uses a small number of dynamic
+#   inline styles for positioning (crosshair, tooltips, etc). Dropping it would require
+#   a deeper refactor to avoid style attributes entirely.
+# - Script execution remains strictly limited to first‑party bundles.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.example.com https://api.lum.bio https://*.workers.dev https://*.sentry.io https://*.ingest.sentry.io; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.lum.bio https://*.workers.dev https://*.sentry.io https://*.ingest.sentry.io; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), geolocation=(), microphone=(), interest-cohort=()
   X-Content-Type-Options: nosniff
@@ -47,4 +52,3 @@
 # Favicon with medium cache
 /logo.svg
   Cache-Control: public, max-age=86400
-

@@ -77,6 +77,8 @@ export const IMAGE_CONFIG = {
   THUMBNAIL_WIDTH: 400,
   /** Full image max width (px) */
   FULL_WIDTH: 1920,
+  /** Number of images to load with high priority (for LCP optimization) */
+  PRIORITY_COUNT: 2,
 } as const;
 
 /**

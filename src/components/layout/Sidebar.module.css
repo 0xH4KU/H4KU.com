@@ -362,6 +362,7 @@
 
 .sidebar-item {
   padding: 12px 20px;
+  padding-left: var(--indent, 20px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -607,6 +608,7 @@
 @media (min-width: 769px) {
   .sidebar-item {
     padding: 10px 18px;
+    padding-left: var(--indent, 18px);
     gap: 12px;
     min-height: 44px;
   }

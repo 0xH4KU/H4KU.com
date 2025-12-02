@@ -193,7 +193,6 @@ const SearchPanel: React.FC = () => {
         role="dialog"
         aria-modal="true"
         aria-label="Search panel"
-        aria-labelledby={titleId}
         aria-describedby={descriptionId}
         ref={panelRef}
         tabIndex={-1}

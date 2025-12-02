@@ -72,8 +72,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         adjustedY = viewportHeight - rect.height - 10;
       }
 
-      menuRef.current.style.left = `${adjustedX}px`;
-      menuRef.current.style.top = `${adjustedY}px`;
+      menuRef.current.style.setProperty('--menu-x', `${adjustedX}px`);
+      menuRef.current.style.setProperty('--menu-y', `${adjustedY}px`);
     }
   }, [x, y]);
 
@@ -81,7 +81,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     <div
       ref={menuRef}
       className={styles['context-menu']}
-      style={{ left: x, top: y }}
+      style={
+        {
+          '--menu-x': `${x}px`,
+          '--menu-y': `${y}px`,
+        } as React.CSSProperties
+      }
       role="menu"
     >
       <div className={styles['context-menu-header']}>{itemName}</div>

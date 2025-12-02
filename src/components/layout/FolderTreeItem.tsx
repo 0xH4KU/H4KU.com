@@ -67,7 +67,7 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
     <>
       <div
         className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned ? styles['sidebar-item--pinned'] : ''}`}
-        style={{ paddingLeft: `${indent}px` }}
+        style={{ '--indent': `${indent}px` } as React.CSSProperties}
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
         role="button"

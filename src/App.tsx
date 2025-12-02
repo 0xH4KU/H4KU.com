@@ -139,9 +139,15 @@ const AppContent: React.FC = () => {
             id="main-content"
             className={styles['content-area']}
             role="main"
-            style={{
-              marginLeft: isMobile ? 0 : isSidebarOpen ? sidebarWidth : 0,
-            }}
+            style={
+              {
+                '--sidebar-margin': isMobile
+                  ? '0px'
+                  : isSidebarOpen
+                    ? `${sidebarWidth}px`
+                    : '0px',
+              } as React.CSSProperties
+            }
           >
             <ErrorBoundary>
               <ContentView />

@@ -1,5 +1,7 @@
 .tooltip {
   position: fixed;
+  left: var(--tooltip-x, 0);
+  top: var(--tooltip-y, 0);
   transform: translate(-50%, -100%);
   background: var(--color-text);
   color: var(--color-surface);
