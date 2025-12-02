@@ -128,7 +128,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 - `npm run integrity:check` recomputes both hashes. Pass `-- --write` to update the stored values when you intentionally edit content JSON.
 - `src/data/mockData.ts` validates the hashes at runtime; the UI surfaces the status so tamper warnings aren’t silent.
 - Always run `npm run build:data` after changing anything under `src/content/` or after syncing with `npm run cms`, then commit the refreshed snapshot.
-- 更多細節可直接查看程式碼中的註解與 `src/data/mockData.ts`。
+- For more details, you can directly refer to the comments in the code and `src/data/mockData.ts`。
 
 ### Accessibility Features
 
