@@ -1,6 +1,7 @@
 .app {
   width: 100vw;
-  height: 100vh; /* Fallback for browsers that do not support Custom Properties */
+  height: 100vh;
+  /* Fallback for browsers that do not support Custom Properties */
   min-height: 100vh;
   height: calc(var(--vh, 1vh) * 100);
   display: flex;
@@ -42,7 +43,6 @@
     linear-gradient(to bottom, var(--grid-bold) 1px, transparent 1px);
   background-size: 96px 96px;
 }
-
 @supports (height: 100dvh) {
   .app {
     height: 100dvh;

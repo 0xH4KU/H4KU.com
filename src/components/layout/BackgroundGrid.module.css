@@ -1,0 +1,40 @@
+.container {
+  position: fixed;
+  inset: -50px;
+  /* Extend beyond viewport to prevent edges showing during movement */
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+.gridLayer {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  will-change: transform;
+}
+
+.gridLayerBold {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-bold) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-bold) 1px, transparent 1px);
+  background-size: 96px 96px;
+  will-change: transform;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    var(--color-background) 120%
+  );
+  pointer-events: none;
+}

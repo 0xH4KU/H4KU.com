@@ -7,3 +7,5 @@ export { default as Lightbox } from './overlay/Lightbox';
 export { default as SearchPanel } from './layout/SearchPanel';
 export { default as Breadcrumb } from './layout/Breadcrumb';
 export { FolderTreeItem } from './layout/FolderTreeItem';
+export { default as GlitchText } from './effects/GlitchText';
+export { default as Typewriter } from './effects/Typewriter';

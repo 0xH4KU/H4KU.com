@@ -62,6 +62,8 @@ export function useCrosshair() {
     };
   }, [showCrosshair]);
 
+  const [isHoveringInteractive, setIsHoveringInteractive] = useState(false);
+
   useEffect(() => {
     /* c8 ignore next */
     if (typeof window === 'undefined') {
@@ -75,6 +77,22 @@ export function useCrosshair() {
         x: event.clientX,
         y: event.clientY,
       };
+
+      // Check for interactive elements
+      const target = event.target;
+      let isInteractive = false;
+
+      if (
+        target &&
+        target instanceof HTMLElement &&
+        typeof target.closest === 'function'
+      ) {
+        isInteractive =
+          target.closest(
+            'a, button, input, select, textarea, [role="button"]'
+          ) !== null;
+      }
+      setIsHoveringInteractive(isInteractive);
 
       if (!showCrosshairRef.current) {
         return;
@@ -142,6 +160,7 @@ export function useCrosshair() {
   return {
     showCrosshair,
     mousePos,
+    isHoveringInteractive,
     toggleCrosshair,
   };
 }

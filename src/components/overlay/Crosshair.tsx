@@ -6,7 +6,7 @@ const LINE_THICKNESS = 1;
 const LABEL_OFFSET = 12;
 
 const Crosshair: React.FC = () => {
-  const { showCrosshair, mousePos } = useCrosshair();
+  const { showCrosshair, mousePos, isHoveringInteractive } = useCrosshair();
 
   if (!showCrosshair) {
     return null;
@@ -33,7 +33,9 @@ const Crosshair: React.FC = () => {
         }}
       />
       <div
-        className={styles['crosshair-center']}
+        className={`${styles['crosshair-center']} ${
+          isHoveringInteractive ? styles['interactive'] : ''
+        }`}
         style={{
           left: `${mousePos.x}px`,
           top: `${mousePos.y}px`,
