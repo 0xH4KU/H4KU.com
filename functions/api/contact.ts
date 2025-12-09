@@ -84,12 +84,21 @@ function createEmailHtml(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <style>
+    :root { color-scheme: light dark; }
+    @media (prefers-color-scheme: dark) {
+      .email-body, .email-wrapper, .email-container { background-color: #1a1a1a !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: 'Courier New', Courier, monospace;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; padding: 40px 20px;">
+<body class="email-body" style="margin: 0; padding: 0; background-color: #1a1a1a !important; font-family: 'Courier New', Courier, monospace;">
+  <div style="display: none; max-height: 0; overflow: hidden; color: #1a1a1a; font-size: 1px;">New message from ${escapeHtml(payload.name)}</div>
+  <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a !important; padding: 40px 20px;" bgcolor="#1a1a1a">
     <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%;">
+      <td align="center" bgcolor="#1a1a1a" style="background-color: #1a1a1a !important;">
+        <table class="email-container" width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%; background-color: #1a1a1a !important;" bgcolor="#1a1a1a">
 
           <!-- Top Border Line -->
           <tr>
@@ -156,7 +165,7 @@ function createEmailHtml(
               <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;">
                 Message
               </div>
-              <div style="background-color: #0f0f0f; border-left: 2px solid #689696; padding: 20px; color: #ccc; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(payload.message)}</div>
+              <div style="background-color: #0f0f0f !important; border-left: 2px solid #689696; padding: 20px; color: #ccc; font-size: 14px; line-height: 1.7; white-space: pre-wrap;" bgcolor="#0f0f0f">${escapeHtml(payload.message)}</div>
             </td>
           </tr>
 
