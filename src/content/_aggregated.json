@@ -26,12 +26,12 @@
   "pages": [
     {
       "id": "about",
-      "filename": "about.txt",
+      "filename": "About.txt",
       "content": "ABOUT\n════════════════════════\n\nHAKU (@0xH4KU)\nFreelance illustrator\n\nAnime-style illustrations\nCharacter design\nDigital art\n\nNot available for commissions\n"
     },
     {
       "id": "contact",
-      "filename": "contact.txt",
+      "filename": "Contact.txt",
       "content": "CONTACT\n════════════════════════\n\nEmail: 0x@H4KU.com\n\nFor commissions and inquiries,\nplease reach out via email or\nuse the contact form.\n\nResponse time: 1-2 business days\n"
     }
   ],
@@ -52,7 +52,7 @@
       "url": "https://twitter.com/0xH4KU"
     }
   ],
-  "_buildTime": "2025-12-03T12:28:11.593Z",
-  "_integrity": "f98549ba",
-  "_integritySHA256": "f3c03b40b56c4ca421a491347dc22df033a984736422f02200e18eebb4e3795e"
+  "_buildTime": "2025-12-09T09:25:31.087Z",
+  "_integrity": "530ab8e1",
+  "_integritySHA256": "55a70c90fb22e541a6d7e1af7275144c7a91928884c795f2bc9f04aab3c559db"
 }
