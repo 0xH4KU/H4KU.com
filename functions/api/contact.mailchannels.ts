@@ -1,14 +1,16 @@
 /**
- * Cloudflare Pages Function - Contact Form Handler
+ * Cloudflare Pages Function - Contact Form Handler (MailChannels)
  *
- * Handles POST /api/contact requests and sends email via Cloudflare Email Workers.
- *
- * Required bindings (configure in Cloudflare Dashboard):
- * - EMAIL: Email Workers binding for sending emails
+ * Uses MailChannels API which is FREE for Cloudflare Workers.
+ * No additional setup required - just deploy!
  *
  * Required environment variables:
  * - CONTACT_TO_EMAIL: Recipient email address (e.g., 0x@H4KU.com)
- * - CONTACT_FROM_EMAIL: Sender email address (must be verified in Cloudflare)
+ *
+ * Optional:
+ * - DKIM_DOMAIN: Your domain for DKIM signing
+ * - DKIM_SELECTOR: DKIM selector (default: mailchannels)
+ * - DKIM_PRIVATE_KEY: DKIM private key for email signing
  */
 
 interface ContactPayload {
@@ -18,25 +20,11 @@ interface ContactPayload {
 }
 
 interface Env {
-  EMAIL: {
-    send: (email: EmailMessage) => Promise<void>;
-  };
   CONTACT_TO_EMAIL: string;
-  CONTACT_FROM_EMAIL: string;
+  DKIM_DOMAIN?: string;
+  DKIM_SELECTOR?: string;
+  DKIM_PRIVATE_KEY?: string;
 }
-
-interface EmailMessage {
-  from: string;
-  to: string;
-  subject: string;
-  text: string;
-  html?: string;
-  replyTo?: string;
-}
-
-// Simple rate limiting using KV (optional, can be added later)
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX = 3; // Max 3 requests per minute per IP
 
 function generateReferenceId(): string {
   const timestamp = Date.now().toString(36);
@@ -71,7 +59,6 @@ function validatePayload(data: unknown): data is ContactPayload {
     return false;
   }
 
-  // Length limits
   if (payload.name.length > 100) return false;
   if (payload.email.length > 254) return false;
   if (payload.message.length > 5000) return false;
@@ -80,35 +67,16 @@ function validatePayload(data: unknown): data is ContactPayload {
 }
 
 function isValidEmail(email: string): boolean {
-  // Basic email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-function createEmailContent(
+function createEmailHtml(
   payload: ContactPayload,
   referenceId: string,
   clientIp: string
-): { text: string; html: string } {
-  const text = `
-New Contact Form Submission
-============================
-
-Reference ID: ${referenceId}
-
-From: ${payload.name}
-Email: ${payload.email}
-IP: ${clientIp}
-Time: ${new Date().toISOString()}
-
-Message:
-${payload.message}
-
----
-This message was sent via the H4KU.com contact form.
-`.trim();
-
-  const html = `
+): string {
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -154,35 +122,25 @@ This message was sent via the H4KU.com contact form.
 </body>
 </html>
 `.trim();
-
-  return { text, html };
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
 
-  // CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': 'https://h4ku.com',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
   };
 
-  // Handle preflight
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  // Verify required env vars
-  if (!env.CONTACT_TO_EMAIL || !env.CONTACT_FROM_EMAIL) {
-    console.error('Missing required environment variables');
+  if (!env.CONTACT_TO_EMAIL) {
+    console.error('Missing CONTACT_TO_EMAIL');
     return Response.json(
       { success: false, message: 'Server configuration error' },
       { status: 500, headers: corsHeaders }
     );
   }
 
-  // Parse and validate payload
   let payload: unknown;
   try {
     payload = await request.json();
@@ -202,20 +160,56 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const referenceId = generateReferenceId();
   const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const html = createEmailHtml(payload, referenceId, clientIp);
 
-  // Create email content
-  const { text, html } = createEmailContent(payload, referenceId, clientIp);
+  // Build MailChannels request
+  const mailRequest: Record<string, unknown> = {
+    personalizations: [
+      {
+        to: [{ email: env.CONTACT_TO_EMAIL }],
+      },
+    ],
+    from: {
+      email: `noreply@h4ku.com`,
+      name: 'H4KU.com Contact',
+    },
+    reply_to: {
+      email: payload.email,
+      name: payload.name,
+    },
+    subject: `[H4KU.com] Contact from ${payload.name}`,
+    content: [
+      {
+        type: 'text/html',
+        value: html,
+      },
+    ],
+  };
+
+  // Add DKIM if configured
+  if (env.DKIM_DOMAIN && env.DKIM_SELECTOR && env.DKIM_PRIVATE_KEY) {
+    (mailRequest.personalizations as Record<string, unknown>[])[0].dkim_domain =
+      env.DKIM_DOMAIN;
+    (
+      mailRequest.personalizations as Record<string, unknown>[]
+    )[0].dkim_selector = env.DKIM_SELECTOR;
+    (
+      mailRequest.personalizations as Record<string, unknown>[]
+    )[0].dkim_private_key = env.DKIM_PRIVATE_KEY;
+  }
 
   try {
-    // Send email via Cloudflare Email Workers
-    await env.EMAIL.send({
-      from: env.CONTACT_FROM_EMAIL,
-      to: env.CONTACT_TO_EMAIL,
-      subject: `[H4KU.com] Contact from ${payload.name}`,
-      text,
-      html,
-      replyTo: payload.email,
+    const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mailRequest),
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('MailChannels error:', response.status, errorText);
+      throw new Error(`MailChannels returned ${response.status}`);
+    }
 
     console.log(`Contact form submitted: ${referenceId} from ${payload.email}`);
 
@@ -239,7 +233,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 };
 
-// Handle OPTIONS for CORS preflight
 export const onRequestOptions: PagesFunction = async () => {
   return new Response(null, {
     headers: {
