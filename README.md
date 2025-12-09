@@ -164,7 +164,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 ### Setup
 
 ```bash
-git clone https://github.com/0xH4KU/H4KU.com.git
+# Private repository - access restricted
 cd H4KU.com
 npm install
 cp .env.example .env  # Configure VITE_CONTACT_ENDPOINT if needed
@@ -291,7 +291,7 @@ See [LICENSE.md](./LICENSE.md) for full terms.
 For questions, collaboration, or licensing inquiries:
 
 - **Email:** 0x@H4KU.com
-- **Issues:** [GitHub](https://github.com/0xH4KU/H4KU.com/issues)
+- **Website:** https://H4KU.com
 
 ### Cloudflare Email Worker setup (recommended)
 

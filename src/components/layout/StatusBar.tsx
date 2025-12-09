@@ -5,8 +5,6 @@ import { mockData, dataIntegrity } from '@/data/mockData';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
 
-const INTEGRITY_DOC_URL = 'https://github.com/0xH4KU/H4KU.com';
-
 const StatusBar: React.FC = () => {
   const { currentView, navigateTo } = useNavigation();
   const { sortOrder, toggleSortOrder, typeOrder, toggleTypeOrder } =
@@ -185,15 +183,7 @@ const StatusBar: React.FC = () => {
         {!dataIntegrity.isValid && (
           <span className={styles['integrity-warning']} role="alert">
             Integrity mismatch detected. {mismatchSummary} Run{' '}
-            <code>npm run integrity:check</code> or read the{' '}
-            <a
-              href={INTEGRITY_DOC_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Integrity Guide
-            </a>
-            .
+            <code>npm run integrity:check</code> to verify.
           </span>
         )}
       </div>

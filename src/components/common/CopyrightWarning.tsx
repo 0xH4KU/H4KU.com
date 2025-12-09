@@ -6,7 +6,7 @@
  * unauthorized deployment and redistribution.
  */
 
-import { AlertTriangle, ExternalLink, Shield } from 'lucide-react';
+import { AlertTriangle, Shield } from 'lucide-react';
 import { useEffect } from 'react';
 import styles from './CopyrightWarning.module.css';
 
@@ -80,15 +80,13 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
             <h2>📄 License Information</h2>
             <p>
               For licensing inquiries or to report this unauthorized deployment,
-              please visit the official repository.
+              please contact the author.
             </p>
             <a
-              href="https://github.com/0xH4KU/H4KU.com"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:0x@H4KU.com"
               className={styles.link}
             >
-              GitHub Project <ExternalLink size={16} />
+              0x@H4KU.com
             </a>
           </div>
         </div>
