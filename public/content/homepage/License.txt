@@ -7,167 +7,145 @@ Copyright © 2025 HAKU. All rights reserved.
 
 SUMMARY
 
-This is a STRICTLY RESTRICTIVE license.
-You may only VIEW this website for personal enjoyment.
-All other uses are PROHIBITED without written permission.
+This license allows personal, non-commercial use of artwork
+with proper attribution. Code may be studied for learning
+purposes. Commercial use and AI training are prohibited.
 
 ════════════════════════════════════════════════════════════════
 
 SECTION 1: ARTWORK & CREATIVE CONTENT
 ────────────────────────────────────────────────────────────────
 
-All artwork, illustrations, character designs, visual styles,
-color schemes, and creative content displayed on H4KU.com are
-the EXCLUSIVE intellectual property of the Author.
+All artwork, illustrations, character designs, and visual
+content displayed on H4KU.com are the intellectual property
+of the Author.
 
-STRICTLY PROHIBITED:
+PERMITTED (with attribution):
 
-• Downloading, saving, or copying any artwork or images
-• Using any artwork for personal or commercial purposes
-• Reproducing, redistributing, or sharing any visual content
-• Using artwork as references, traces, or inspiration bases
-• Creating derivative works based on any artwork
-• Using any artwork in AI training datasets
-• Displaying artwork outside of H4KU.com context
-• Screenshotting artwork for redistribution
+✓ Download for personal use (wallpapers, avatars, etc.)
+✓ Use as drawing reference or practice material
+✓ Share on social media for non-commercial purposes
+✓ Create fan art inspired by the works
 
-STYLE & DESIGN PROTECTION:
+ATTRIBUTION REQUIREMENT:
 
-The unique visual style, aesthetic choices, character designs,
-color palettes, and artistic techniques displayed on this
-website are protected intellectual property.
+When using or sharing any artwork, you MUST include:
+• Credit to "HAKU" or "@0xH4KU"
+• Link to https://H4KU.com when possible
 
-• Visual style may NOT be imitated or replicated
-• Character designs may NOT be referenced or reproduced
-• Color schemes and palettes may NOT be copied
-• Design patterns and layouts may NOT be duplicated
-• Artistic techniques may NOT be studied for replication
+Example: "Artwork by HAKU (@0xH4KU) - h4ku.com"
 
-All artwork is monitored for unauthorized reproduction.
-Unauthorized use WILL result in DMCA takedowns and legal action.
+PROHIBITED:
+
+✗ Commercial use of any kind (merchandise, prints, products)
+✗ Printing or physical reproduction without prior permission
+✗ Removing, cropping, or obscuring watermarks or signatures
+✗ Claiming the artwork as your own creation
+✗ Using artwork in AI/ML training datasets
+✗ Selling or monetizing the artwork in any form
+✗ Using artwork in NFTs or blockchain-related projects
+
+SPECIALLY MARKED WORKS:
+
+Some works may be marked with "All Rights Reserved" or similar
+restrictions. These works are NOT covered by the permissions
+above and may NOT be used in any way without explicit written
+permission from the Author.
+
+FOR PRINTING OR COMMERCIAL INQUIRIES:
+
+Please contact 0x@H4KU.com before any printing or commercial
+use. Unauthorized commercial use will result in legal action.
 
 ════════════════════════════════════════════════════════════════
 
 SECTION 2: SOURCE CODE
 ────────────────────────────────────────────────────────────────
 
-The source code of this website is proprietary and protected.
+The source code of this website is proprietary but may be
+studied for educational purposes.
 
-STRICTLY PROHIBITED:
+PERMITTED:
 
-• Copying, reproducing, or duplicating any code
-• Using code as a template, boilerplate, or starting point
-• Incorporating any code patterns or architectures
-• Reverse engineering, decompiling, or disassembling
-• Distributing, publishing, or sharing any code
-• Modifying, adapting, or creating derivative works
-• Using code for educational tutorials or demonstrations
+✓ Reading and studying the code for learning
+✓ Using code concepts and patterns as inspiration
+✓ Referencing techniques in your own original work
 
-WHAT IS ALLOWED:
+PROHIBITED:
 
-• Viewing the website in a browser for personal enjoyment
-
-════════════════════════════════════════════════════════════════
-
-SECTION 3: DEPLOYMENT & COMMERCIAL USE
-────────────────────────────────────────────────────────────────
-
-STRICTLY PROHIBITED:
-
-• Deploying this website on any domain except H4KU.com
-• Hosting, publishing, or running on any server or platform
-• Creating mirrors, caches, or archives
-• Any commercial use whatsoever
-• Selling, licensing, sublicensing, or monetizing
-• Including in any product, service, or offering
-• Using for portfolio demonstrations (except by the Author)
+✗ Direct copy-paste of substantial code portions
+✗ Using this codebase as a template or boilerplate
+✗ Redistributing the source code
+✗ Deploying copies of this website
+✗ Commercial use of the code
 
 ════════════════════════════════════════════════════════════════
 
-SECTION 4: ATTRIBUTION & OWNERSHIP
+SECTION 3: STYLE & DESIGN
 ────────────────────────────────────────────────────────────────
 
-STRICTLY PROHIBITED:
+Artistic style and design aesthetics are NOT restricted.
 
-• Removing, altering, or obscuring any copyright notices
-• Claiming authorship or ownership of any part
-• Misrepresenting the origin or ownership
-• Implying any affiliation, endorsement, or sponsorship
+PERMITTED:
+
+✓ Being inspired by the visual style
+✓ Developing your own style with similar elements
+✓ Learning from the design techniques
+
+The Author believes in the free exchange of artistic ideas
+and welcomes others to develop their own unique styles.
 
 ════════════════════════════════════════════════════════════════
 
-SECTION 5: INTEGRITY & SECURITY
+SECTION 4: DEPLOYMENT
 ────────────────────────────────────────────────────────────────
 
-This website includes integrity verification and security
-measures including:
+PROHIBITED:
 
-• Build fingerprinting and traceability
-• Content integrity checksums
-• Domain verification locks
-• Anti-tampering measures
-
-Tampering with, bypassing, or removing these mechanisms is a
-violation of this license and may constitute a criminal offense
-under computer fraud and abuse laws.
+✗ Deploying this website on any domain except H4KU.com
+✗ Creating mirrors or copies of the website
+✗ Using the website design as a template
 
 ════════════════════════════════════════════════════════════════
 
-SECTION 6: ENFORCEMENT
+SECTION 5: ENFORCEMENT
 ────────────────────────────────────────────────────────────────
 
-MONITORING:
+VIOLATIONS:
+
+• Failure to provide attribution: Warning, then takedown
+• Commercial use without permission: Legal action
+• AI training usage: DMCA takedown and legal action
+• Claiming artwork as own: Immediate legal action
 
 The Author reserves the right to:
-• Monitor for unauthorized use of any content
-• Use automated tools to detect license violations
-• Track and trace unauthorized deployments or reproductions
-
-CONSEQUENCES:
-
-Violation of this license will result in:
-• Immediate termination of all viewing rights
-• DMCA takedown requests for infringing content
-• Legal action seeking damages and injunctive relief
-• Reports to relevant platforms and hosting providers
-• Prosecution to the fullest extent of applicable law
+• Request removal of improperly used content
+• Report violations to platforms and hosting providers
+• Pursue legal remedies for serious violations
 
 ════════════════════════════════════════════════════════════════
 
-SECTION 7: TERMINATION
+SECTION 6: DISCLAIMER
 ────────────────────────────────────────────────────────────────
 
-• This license is effective until terminated
-• The Author may terminate this license at any time
-• Your rights terminate automatically upon any violation
-• Upon termination, you must cease all use immediately
-
-════════════════════════════════════════════════════════════════
-
-SECTION 8: DISCLAIMER
-────────────────────────────────────────────────────────────────
-
-THE WORK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED. THE AUTHOR DISCLAIMS ALL WARRANTIES
-INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
-AND NON-INFRINGEMENT.
-
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES,
-OR OTHER LIABILITY ARISING FROM THE WORK.
+THE WORK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
+THE AUTHOR IS NOT LIABLE FOR ANY CLAIMS OR DAMAGES ARISING
+FROM THE USE OF THIS WORK.
 
 ════════════════════════════════════════════════════════════════
 
 CONTACT
 ────────────────────────────────────────────────────────────────
 
-For licensing inquiries, permission requests, or violations:
+For permissions, licensing inquiries, or to report violations:
 
 Email: 0x@H4KU.com
 Website: https://H4KU.com
+Social: @0xH4KU
 
 ────────────────────────────────────────────────────────────────
 
 By accessing this website, you acknowledge that you have read,
 understood, and agree to be bound by the terms of this license.
 
-© 2025 HAKU. All rights reserved worldwide.
+© 2025 HAKU. Some rights reserved.

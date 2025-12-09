@@ -1,142 +1,136 @@
 # HAKU Personal Source License (HPSL-1.0)
 
-**Copyright © 2025 HAKU. All rights reserved.**
+**Copyright © 2025 HAKU. Some rights reserved.**
 
 ---
 
 ## Summary
 
-This is a **strictly restrictive license**. You may only **view** this source code for personal reference. All other uses are prohibited.
+This license allows **personal, non-commercial use** of artwork with proper attribution. Code may be studied for learning purposes. Commercial use and AI training are prohibited.
 
 ---
 
 ## 1. Definitions
 
-- **"Work"** refers to all source code, assets, artwork, images, designs, animations, text content, JSON data, configuration files, and any other materials contained in this repository or displayed on H4KU.com.
-- **"Author"** refers to HAKU (0xH4KU), the sole copyright holder.
+- **"Work"** refers to all source code, artwork, images, designs, and content on H4KU.com.
+- **"Author"** refers to HAKU (0xH4KU), the copyright holder.
 - **"You"** refers to any individual or entity accessing this Work.
 
 ---
 
-## 2. Grant of Rights
+## 2. Artwork & Creative Content
 
-Subject to the terms of this license, the Author grants You a **limited, non-exclusive, non-transferable, revocable** right to:
+All artwork, illustrations, character designs, and visual content are the intellectual property of the Author.
 
-1. **View** the source code for personal educational reference only.
+### 2.1 Permitted Uses (with attribution)
 
-**No other rights are granted.** All rights not explicitly granted are reserved by the Author.
+- ✓ Download for personal use (wallpapers, avatars, etc.)
+- ✓ Use as drawing reference or practice material
+- ✓ Share on social media for non-commercial purposes
+- ✓ Create fan art inspired by the works
 
----
+### 2.2 Attribution Requirement
 
-## 3. Restrictions
+When using or sharing any artwork, you **MUST** include:
+- Credit to "HAKU" or "@0xH4KU"
+- Link to https://H4KU.com when possible
 
-You **MAY NOT**, under any circumstances:
+Example: `Artwork by HAKU (@0xH4KU) - h4ku.com`
 
-### 3.1 Code Restrictions
-- Copy, reproduce, or duplicate any portion of the source code
-- Modify, adapt, alter, or create derivative works
-- Distribute, publish, or share the code in any form
-- Use the code as a template, boilerplate, or starting point for any project
-- Incorporate any code patterns, architectures, or implementations into your own projects
-- Reverse engineer, decompile, or disassemble any compiled portions
+### 2.3 Prohibited Uses
 
-### 3.2 Asset & Content Restrictions
-- Download, save, copy, or reproduce any artwork, images, or visual assets
-- Use any assets for personal, commercial, or any other purpose
-- Reference, trace, or create works inspired by the artwork
-- Display the artwork outside of its original context on H4KU.com
+- ✗ Commercial use of any kind (merchandise, prints, products)
+- ✗ Printing or physical reproduction without prior permission
+- ✗ Removing, cropping, or obscuring watermarks or signatures
+- ✗ Claiming the artwork as your own creation
+- ✗ Using artwork in AI/ML training datasets
+- ✗ Selling or monetizing the artwork in any form
+- ✗ Using artwork in NFTs or blockchain-related projects
 
-### 3.3 Deployment Restrictions
-- Deploy, host, or publish this Work or any derivative on any server, domain, or platform
-- Run this Work in any production environment other than H4KU.com
-- Create mirrors, caches, or archives of this Work
+### 2.4 Specially Marked Works
 
-### 3.4 Commercial Restrictions
-- Use any part of this Work for commercial purposes
-- Sell, license, sublicense, or monetize this Work in any way
-- Include this Work in any product, service, or offering
+Some works may be marked with "All Rights Reserved" or similar restrictions. These works are **NOT** covered by the permissions above and may **NOT** be used in any way without explicit written permission.
 
-### 3.5 Attribution Restrictions
-- Remove, alter, or obscure any copyright notices, attributions, or license information
-- Claim authorship or ownership of any part of this Work
-- Misrepresent the origin or ownership of this Work
+### 2.5 Commercial & Printing Inquiries
+
+Contact **0x@H4KU.com** before any printing or commercial use.
 
 ---
 
-## 4. Artwork & Creative Content
+## 3. Source Code
 
-All artwork, illustrations, character designs, and visual content displayed on H4KU.com are the **exclusive intellectual property** of the Author. These works are:
+The source code is proprietary but may be studied for educational purposes.
 
-- Protected by copyright law
-- **NOT available for any use** without explicit written permission
-- Subject to DMCA takedown for unauthorized use
-- Monitored for unauthorized reproduction
+### 3.1 Permitted
 
-**Unauthorized use of artwork will result in legal action.**
+- ✓ Reading and studying the code for learning
+- ✓ Using code concepts and patterns as inspiration
+- ✓ Referencing techniques in your own original work
+
+### 3.2 Prohibited
+
+- ✗ Direct copy-paste of substantial code portions
+- ✗ Using this codebase as a template or boilerplate
+- ✗ Redistributing the source code
+- ✗ Deploying copies of this website
+- ✗ Commercial use of the code
 
 ---
 
-## 5. Code Integrity
+## 4. Style & Design
 
-This Work includes integrity verification mechanisms:
+Artistic style and design aesthetics are **NOT** restricted.
 
-- Build fingerprinting and traceability
-- Content integrity checksums
-- Domain verification locks
+- ✓ Being inspired by the visual style
+- ✓ Developing your own style with similar elements
+- ✓ Learning from the design techniques
 
-Tampering with, bypassing, or removing these mechanisms is a violation of this license and may constitute a criminal offense under computer fraud laws.
+The Author believes in the free exchange of artistic ideas and welcomes others to develop their own unique styles.
+
+---
+
+## 5. Deployment
+
+- ✗ Deploying this website on any domain except H4KU.com
+- ✗ Creating mirrors or copies of the website
+- ✗ Using the website design as a template
 
 ---
 
 ## 6. Enforcement
 
-### 6.1 Monitoring
+### Violations
+
+| Violation | Consequence |
+|-----------|-------------|
+| Missing attribution | Warning, then takedown request |
+| Commercial use without permission | Legal action |
+| AI training usage | DMCA takedown and legal action |
+| Claiming artwork as own | Immediate legal action |
+
 The Author reserves the right to:
-- Monitor for unauthorized use of this Work
-- Use automated tools to detect license violations
-- Track and trace unauthorized deployments
-
-### 6.2 Consequences
-Violation of this license will result in:
-- Immediate termination of all granted rights
-- Legal action seeking damages and injunctive relief
-- DMCA takedown requests for infringing content
-- Reports to relevant platforms and hosting providers
+- Request removal of improperly used content
+- Report violations to platforms and hosting providers
+- Pursue legal remedies for serious violations
 
 ---
 
-## 7. Termination
+## 7. Disclaimer
 
-- This license is effective until terminated
-- The Author may terminate this license at any time for any reason
-- Your rights terminate automatically upon any violation
-- Upon termination, You must cease all use and destroy any copies
+THE WORK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. THE AUTHOR IS NOT LIABLE FOR ANY CLAIMS OR DAMAGES ARISING FROM THE USE OF THIS WORK.
 
 ---
 
-## 8. Disclaimer
+## 8. Contact
 
-THE WORK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. THE AUTHOR DISCLAIMS ALL WARRANTIES INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
-
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE WORK.
-
----
-
-## 9. Governing Law
-
-This license shall be governed by and construed in accordance with applicable copyright and intellectual property laws. Any disputes shall be resolved in a court of competent jurisdiction.
-
----
-
-## 10. Contact
-
-For licensing inquiries, permissions, or to report violations:
+For permissions, licensing inquiries, or to report violations:
 
 - **Email:** 0x@H4KU.com
 - **Website:** https://H4KU.com
+- **Social:** @0xH4KU
 
 ---
 
-**By accessing this Work, You acknowledge that You have read, understood, and agree to be bound by the terms of this license.**
+**By accessing this Work, you acknowledge that you have read, understood, and agree to be bound by the terms of this license.**
 
 *Last updated: December 2025*
