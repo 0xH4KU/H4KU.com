@@ -167,10 +167,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     personalizations: [
       {
         to: [{ email: env.CONTACT_TO_EMAIL }],
+        // Domain Lockdown - must match DNS TXT record
+        dkim_domain: 'h4ku.com',
+        dkim_selector: 'mailchannels',
       },
     ],
     from: {
-      email: `noreply@h4ku.com`,
+      email: 'noreply@h4ku.com',
       name: 'H4KU.com Contact',
     },
     reply_to: {
@@ -208,7 +211,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('MailChannels error:', response.status, errorText);
-      throw new Error(`MailChannels returned ${response.status}`);
+      // Return detailed error for debugging
+      return Response.json(
+        {
+          success: false,
+          message: `Email service error: ${response.status} - ${errorText}`,
+        },
+        { status: 500, headers: corsHeaders }
+      );
     }
 
     console.log(`Contact form submitted: ${referenceId} from ${payload.email}`);
