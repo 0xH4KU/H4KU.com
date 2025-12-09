@@ -18,10 +18,12 @@ const DEFAULT_ALLOWED_DOMAINS: DomainMatcher[] = [
   '127.0.0.1',
   '0.0.0.0',
   '::1',
+  'h4ku.com',
+  'www.h4ku.com',
   'H4KU.com',
   'www.H4KU.com',
   'h4ku-com.pages.dev',
-  /.*\.h4ku-com\.pages\.dev$/,
+  /.*\.h4ku-com\.pages\.dev$/i,
   /^192\.168\.\d{1,3}\.\d{1,3}$/,
   /^.+\.localhost$/,
 ];
@@ -105,13 +107,15 @@ const isDomainLockEnabled = () => {
 /**
  * Check if a domain matches the whitelist
  */
-const isDomainAllowed = (hostname: string): boolean =>
-  ALLOWED_DOMAINS.some(allowed => {
+const isDomainAllowed = (hostname: string): boolean => {
+  const lowerHostname = hostname.toLowerCase();
+  return ALLOWED_DOMAINS.some(allowed => {
     if (typeof allowed === 'string') {
-      return hostname === allowed;
+      return lowerHostname === allowed.toLowerCase();
     }
     return allowed.test(hostname);
   });
+};
 
 /**
  * Domain verification result
