@@ -76,49 +76,123 @@ function createEmailHtml(
   referenceId: string,
   clientIp: string
 ): string {
+  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
   return `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #000; color: #0f0; padding: 20px; text-align: center; font-family: monospace; }
-    .content { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
-    .field { margin-bottom: 15px; }
-    .label { font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase; }
-    .value { margin-top: 5px; }
-    .message { background: #fff; padding: 15px; border-left: 3px solid #0f0; white-space: pre-wrap; }
-    .footer { font-size: 12px; color: #999; margin-top: 20px; text-align: center; }
-    .ref { font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 3px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-  <div class="header">
-    <h2 style="margin: 0;">H4KU.com Contact</h2>
-  </div>
-  <div class="content">
-    <div class="field">
-      <div class="label">Reference ID</div>
-      <div class="value"><span class="ref">${escapeHtml(referenceId)}</span></div>
-    </div>
-    <div class="field">
-      <div class="label">From</div>
-      <div class="value">${escapeHtml(payload.name)}</div>
-    </div>
-    <div class="field">
-      <div class="label">Email</div>
-      <div class="value"><a href="mailto:${escapeHtml(payload.email)}">${escapeHtml(payload.email)}</a></div>
-    </div>
-    <div class="field">
-      <div class="label">Message</div>
-      <div class="message">${escapeHtml(payload.message)}</div>
-    </div>
-  </div>
-  <div class="footer">
-    Sent via H4KU.com contact form at ${new Date().toISOString()}<br>
-    Client IP: ${escapeHtml(clientIp)}
-  </div>
+<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: 'Courier New', Courier, monospace;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%;">
+
+          <!-- Top Border Line -->
+          <tr>
+            <td style="border-top: 1px solid #333; padding-top: 30px;"></td>
+          </tr>
+
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom: 30px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <span style="color: #689696; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">
+                      H4KU.COM
+                    </span>
+                  </td>
+                  <td align="right">
+                    <span style="color: #666; font-size: 11px;">
+                      ${dateStr}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding-bottom: 30px;">
+              <div style="color: #e8e8e8; font-size: 20px; font-weight: normal; letter-spacing: 1px;">
+                New Message
+              </div>
+              <div style="color: #666; font-size: 12px; margin-top: 8px;">
+                ref: ${escapeHtml(referenceId)}
+              </div>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="border-top: 1px solid #333; padding-top: 30px;"></td>
+          </tr>
+
+          <!-- Sender Section -->
+          <tr>
+            <td style="padding-bottom: 25px;">
+              <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">
+                From
+              </div>
+              <div style="color: #e8e8e8; font-size: 16px;">
+                ${escapeHtml(payload.name)}
+              </div>
+              <div style="margin-top: 4px;">
+                <a href="mailto:${escapeHtml(payload.email)}" style="color: #689696; text-decoration: none; font-size: 13px;">
+                  ${escapeHtml(payload.email)}
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Message Section -->
+          <tr>
+            <td style="padding-bottom: 30px;">
+              <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;">
+                Message
+              </div>
+              <div style="background-color: #0f0f0f; border-left: 2px solid #689696; padding: 20px; color: #ccc; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(payload.message)}</div>
+            </td>
+          </tr>
+
+          <!-- Bottom Divider -->
+          <tr>
+            <td style="border-top: 1px solid #333; padding-top: 25px;"></td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="color: #666; font-size: 11px; line-height: 1.6;">
+                    <span style="color: #e87722;">●</span> Transmitted via h4ku.com<br>
+                    <span style="color: #444;">Client: ${escapeHtml(clientIp)}</span>
+                  </td>
+                  <td align="right" valign="bottom">
+                    <a href="https://h4ku.com" style="color: #689696; text-decoration: none; font-size: 11px;">
+                      h4ku.com →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Bottom Border Line -->
+          <tr>
+            <td style="padding-top: 30px; border-bottom: 1px solid #333;"></td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
 `.trim();
