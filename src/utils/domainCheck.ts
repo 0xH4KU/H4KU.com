@@ -168,7 +168,7 @@ export const logDomainVerification = (result: DomainCheckResult): void => {
     );
     secureWarn(`%c${result.message}`, 'color: orange; font-size: 12px;');
     secureWarn(
-      `%cThis website is protected by copyright law (LPSL-1.0).`,
+      `%cThis website is protected by copyright law (HPSL-1.0).`,
       'color: orange; font-size: 12px;'
     );
     secureWarn(

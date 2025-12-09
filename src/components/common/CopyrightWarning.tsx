@@ -49,7 +49,7 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
             <h2>⚖️ Legal Notice</h2>
             <p>
               This website and its source code are protected under the{' '}
-              <strong>Limited Personal Source License (LPSL-1.0)</strong>.
+              <strong>HAKU Personal Source License (HPSL-1.0)</strong>.
             </p>
             <ul>
               <li>

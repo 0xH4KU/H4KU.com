@@ -280,9 +280,9 @@ Build artifacts retained for 7 days.
 
 ## License
 
-This project is licensed under the **H4KU.com Personal Source License (LPSL-1.0)**.
+This project is licensed under the **HAKU Personal Source License (HPSL-1.0)**.
 
-**Summary:** Source code is available for learning and reference. Deployment, redistribution, and commercial use are prohibited. Content and artwork remain exclusive to the author.
+**Summary:** Source code is available for viewing only. Copying, deployment, redistribution, and commercial use are strictly prohibited. All artwork and content are exclusive intellectual property of the author.
 
 See [LICENSE.md](./LICENSE.md) for full terms.
 

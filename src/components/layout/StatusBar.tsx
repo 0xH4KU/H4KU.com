@@ -7,10 +7,8 @@ import styles from './StatusBar.module.css';
 
 const INTEGRITY_DOC_URL = 'https://github.com/0xH4KU/H4KU.com';
 
-const LICENSE_URL = 'https://github.com/0xH4KU/H4KU.com/blob/main/LICENSE.md';
-
 const StatusBar: React.FC = () => {
-  const { currentView } = useNavigation();
+  const { currentView, navigateTo } = useNavigation();
   const { sortOrder, toggleSortOrder, typeOrder, toggleTypeOrder } =
     useSortOrder();
   const { socials } = mockData;
@@ -41,6 +39,17 @@ const StatusBar: React.FC = () => {
   const handleToggleTypeOrder = useCallback(() => {
     toggleTypeOrder();
   }, [toggleTypeOrder]);
+
+  const handleLicenseClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const licensePage = mockData.pages.find(p => p.id === 'license');
+      if (licensePage) {
+        navigateTo(licensePage);
+      }
+    },
+    [navigateTo]
+  );
 
   const socialLinks = useMemo(
     () =>
@@ -192,14 +201,13 @@ const StatusBar: React.FC = () => {
         className={`${styles['status-section']} ${styles['status-section--license']}`}
       >
         <a
-          href={LICENSE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/page/license"
+          onClick={handleLicenseClick}
           className={styles['license-link']}
-          aria-label="View license information (LPSL-1.0)"
-          title="Limited Personal Source License - Click to view terms"
+          aria-label="View license information (HPSL-1.0)"
+          title="HAKU Personal Source License - Click to view terms"
         >
-          [LPSL-1.0]
+          [HPSL-1.0]
         </a>
       </div>
       <div

@@ -16,17 +16,15 @@ export const displayConsoleCopyright = (): void => {
     return;
   }
 
-  // ASCII Art Banner
+  // ASCII Art Banner - HAKU
   const banner = `
-   ▄█          ███    █▄    ▄▄▄▄███▄▄▄▄         ▀█████████▄   ▄█   ▄██████▄
-  ███          ███    ███ ▄██▀▀▀███▀▀▀██▄         ███    ███ ███  ███    ███
-  ███          ███    ███ ███   ███   ███         ███    ███ ███▌ ███    ███
-  ███          ███    ███ ███   ███   ███        ▄███▄▄▄██▀  ███▌ ███    ███
-  ███          ███    ███ ███   ███   ███       ▀▀███▀▀▀██▄  ███▌ ███    ███
-  ███          ███    ███ ███   ███   ███         ███    ██▄ ███  ███    ███
-  ███▌    ▄    ███    ███ ███   ███   ███         ███    ███ ███  ███    ███
-  █████▄▄██    ████████▀   ▀█   ███   █▀        ▄█████████▀  █▀    ▀██████▀
-  ▀
+  ██╗  ██╗ █████╗ ██╗  ██╗██╗   ██╗
+  ██║  ██║██╔══██╗██║ ██╔╝██║   ██║
+  ███████║███████║█████╔╝ ██║   ██║
+  ██╔══██║██╔══██║██╔═██╗ ██║   ██║
+  ██║  ██║██║  ██║██║  ██╗╚██████╔╝
+  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝
+                        H4KU.com
 `;
 
   const styles = {
@@ -62,28 +60,28 @@ export const displayConsoleCopyright = (): void => {
   );
 
   secureLog(
-    '%cLicense: Limited Personal Source License (LPSL-1.0)',
+    '%cLicense: HAKU Personal Source License (HPSL-1.0)',
     styles.license
   );
 
   secureLog('');
 
   // Restrictions
-  secureLog('%c❌ RESTRICTIONS:', styles.warning);
+  secureLog('%c❌ STRICTLY PROHIBITED:', styles.warning);
 
-  secureLog('%c   • Deployment to other domains is PROHIBITED', styles.info);
-  secureLog('%c   • Redistribution is NOT PERMITTED', styles.info);
-  secureLog('%c   • Commercial use is STRICTLY FORBIDDEN', styles.info);
-  secureLog('%c   • Removing attribution is ILLEGAL', styles.info);
+  secureLog('%c   • Deployment to other domains', styles.info);
+  secureLog('%c   • Redistribution of source code', styles.info);
+  secureLog('%c   • Copying or plagiarizing code', styles.info);
+  secureLog('%c   • Using any artwork or assets', styles.info);
+  secureLog('%c   • Commercial use of any kind', styles.info);
+  secureLog('%c   • Removing or altering attribution', styles.info);
 
   secureLog('');
 
   // Permissions
   secureLog('%c✅ ALLOWED:', styles.warning);
 
-  secureLog('%c   • Viewing for personal reference', styles.info);
-  secureLog('%c   • Learning from implementation', styles.info);
-  secureLog('%c   • Forking for study purposes (not deployment)', styles.info);
+  secureLog('%c   • Viewing for personal reference only', styles.info);
 
   secureLog('');
 
@@ -103,7 +101,7 @@ export const displayConsoleCopyright = (): void => {
       secureLog(`%c   Signature: ${fingerprint.signature}`, styles.license);
     }
     secureLog(
-      '%c   Note: This build is fingerprinted and can be traced.',
+      '%c   Note: This build is fingerprinted and traceable.',
       styles.info
     );
 
@@ -111,15 +109,9 @@ export const displayConsoleCopyright = (): void => {
   }
 
   // Contact info
-  secureLog('%c📧 LICENSING INQUIRIES:', styles.warning);
-  secureLog(
-    '%c   For licensing or permission requests, please open an issue via:',
-    styles.info
-  );
-  secureLog(
-    '%c   GitHub: https://github.com/0xH4KU/H4KU.com/issues',
-    styles.license
-  );
+  secureLog('%c📧 CONTACT:', styles.warning);
+  secureLog('%c   Email: 0x@H4KU.com', styles.info);
+  secureLog('%c   License: https://H4KU.com/page/license', styles.license);
 
   secureLog('');
 
@@ -133,7 +125,7 @@ export const displayConsoleCopyright = (): void => {
     styles.license
   );
   secureLog(
-    '%cUnauthorized use will result in legal action.',
+    '%cViolators will be prosecuted to the fullest extent of the law.',
     'color: #ff0000; font-weight: bold;'
   );
   secureLog('');
@@ -147,7 +139,7 @@ export const displayDevCopyright = (): void => {
     return;
   }
 
-  secureLog('%c🔒 Protected by LPSL-1.0', 'color: #888; font-size: 10px;');
+  secureLog('%c🔒 Protected by HPSL-1.0', 'color: #888; font-size: 10px;');
   secureLog(
     '%cThis code is protected by copyright law. See LICENSE.md for details.',
     'color: #666; font-size: 9px;'

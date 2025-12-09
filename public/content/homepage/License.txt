@@ -1,0 +1,69 @@
+LICENSE
+════════════════════════════════════════════════════════════════
+
+HAKU PERSONAL SOURCE LICENSE (HPSL-1.0)
+
+Copyright © 2025 HAKU. All rights reserved.
+
+────────────────────────────────────────────────────────────────
+
+SUMMARY
+
+This is a STRICTLY RESTRICTIVE license.
+You may only VIEW this source code for personal reference.
+All other uses are PROHIBITED.
+
+────────────────────────────────────────────────────────────────
+
+STRICTLY PROHIBITED
+
+• Copying, reproducing, or duplicating any code
+• Using code as a template or starting point
+• Incorporating code patterns into your projects
+• Downloading, saving, or copying any artwork
+• Using any assets for any purpose
+• Deploying on any domain except H4KU.com
+• Commercial use of any kind
+• Removing or altering copyright notices
+• Claiming ownership of any part of this work
+
+────────────────────────────────────────────────────────────────
+
+ARTWORK & CREATIVE CONTENT
+
+All artwork, illustrations, character designs, and visual
+content displayed on H4KU.com are the EXCLUSIVE intellectual
+property of the Author.
+
+• Protected by copyright law
+• NOT available for any use without written permission
+• Subject to DMCA takedown for unauthorized use
+• Monitored for unauthorized reproduction
+
+Unauthorized use of artwork WILL result in legal action.
+
+────────────────────────────────────────────────────────────────
+
+ENFORCEMENT
+
+Violation of this license will result in:
+
+• Immediate termination of all granted rights
+• Legal action seeking damages
+• DMCA takedown requests
+• Reports to platforms and hosting providers
+
+────────────────────────────────────────────────────────────────
+
+CONTACT
+
+For licensing inquiries or to report violations:
+
+Email: 0x@H4KU.com
+
+────────────────────────────────────────────────────────────────
+
+By accessing this Work, you acknowledge that you have read,
+understood, and agree to be bound by the terms of this license.
+
+Full license text: https://github.com/0xH4KU/H4KU.com/blob/main/LICENSE.md
