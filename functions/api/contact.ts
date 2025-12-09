@@ -1,16 +1,18 @@
 /**
- * Cloudflare Pages Function - Contact Form Handler (MailChannels)
+ * Cloudflare Pages Function - Contact Form Handler (Resend)
  *
- * Uses MailChannels API which is FREE for Cloudflare Workers.
- * No additional setup required - just deploy!
+ * Uses Resend API for sending emails.
+ * Free tier: 100 emails/day, 3000 emails/month
+ *
+ * Setup:
+ * 1. Sign up at https://resend.com
+ * 2. Get your API key from dashboard
+ * 3. Add your domain (or use onboarding@resend.dev for testing)
+ * 4. Set environment variable: RESEND_API_KEY
  *
  * Required environment variables:
- * - CONTACT_TO_EMAIL: Recipient email address (e.g., 0x@H4KU.com)
- *
- * Optional:
- * - DKIM_DOMAIN: Your domain for DKIM signing
- * - DKIM_SELECTOR: DKIM selector (default: mailchannels)
- * - DKIM_PRIVATE_KEY: DKIM private key for email signing
+ * - RESEND_API_KEY: Your Resend API key
+ * - CONTACT_TO_EMAIL: Recipient email address
  */
 
 interface ContactPayload {
@@ -20,10 +22,8 @@ interface ContactPayload {
 }
 
 interface Env {
+  RESEND_API_KEY: string;
   CONTACT_TO_EMAIL: string;
-  DKIM_DOMAIN?: string;
-  DKIM_SELECTOR?: string;
-  DKIM_PRIVATE_KEY?: string;
 }
 
 function generateReferenceId(): string {
@@ -133,10 +133,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
   };
 
+  // Check required env vars
+  if (!env.RESEND_API_KEY) {
+    console.error('Missing RESEND_API_KEY');
+    return Response.json(
+      { success: false, message: 'Server configuration error: Missing API key' },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+
   if (!env.CONTACT_TO_EMAIL) {
     console.error('Missing CONTACT_TO_EMAIL');
     return Response.json(
-      { success: false, message: 'Server configuration error' },
+      { success: false, message: 'Server configuration error: Missing recipient' },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -162,60 +171,30 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
   const html = createEmailHtml(payload, referenceId, clientIp);
 
-  // Build MailChannels request
-  const mailRequest: Record<string, unknown> = {
-    personalizations: [
-      {
-        to: [{ email: env.CONTACT_TO_EMAIL }],
-        // Domain Lockdown - must match DNS TXT record
-        dkim_domain: 'h4ku.com',
-        dkim_selector: 'mailchannels',
-      },
-    ],
-    from: {
-      email: 'noreply@h4ku.com',
-      name: 'H4KU.com Contact',
-    },
-    reply_to: {
-      email: payload.email,
-      name: payload.name,
-    },
-    subject: `[H4KU.com] Contact from ${payload.name}`,
-    content: [
-      {
-        type: 'text/html',
-        value: html,
-      },
-    ],
-  };
-
-  // Add DKIM if configured
-  if (env.DKIM_DOMAIN && env.DKIM_SELECTOR && env.DKIM_PRIVATE_KEY) {
-    (mailRequest.personalizations as Record<string, unknown>[])[0].dkim_domain =
-      env.DKIM_DOMAIN;
-    (
-      mailRequest.personalizations as Record<string, unknown>[]
-    )[0].dkim_selector = env.DKIM_SELECTOR;
-    (
-      mailRequest.personalizations as Record<string, unknown>[]
-    )[0].dkim_private_key = env.DKIM_PRIVATE_KEY;
-  }
-
   try {
-    const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(mailRequest),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'H4KU.com <onboarding@resend.dev>', // Change after domain verification
+        to: [env.CONTACT_TO_EMAIL],
+        reply_to: payload.email,
+        subject: `[H4KU.com] Contact from ${payload.name}`,
+        html: html,
+      }),
     });
 
+    const result = await response.json() as Record<string, unknown>;
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('MailChannels error:', response.status, errorText);
-      // Return detailed error for debugging
+      console.error('Resend error:', response.status, JSON.stringify(result));
       return Response.json(
         {
           success: false,
-          message: `Email service error: ${response.status} - ${errorText}`,
+          message: `Email service error: ${(result as { message?: string }).message || response.status}`,
         },
         { status: 500, headers: corsHeaders }
       );
