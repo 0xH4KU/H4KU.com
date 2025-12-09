@@ -7,7 +7,7 @@ const contactSelectors = {
   submit: 'Send Message',
 };
 
-test.describe('Lum.bio smoke E2E', () => {
+test.describe('H4KU.com smoke E2E', () => {
   test('about page renders', async ({ page }) => {
     await page.goto('/');
 

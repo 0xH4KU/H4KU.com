@@ -2,7 +2,7 @@
 
 _How to add or update assets under `public/content` without breaking licensing or integrity._
 
-> Licensing reminder: all assets fall under the [Lum.bio Personal Source License](./LICENSE.md). Images, copy, and JSON data are for running this site only—do not redistribute or commercialise them.
+> Licensing reminder: all assets fall under the [H4KU.com Personal Source License](./LICENSE.md). Images, copy, and JSON data are for running this site only—do not redistribute or commercialise them.
 
 ## Quick Start
 

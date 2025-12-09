@@ -117,7 +117,7 @@ export const displayConsoleCopyright = (): void => {
     styles.info
   );
   secureLog(
-    '%c   GitHub: https://github.com/lum-muu/lum.bio/issues',
+    '%c   GitHub: https://github.com/0xH4KU/H4KU.com/issues',
     styles.license
   );
 
@@ -129,7 +129,7 @@ export const displayConsoleCopyright = (): void => {
     'color: #333;'
   );
   secureLog(
-    `%c© ${new Date().getFullYear()} lum. All rights reserved.`,
+    `%c© ${new Date().getFullYear()} HAKU. All rights reserved.`,
     styles.license
   );
   secureLog(

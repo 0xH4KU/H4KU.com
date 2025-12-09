@@ -156,7 +156,7 @@ export function ContactForm() {
       const fallbackMessage =
         error instanceof ContactSubmissionError
           ? error.message
-          : 'Failed to send message. Please try again or email directly at hi@lum.bio';
+          : 'Failed to send message. Please try again or email directly at 0x@H4KU.com';
       console.error('Contact submission error:', error);
       setStatus({
         type: 'error',

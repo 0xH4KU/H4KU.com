@@ -163,7 +163,7 @@ describe('StatusBar integrity indicator', () => {
     await renderStatusBar({
       socials: [
         { name: 'Contact', code: 'CT', url: 'mailto:hello@example.com' },
-        { name: 'Docs', code: 'DC', url: 'https://lum.bio/docs' },
+        { name: 'Docs', code: 'DC', url: 'https://H4KU.com/docs' },
       ],
     });
 
@@ -176,7 +176,7 @@ describe('StatusBar integrity indicator', () => {
     const externalLink = screen.getByLabelText(
       /\[DC], Open Docs \(opens in new tab\)/i
     );
-    expect(externalLink).toHaveAttribute('href', 'https://lum.bio/docs');
+    expect(externalLink).toHaveAttribute('href', 'https://H4KU.com/docs');
     expect(externalLink).toHaveAttribute('target', '_blank');
     expect(externalLink).toHaveAttribute('rel', 'noopener noreferrer');
   });

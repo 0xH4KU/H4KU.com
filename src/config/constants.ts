@@ -49,10 +49,10 @@ export const THEME_COLORS = {
  * Local storage keys
  */
 export const STORAGE_KEYS = {
-  THEME: 'lum.bio.theme',
-  SIDEBAR_WIDTH: 'lum.bio.sidebar.width',
-  EXPANDED_FOLDERS: 'lum.bio.sidebar.expanded',
-  PINNED_ITEMS: 'lum.bio.sidebar.pinned',
+  THEME: 'H4KU.com.theme',
+  SIDEBAR_WIDTH: 'H4KU.com.sidebar.width',
+  EXPANDED_FOLDERS: 'H4KU.com.sidebar.expanded',
+  PINNED_ITEMS: 'H4KU.com.sidebar.pinned',
 } as const;
 
 /**

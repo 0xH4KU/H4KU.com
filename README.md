@@ -1,11 +1,11 @@
-# Lum.bio
+# H4KU.com
 
 _A file-system inspired portfolio built with React 19, TypeScript, and static content aggregation._
 
 ## Project Structure
 
 ```
-lum.bio/
+H4KU.com/
 ├── src/
 │   ├── components/
 │   │   ├── common/          # Reusable UI primitives
@@ -164,8 +164,8 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 ### Setup
 
 ```bash
-git clone https://github.com/lum-muu/lum.bio.git
-cd lum.bio
+git clone https://github.com/0xH4KU/H4KU.com.git
+cd H4KU.com
 npm install
 cp .env.example .env  # Configure VITE_CONTACT_ENDPOINT if needed
 npm run dev
@@ -250,7 +250,7 @@ Cloudflare Pages deployments run out of the box via the bundled `wrangler.toml`:
 ```bash
 npm install
 npm run build
-npx wrangler pages deploy --project-name lum-bio dist
+npx wrangler pages deploy --project-name h4ku-com dist
 ```
 
 - Adjust `pages_build_output_dir` or `name` inside `wrangler.toml` if your project slug differs.
@@ -280,7 +280,7 @@ Build artifacts retained for 7 days.
 
 ## License
 
-This project is licensed under the **Lum.bio Personal Source License (LPSL-1.0)**.
+This project is licensed under the **H4KU.com Personal Source License (LPSL-1.0)**.
 
 **Summary:** Source code is available for learning and reference. Deployment, redistribution, and commercial use are prohibited. Content and artwork remain exclusive to the author.
 
@@ -290,8 +290,8 @@ See [LICENSE.md](./LICENSE.md) for full terms.
 
 For questions, collaboration, or licensing inquiries:
 
-- **Email:** hi@lum.bio
-- **Issues:** [GitHub](https://github.com/lum-muu/lum.bio/issues)
+- **Email:** 0x@H4KU.com
+- **Issues:** [GitHub](https://github.com/0xH4KU/H4KU.com/issues)
 
 ### Cloudflare Email Worker setup (recommended)
 

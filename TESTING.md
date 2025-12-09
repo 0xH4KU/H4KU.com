@@ -1,6 +1,6 @@
 # Testing Guide
 
-_Testing philosophy, tooling, and expectations for Lum.bio._
+_Testing philosophy, tooling, and expectations for H4KU.com._
 
 ## 1. Overview
 

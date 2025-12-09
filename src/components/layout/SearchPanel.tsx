@@ -199,7 +199,7 @@ const SearchPanel: React.FC = () => {
         onClick={event => event.stopPropagation()}
       >
         <div className={styles['sr-only']} id={titleId}>
-          Search lum.bio
+          Search H4KU.com
         </div>
         <p className={styles['sr-only']} id={descriptionId}>
           Type to search folders, images, and text files. Use arrow keys to

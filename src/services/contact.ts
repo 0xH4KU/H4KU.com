@@ -14,7 +14,7 @@ export interface ContactApiResponse {
 
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
-  'X-Requested-With': 'lum.bio-contact-form',
+  'X-Requested-With': 'H4KU.com-contact-form',
 };
 
 export class ContactSubmissionError extends Error {

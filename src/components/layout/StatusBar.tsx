@@ -5,9 +5,9 @@ import { mockData, dataIntegrity } from '@/data/mockData';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
 
-const INTEGRITY_DOC_URL = 'https://github.com/lum-muu/lum.bio';
+const INTEGRITY_DOC_URL = 'https://github.com/0xH4KU/H4KU.com';
 
-const LICENSE_URL = 'https://github.com/lum-muu/lum.bio/blob/main/LICENSE.md';
+const LICENSE_URL = 'https://github.com/0xH4KU/H4KU.com/blob/main/LICENSE.md';
 
 const StatusBar: React.FC = () => {
   const { currentView } = useNavigation();
@@ -207,10 +207,10 @@ const StatusBar: React.FC = () => {
       >
         <span
           className={styles['status-right']}
-          aria-label={`© ${currentYear} lum.bio`}
+          aria-label={`© ${currentYear} H4KU.com`}
         >
           <span className={styles['copyright-symbol']}>©</span>
-          <span>{currentYear} lum.bio</span>
+          <span>{currentYear} H4KU.com</span>
         </span>
       </div>
     </div>

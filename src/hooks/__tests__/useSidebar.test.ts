@@ -29,7 +29,7 @@ describe('useSidebar', () => {
 
   it('should restore width from localStorage', () => {
     const storedWidth = 280;
-    localStorage.setItem('lum.bio.sidebar.width', JSON.stringify(storedWidth));
+    localStorage.setItem('H4KU.com.sidebar.width', JSON.stringify(storedWidth));
 
     const { result } = renderHook(() => useSidebar());
 
@@ -158,7 +158,7 @@ describe('useSidebar', () => {
     });
 
     // Check localStorage
-    const stored = localStorage.getItem('lum.bio.sidebar.width');
+    const stored = localStorage.getItem('H4KU.com.sidebar.width');
     expect(stored).not.toBeNull();
     const parsed = JSON.parse(stored as string);
     expect(parsed).toMatchObject({ value: 280 });
@@ -263,7 +263,7 @@ describe('useSidebar', () => {
     const initialValue = 250;
     const storedValue = 300;
 
-    localStorage.setItem('lum.bio.sidebar.width', JSON.stringify(storedValue));
+    localStorage.setItem('H4KU.com.sidebar.width', JSON.stringify(storedValue));
 
     const { result } = renderHook(() => useSidebar(initialValue));
 

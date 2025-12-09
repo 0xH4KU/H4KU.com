@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('home page has Lum title', async ({ page }) => {
+test('home page has HAKU title', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/lum/i);
+  await expect(page).toHaveTitle(/HAKU/i);
 });
 
 test('skip link moves focus to main content', async ({ page }) => {

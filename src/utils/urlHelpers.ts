@@ -48,7 +48,7 @@ export function getSafeUrl(
   }
 }
 
-const DEFAULT_APP_ORIGIN = 'https://lum.bio';
+const DEFAULT_APP_ORIGIN = 'https://H4KU.com';
 
 const getAppOrigin = () => {
   if (typeof window !== 'undefined' && window.location?.origin) {

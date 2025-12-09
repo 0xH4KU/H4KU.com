@@ -19,9 +19,9 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
       <button
         className={styles['logo-button']}
         onClick={onLogoClick}
-        aria-label="LUM.BIO, Go to home"
+        aria-label="H4KU.COM, Go to home"
       >
-        LUM.BIO
+        H4KU.COM
       </button>
       <div className={styles['header-controls']}>
         <Tooltip

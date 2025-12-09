@@ -1,6 +1,6 @@
 (function initTheme() {
   try {
-    const storedTheme = localStorage.getItem('lum.bio.theme');
+    const storedTheme = localStorage.getItem('H4KU.com.theme');
     const theme =
       storedTheme === 'light' || storedTheme === 'dark'
         ? storedTheme

@@ -249,7 +249,7 @@ export default defineConfig({
       ? []
       : [
           sitemap({
-            hostname: 'https://lum.bio',
+            hostname: 'https://H4KU.com',
             dynamicRoutes,
             readable: true,
             // CF Pages serves robots.txt from /public so avoid clobbering it here.
