@@ -27,7 +27,7 @@
     {
       "id": "about",
       "filename": "About.txt",
-      "content": "ABOUT\n════════════════════════\n\nHAKU (@0xH4KU)\nFreelance illustrator\n\nAnime-style illustrations\nCharacter design\nDigital art\n\nNot available for commissions\n"
+      "content": "ABOUT\n════════════════════════\n\nHAKU (@0xH4KU)\nFreelance illustrator\n\nCharacter design\nDigital art\n\nNot available for commissions\n"
     },
     {
       "id": "contact",
@@ -57,7 +57,7 @@
       "url": "https://twitter.com/0xH4KU"
     }
   ],
-  "_buildTime": "2025-12-09T15:14:32.562Z",
-  "_integrity": "50c12275",
-  "_integritySHA256": "0b12b85f09fc51f0b305971a18eb82ca55875c0a4010382987cc9c312d387bb1"
+  "_buildTime": "2025-12-10T05:00:09.692Z",
+  "_integrity": "c49ec7f4",
+  "_integritySHA256": "fe692852143c9d98d25627b48bc0d830dbce94731be74b6c3956a9bab63f93ad"
 }
