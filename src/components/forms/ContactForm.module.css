@@ -42,7 +42,7 @@
 .input:focus,
 .textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(104, 150, 150, 0.35);
+  box-shadow: 0 0 0 2px var(--color-primary-35);
 }
 
 .input:disabled,
@@ -96,13 +96,13 @@
 }
 
 .success {
-  background: rgba(104, 150, 150, 0.15);
+  background: var(--color-primary-15);
   border-color: var(--color-primary);
   color: var(--color-text);
 }
 
 .error {
-  background: rgba(232, 119, 34, 0.12);
+  background: var(--color-primary-12);
   border-color: var(--color-secondary);
   color: var(--color-text);
 }

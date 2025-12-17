@@ -55,7 +55,7 @@
 }
 
 .context-menu-item:hover {
-  background: rgba(104, 150, 150, 0.15);
+  background: var(--color-primary-15);
   transform: translateX(2px);
 }
 

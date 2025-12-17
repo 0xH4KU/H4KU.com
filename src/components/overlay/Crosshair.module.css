@@ -9,22 +9,22 @@
   height: 1px;
   left: 0;
   right: 0;
-  background: #689696;
+  background: var(--color-primary);
   opacity: 0.8;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.3),
-    0 0 4px rgba(104, 150, 150, 0.5);
+    0 0 4px var(--color-primary-50);
 }
 
 .crosshair-y {
   width: 1px;
   top: 0;
   bottom: 0;
-  background: #689696;
+  background: var(--color-primary);
   opacity: 0.8;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.3),
-    0 0 4px rgba(104, 150, 150, 0.5);
+    0 0 4px var(--color-primary-50);
 }
 
 .crosshair-center {
@@ -34,12 +34,12 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #689696;
+  background: var(--color-primary);
   transform: translate(-50%, -50%);
   box-shadow:
     0 0 0 2px rgba(0, 0, 0, 0.5),
     0 0 0 3px rgba(255, 255, 255, 0.3),
-    0 0 8px rgba(104, 150, 150, 0.8);
+    0 0 8px var(--color-primary-80);
   transition:
     width 0.2s ease,
     height 0.2s ease,
@@ -53,7 +53,7 @@
   box-shadow:
     0 0 0 2px rgba(0, 0, 0, 0.5),
     0 0 0 3px rgba(255, 255, 255, 0.3),
-    0 0 12px rgba(232, 119, 34, 0.8);
+    0 0 12px var(--color-primary-80);
 }
 
 .crosshair-label {
@@ -62,7 +62,7 @@
   pointer-events: none;
   padding: 4px 8px;
   font-size: var(--font-size-xxs);
-  border: 1px solid #689696;
+  border: 1px solid var(--color-primary);
   background: var(--color-crosshair-bg);
   color: var(--color-crosshair-text);
   font-family: inherit;

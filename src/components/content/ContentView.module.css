@@ -27,14 +27,14 @@
 
 .file-item:focus-visible {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(104, 150, 150, 0.35);
+  box-shadow: 0 0 0 3px var(--color-primary-35);
   outline: none;
 }
 
 .file-item:hover {
   transform: translateY(-2px);
   border-color: var(--color-secondary);
-  box-shadow: 0 4px 12px rgba(232, 119, 34, 0.15);
+  box-shadow: 0 4px 12px var(--color-primary-15);
 }
 
 .file-icon {
@@ -96,7 +96,7 @@
 
 .work-item:focus-visible {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(104, 150, 150, 0.35);
+  box-shadow: 0 0 0 3px var(--color-primary-35);
   outline: none;
 }
 
@@ -118,7 +118,7 @@
 .work-item:hover {
   transform: translateY(-4px);
   border-color: var(--color-secondary);
-  box-shadow: 0 8px 16px rgba(232, 119, 34, 0.2);
+  box-shadow: 0 8px 16px var(--color-primary-20);
 }
 
 .txt-title {

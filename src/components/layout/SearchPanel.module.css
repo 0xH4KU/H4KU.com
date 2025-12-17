@@ -68,7 +68,7 @@
 }
 
 .search-result:hover {
-  background: var(--color-hover-bg, rgba(104, 150, 150, 0.1));
+  background: var(--color-hover-bg, var(--color-primary-10));
 }
 
 .search-result--selected {

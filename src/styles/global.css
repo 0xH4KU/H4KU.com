@@ -27,8 +27,24 @@
   --spacing-xl: 2rem;
 
   /* Colors - Brand */
-  --color-primary: #689696;
-  --color-secondary: #e87722;
+  --color-primary: #c0a88d; /* Chino - 互動層/品牌色 */
+  --color-secondary: #c0a88d; /* Chino */
+  --color-primary-rgb: 192, 168, 141; /* For rgba() usage */
+
+  /* Primary color with opacity variants */
+  --color-primary-5: rgba(192, 168, 141, 0.05);
+  --color-primary-10: rgba(192, 168, 141, 0.1);
+  --color-primary-12: rgba(192, 168, 141, 0.12);
+  --color-primary-15: rgba(192, 168, 141, 0.15);
+  --color-primary-20: rgba(192, 168, 141, 0.2);
+  --color-primary-25: rgba(192, 168, 141, 0.25);
+  --color-primary-30: rgba(192, 168, 141, 0.3);
+  --color-primary-35: rgba(192, 168, 141, 0.35);
+  --color-primary-40: rgba(192, 168, 141, 0.4);
+  --color-primary-50: rgba(192, 168, 141, 0.5);
+  --color-primary-60: rgba(192, 168, 141, 0.6);
+  --color-primary-70: rgba(192, 168, 141, 0.7);
+  --color-primary-80: rgba(192, 168, 141, 0.8);
 
   /* Layout */
   --topbar-height: 64px;
@@ -78,16 +94,16 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: #1a1a1a;
-    --color-foreground: #e8e8e8;
+    --color-foreground: #e5e2dd; /* Wan White */
     --color-border: #333;
     --color-border-subtle: #2a2a2a;
     --color-surface: #0f0f0f;
     --color-surface-hover: #1f1f1f;
-    --color-text: #e8e8e8;
+    --color-text: #e5e2dd; /* Wan White */
     --color-text-muted: #999;
     --color-text-dim: #666;
     --color-crosshair-bg: rgba(0, 0, 0, 0.9);
-    --color-crosshair-text: #689696;
+    --color-crosshair-text: #c0a88d; /* Chino */
     --grid-line: rgba(255, 255, 255, 0.04);
     --grid-bold: rgba(255, 255, 255, 0.08);
     --color-chrome: #0f0f0f;
@@ -115,16 +131,16 @@
 /* Dark Theme Variables */
 [data-theme='dark'] {
   --color-background: #1a1a1a;
-  --color-foreground: #e8e8e8;
+  --color-foreground: #e5e2dd; /* Wan White */
   --color-border: #333;
   --color-border-subtle: #2a2a2a;
   --color-surface: #0f0f0f;
   --color-surface-hover: #1f1f1f;
-  --color-text: #e8e8e8;
+  --color-text: #e5e2dd; /* Wan White */
   --color-text-muted: #999;
   --color-text-dim: #666;
   --color-crosshair-bg: rgba(0, 0, 0, 0.9);
-  --color-crosshair-text: #689696;
+  --color-crosshair-text: #c0a88d; /* Chino */
   --grid-line: rgba(255, 255, 255, 0.04);
   --grid-bold: rgba(255, 255, 255, 0.08);
   --color-chrome: var(--color-surface);

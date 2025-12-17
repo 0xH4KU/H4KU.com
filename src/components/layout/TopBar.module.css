@@ -61,7 +61,7 @@
   border-color: var(--color-primary);
   color: #fff;
   transform: scale(1.1);
-  box-shadow: 0 0 0 3px rgba(104, 150, 150, 0.2);
+  box-shadow: 0 0 0 3px var(--color-primary-20);
 }
 
 .breadcrumb {
@@ -92,7 +92,7 @@
 .breadcrumb-link:not([disabled]):hover {
   color: var(--color-primary);
   transform: scale(1.05);
-  text-shadow: 0 0 8px rgba(104, 150, 150, 0.4);
+  text-shadow: 0 0 8px var(--color-primary-40);
 }
 
 .breadcrumb-link:focus-visible {
