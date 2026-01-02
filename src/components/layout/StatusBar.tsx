@@ -49,43 +49,48 @@ const StatusBar: React.FC = () => {
     [navigateTo]
   );
 
+  // Only show these socials in the status bar (to save space)
+  const visibleSocials = ['EM', 'BS', 'TW'];
+
   const socialLinks = useMemo(
     () =>
-      socials.map(social => {
-        const safeUrl = getSafeUrl(social.url);
+      socials
+        .filter(social => visibleSocials.includes(social.code))
+        .map(social => {
+          const safeUrl = getSafeUrl(social.url);
 
-        if (!safeUrl) {
+          if (!safeUrl) {
+            return (
+              <span
+                key={social.code}
+                className={styles['status-social-disabled']}
+                aria-disabled="true"
+              >
+                [{social.code}]
+              </span>
+            );
+          }
+
+          const ariaLabelParts = [`[${social.code}], Open ${social.name}`];
+          if (safeUrl.isMailto) {
+            ariaLabelParts.push('(opens email client)');
+          }
+          if (safeUrl.isExternal) {
+            ariaLabelParts.push('(opens in new tab)');
+          }
+
           return (
-            <span
+            <a
               key={social.code}
-              className={styles['status-social-disabled']}
-              aria-disabled="true"
+              href={safeUrl.href}
+              target={safeUrl.isExternal ? '_blank' : undefined}
+              rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
+              aria-label={ariaLabelParts.join(' ')}
             >
               [{social.code}]
-            </span>
+            </a>
           );
-        }
-
-        const ariaLabelParts = [`[${social.code}], Open ${social.name}`];
-        if (safeUrl.isMailto) {
-          ariaLabelParts.push('(opens email client)');
-        }
-        if (safeUrl.isExternal) {
-          ariaLabelParts.push('(opens in new tab)');
-        }
-
-        return (
-          <a
-            key={social.code}
-            href={safeUrl.href}
-            target={safeUrl.isExternal ? '_blank' : undefined}
-            rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
-            aria-label={ariaLabelParts.join(' ')}
-          >
-            [{social.code}]
-          </a>
-        );
-      }),
+        }),
     [socials]
   );
 

@@ -6,7 +6,7 @@ _Testing philosophy, tooling, and expectations for H4KU.com._
 
 - **Runner**: Vitest 4 (jsdom)
 - **Library**: React Testing Library (`@testing-library/react` + `@testing-library/user-event`)
-- **Suite size**: small smoke suite (expand as you add features)
+- **Suite size**: 41 spec files / 530+ tests (expand as you add features)
 - **Coverage**: 90% global thresholds (lines/functions/statements), 85% branches
 - **E2E**: Playwright smoke suite (`npm run test:e2e`) targets `/page/about` & `/page/contact` with mocked contact API; expand flows as you add features.
 - **Philosophy**: test behaviours, not implementation details; keep suites fast and deterministic.
@@ -15,15 +15,27 @@ _Testing philosophy, tooling, and expectations for H4KU.com._
 
 ```
 src/
+├── components/
+│   ├── common/__tests__/     # ErrorBoundary, LazyImage tests
+│   └── layout/__tests__/     # StatusBar, Sidebar tests
 ├── hooks/
 │   ├── useLocalStorage.ts
-│   └── __tests__/useLocalStorage.test.ts
+│   ├── useDeferredLoading.ts
+│   └── __tests__/
+│       ├── useLocalStorage.test.ts
+│       └── useDeferredLoading.test.ts
 ├── utils/
 │   ├── navigation.ts
 │   ├── integrity.ts
+│   ├── color.ts
+│   ├── functional.ts
+│   ├── typeGuards.ts
 │   └── __tests__/
 │       ├── navigation.test.ts
-│       └── integrity.test.ts
+│       ├── integrity.test.ts
+│       ├── color.test.ts
+│       ├── functional.test.ts
+│       └── typeGuards.test.ts
 ├── contexts/
 │   └── __tests__/*.test.tsx
 └── tests/

@@ -20,6 +20,7 @@ H4KU.com/
 │   │   │   ├── FolderTreeItem.tsx
 │   │   │   ├── SearchPanel.tsx
 │   │   │   ├── Sidebar.tsx
+│   │   │   ├── SidebarFooter.tsx
 │   │   │   ├── StatusBar.tsx
 │   │   │   ├── TopBar.tsx
 │   │   │   └── Tooltip.tsx
@@ -36,16 +37,22 @@ H4KU.com/
 │   │   ├── use100vh.ts
 │   │   ├── useCrosshair.ts
 │   │   ├── useDebounce.ts
+│   │   ├── useDeferredLoading.ts
+│   │   ├── useInertFallback.ts
 │   │   ├── useLocalStorage.ts
 │   │   ├── useReducedMotion.ts
 │   │   ├── useSidebar.ts
+│   │   ├── useSidebarResize.ts
 │   │   └── useWindowSize.ts
 │   ├── utils/               # Pure utility functions
+│   │   ├── color.ts         # Color manipulation utilities
 │   │   ├── frontmatter.ts   # Markdown parsing
+│   │   ├── functional.ts    # Functional programming helpers
 │   │   ├── navigation.ts    # Navigation helpers
 │   │   ├── searchNavigation.ts # Shared search selection handler
 │   │   ├── secureConsole.ts # Console shims that survive minification
 │   │   ├── sortHelpers.ts   # Sorting logic
+│   │   ├── typeGuards.ts    # Runtime type guards
 │   │   └── urlHelpers.ts    # URL manipulation
 │   ├── content/             # Static content data
 │   │   ├── folders/         # Folder structure JSON
@@ -228,16 +235,16 @@ After editing any of the above, run `npm run build:data` and commit the refreshe
 ## Testing
 
 - Runner: Vitest 4 + Testing Library (jsdom)
-- Suite size: 35 spec files / 340 tests (as of January 2025)
+- Suite size: 41 spec files / 530+ tests (as of January 2025)
 - Coverage: 90% global thresholds (lines/functions/statements) and 85% for branches
 
 Focus areas:
 
 - Context providers (navigation, search, sidebar, theme)
-- Hooks with side effects (storage, focus trapping, debounced resize)
-- Utilities (navigation maps, integrity hashing, URL helpers)
+- Hooks with side effects (storage, focus trapping, debounced resize, deferred loading)
+- Utilities (navigation maps, integrity hashing, URL helpers, color manipulation, type guards)
 - Layout behaviors (search overlay, status bar, keyboard flows)
-- Component unit tests (ContentView, FolderView, TextView)
+- Component unit tests (ContentView, FolderView, TextView, ErrorBoundary)
 
 Principles: prefer behavior over implementation, keep mocks minimal, avoid snapshots, and keep the suite fast enough to run with every commit.
 

@@ -64,6 +64,30 @@ public/content/**/* (source assets)
 - Optional `srcSet`/`sizes` support; errors fall back to an inline placeholder to preserve layout.
 - Implements data-attribute based styling (`data-loaded`, `data-priority`) instead of inline styles for CSP compliance.
 
+### Deferred Loading Hook (`src/hooks/useDeferredLoading.ts`)
+
+- Manages progressive content loading with configurable delays and batch sizes.
+- Supports cancellation and cleanup to prevent memory leaks.
+- Integrates with React's `useDeferredValue` for smooth transitions.
+
+### Inert Fallback Hook (`src/hooks/useInertFallback.ts`)
+
+- Provides cross-browser `inert` attribute support with automatic polyfill detection.
+- Manages focus trapping for modal contexts and overlays.
+- Falls back gracefully on browsers without native `inert` support.
+
+### Sidebar Resize Hook (`src/hooks/useSidebarResize.ts`)
+
+- Handles drag-to-resize functionality for the sidebar panel.
+- Persists width preference to localStorage with min/max constraints.
+- Respects reduced motion preferences for resize animations.
+
+### Utility Modules (`src/utils/`)
+
+- **color.ts** – HSL/RGB conversion, contrast calculation, and theme-aware color manipulation.
+- **functional.ts** – Composable helpers: `pipe`, `compose`, `debounce`, `throttle`, and memoization utilities.
+- **typeGuards.ts** – Runtime type checking for content types, ensuring type safety at system boundaries.
+
 ### Data Parser (`src/data/mockData.ts`)
 
 - Reads from `_aggregated.json`, normalises folder relationships, attaches works/pages, and sorts everything with deterministic rules.
