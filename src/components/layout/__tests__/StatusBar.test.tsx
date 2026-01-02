@@ -162,21 +162,24 @@ describe('StatusBar integrity indicator', () => {
   it('adds rich metadata for mailto and external socials', async () => {
     await renderStatusBar({
       socials: [
-        { name: 'Contact', code: 'CT', url: 'mailto:hello@example.com' },
-        { name: 'Docs', code: 'DC', url: 'https://H4KU.com/docs' },
+        { name: 'Email', code: 'EM', url: 'mailto:hello@example.com' },
+        { name: 'Bluesky', code: 'BS', url: 'https://bsky.app/profile/h4ku' },
       ],
     });
 
     const mailtoLink = screen.getByLabelText(
-      /\[CT], Open Contact \(opens email client\)/i
+      /\[EM], Open Email \(opens email client\)/i
     );
     expect(mailtoLink).toHaveAttribute('href', 'mailto:hello@example.com');
     expect(mailtoLink).not.toHaveAttribute('target');
 
     const externalLink = screen.getByLabelText(
-      /\[DC], Open Docs \(opens in new tab\)/i
+      /\[BS], Open Bluesky \(opens in new tab\)/i
     );
-    expect(externalLink).toHaveAttribute('href', 'https://H4KU.com/docs');
+    expect(externalLink).toHaveAttribute(
+      'href',
+      'https://bsky.app/profile/h4ku'
+    );
     expect(externalLink).toHaveAttribute('target', '_blank');
     expect(externalLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
