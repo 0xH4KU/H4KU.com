@@ -51,7 +51,9 @@ export function useDeferredLoading({
   const [showLoading, setShowLoading] = useState(false);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const minDurationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const minDurationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
   const loadingStartTimeRef = useRef<number>(0);
   const showLoadingRef = useRef(false); // Track actual showing state
 
@@ -136,10 +138,11 @@ export function useDeferredAsync<T = void>({
   minDuration = 300,
 }: UseDeferredLoadingOptions = {}) {
   const [error, setError] = useState<Error | null>(null);
-  const { showLoading, startLoading, endLoading, isLoading } = useDeferredLoading({
-    delay,
-    minDuration,
-  });
+  const { showLoading, startLoading, endLoading, isLoading } =
+    useDeferredLoading({
+      delay,
+      minDuration,
+    });
 
   const execute = useCallback(
     async (asyncFn: () => Promise<T>): Promise<T | undefined> => {

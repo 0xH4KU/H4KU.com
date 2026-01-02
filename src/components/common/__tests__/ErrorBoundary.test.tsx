@@ -101,7 +101,9 @@ describe('ErrorBoundary', () => {
       );
 
       expect(screen.getByText('Custom error message')).toBeInTheDocument();
-      expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Something went wrong')
+      ).not.toBeInTheDocument();
     });
 
     it('calls onError callback when error occurs', () => {
@@ -211,12 +213,16 @@ describe('ErrorBoundary', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Crash report copied to clipboard')).toBeInTheDocument();
+        expect(
+          screen.getByText('Crash report copied to clipboard')
+        ).toBeInTheDocument();
       });
     });
 
     it('shows error message when clipboard fails', async () => {
-      const mockWriteText = vi.fn().mockRejectedValue(new Error('Clipboard error'));
+      const mockWriteText = vi
+        .fn()
+        .mockRejectedValue(new Error('Clipboard error'));
       Object.assign(navigator, {
         clipboard: {
           writeText: mockWriteText,
@@ -309,7 +315,9 @@ describe('ErrorBoundary', () => {
       fireEvent.click(screen.getByText('Copy crash report'));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Crash report copied to clipboard');
+        expect(screen.getByRole('status')).toHaveTextContent(
+          'Crash report copied to clipboard'
+        );
       });
     });
   });

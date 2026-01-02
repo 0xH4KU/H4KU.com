@@ -28,12 +28,14 @@ export type XOR<T, U> = T | U extends object
 /**
  * Make specific properties required
  */
-export type RequiredFields<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+export type RequiredFields<T, K extends keyof T> = Omit<T, K> &
+  Required<Pick<T, K>>;
 
 /**
  * Make specific properties optional
  */
-export type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type OptionalFields<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
 
 /**
  * Deep partial - makes all nested properties optional
@@ -134,7 +136,8 @@ export function uniqueBy<T, K>(
 export function range(end: number): number[];
 export function range(start: number, end: number, step?: number): number[];
 export function range(startOrEnd: number, end?: number, step = 1): number[] {
-  const [actualStart, actualEnd] = end === undefined ? [0, startOrEnd] : [startOrEnd, end];
+  const [actualStart, actualEnd] =
+    end === undefined ? [0, startOrEnd] : [startOrEnd, end];
   const result: number[] = [];
 
   for (let i = actualStart; i < actualEnd; i += step) {

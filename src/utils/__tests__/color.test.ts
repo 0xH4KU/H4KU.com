@@ -51,7 +51,9 @@ describe('color utilities', () => {
 
     describe('parseRgbaString', () => {
       it('parses rgba with alpha', () => {
-        expect(parseRgbaString('rgba(255, 0, 128, 0.5)')).toEqual([255, 0, 128, 0.5]);
+        expect(parseRgbaString('rgba(255, 0, 128, 0.5)')).toEqual([
+          255, 0, 128, 0.5,
+        ]);
       });
 
       it('defaults alpha to 1 for rgb', () => {

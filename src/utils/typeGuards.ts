@@ -123,7 +123,9 @@ export function isNonEmptyString(value: unknown): value is string {
 /**
  * Check if a value is a non-empty array
  */
-export function isNonEmptyArray<T>(value: T[] | null | undefined): value is [T, ...T[]] {
+export function isNonEmptyArray<T>(
+  value: T[] | null | undefined
+): value is [T, ...T[]] {
   return Array.isArray(value) && value.length > 0;
 }
 
@@ -139,7 +141,9 @@ export function isValidDateString(value: unknown): value is string {
 /**
  * Check if a value is a plain object (not null, not array)
  */
-export function isPlainObject(value: unknown): value is Record<string, unknown> {
+export function isPlainObject(
+  value: unknown
+): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 

@@ -153,7 +153,7 @@
   box-shadow: 0 0 0 3px var(--color-primary-10);
 }
 
-.search-input:focus+.search-icon {
+.search-input:focus + .search-icon {
   color: var(--color-primary);
 }
 
@@ -231,7 +231,7 @@
   padding: 12px 0;
 }
 
-.sidebar-section+.sidebar-section {
+.sidebar-section + .sidebar-section {
   border-top: 2px solid var(--color-border);
 }
 

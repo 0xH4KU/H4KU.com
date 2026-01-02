@@ -256,12 +256,18 @@ describe('typeGuards', () => {
       });
 
       it('throws for null and undefined', () => {
-        expect(() => assertDefined(null)).toThrow('Expected value to be defined');
-        expect(() => assertDefined(undefined)).toThrow('Expected value to be defined');
+        expect(() => assertDefined(null)).toThrow(
+          'Expected value to be defined'
+        );
+        expect(() => assertDefined(undefined)).toThrow(
+          'Expected value to be defined'
+        );
       });
 
       it('throws with custom message', () => {
-        expect(() => assertDefined(null, 'Custom message')).toThrow('Custom message');
+        expect(() => assertDefined(null, 'Custom message')).toThrow(
+          'Custom message'
+        );
       });
     });
 
@@ -280,8 +286,12 @@ describe('typeGuards', () => {
     describe('assertNever', () => {
       it('always throws', () => {
         // We need to cast to never to test this
-        expect(() => assertNever('unexpected' as never)).toThrow('Unexpected value: unexpected');
-        expect(() => assertNever('value' as never, 'Custom message')).toThrow('Custom message');
+        expect(() => assertNever('unexpected' as never)).toThrow(
+          'Unexpected value: unexpected'
+        );
+        expect(() => assertNever('value' as never, 'Custom message')).toThrow(
+          'Custom message'
+        );
       });
     });
   });

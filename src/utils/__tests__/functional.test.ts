@@ -132,7 +132,12 @@ describe('functional utilities', () => {
       });
 
       it('uses custom ellipsis', () => {
-        const result = truncateText('Hello world, this is a test', 18, 'en-US', '…');
+        const result = truncateText(
+          'Hello world, this is a test',
+          18,
+          'en-US',
+          '…'
+        );
         expect(result).toBe('Hello world,…');
       });
 
@@ -162,7 +167,11 @@ describe('functional utilities', () => {
       });
 
       it('supports disjunction', () => {
-        const result = formatList(['apple', 'banana', 'cherry'], 'en', 'disjunction');
+        const result = formatList(
+          ['apple', 'banana', 'cherry'],
+          'en',
+          'disjunction'
+        );
         expect(result).toBe('apple, banana, or cherry');
       });
     });

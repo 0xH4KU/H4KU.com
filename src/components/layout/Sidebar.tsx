@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSearchExecutor } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
