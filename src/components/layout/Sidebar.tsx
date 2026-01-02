@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSearchExecutor } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
@@ -12,6 +6,8 @@ import { useLightbox } from '@/contexts/LightboxContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSidebarKeyboardNavigation } from '@/hooks/useSidebarKeyboardNavigation';
+import { useSidebarResize } from '@/hooks/useSidebarResize';
+import { useInertFallback } from '@/hooks/useInertFallback';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, SearchResult } from '@/types';
 import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG } from '@/config/constants';
@@ -25,25 +21,7 @@ import { SidebarSearchResults } from './SidebarSearchResults';
 import { SidebarSections } from './SidebarSections';
 import styles from './Sidebar.module.css';
 
-const KEYBOARD_RESIZE_STEP = 16;
-const KEYBOARD_RESIZE_FAST_STEP = 48;
-const clampSidebarWidth = (value: number) =>
-  Math.min(Math.max(value, SIDEBAR_CONFIG.MIN_WIDTH), SIDEBAR_CONFIG.MAX_WIDTH);
-
 type SidebarEntry = Folder | Page;
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-const DATASET_KEY = 'sidebarTabindex';
-const DATASET_NONE = '__sidebar_none__';
-
-const hasInertSupport = () => {
-  if (typeof HTMLElement === 'undefined') {
-    return false;
-  }
-  return (
-    'inert' in (HTMLElement.prototype as HTMLElement & { inert?: unknown })
-  );
-};
 
 const Sidebar: React.FC = () => {
   const {
@@ -67,16 +45,12 @@ const Sidebar: React.FC = () => {
   const isMobile =
     width !== undefined && width < SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-  const resizeHandleRef = useRef<HTMLDivElement | null>(null);
-  const dragFrameRef = useRef<number | null>(null);
-  const pendingDragWidthRef = useRef<number | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     item: SidebarEntry;
   } | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [isDragging, setIsDragging] = useState(false);
   const [sidebarQuery, setSidebarQuery] = useState('');
   const debouncedSidebarQuery = useDebounce(
     sidebarQuery,
@@ -86,8 +60,19 @@ const Sidebar: React.FC = () => {
     () => runSearch(debouncedSidebarQuery),
     [runSearch, debouncedSidebarQuery]
   );
-  const supportsInert = useMemo(() => hasInertSupport(), []);
-  const normalizedSidebarWidth = clampSidebarWidth(sidebarWidth);
+
+  // Use extracted hooks for resize and inert fallback
+  const {
+    resizeHandleRef,
+    normalizedWidth: normalizedSidebarWidth,
+    handleDragStart,
+    handleResizeKeyDown: handleResizeHandleKeyDown,
+  } = useSidebarResize({ sidebarWidth, setSidebarWidth });
+
+  const { inertProps } = useInertFallback({
+    containerRef: sidebarRef,
+    isInert: !isSidebarOpen,
+  });
 
   const activeSegments = useMemo(
     () => activePath.split('/').filter(Boolean),
@@ -180,41 +165,6 @@ const Sidebar: React.FC = () => {
     [navigateTo, isMobile, closeSidebar]
   );
 
-  const applySidebarWidth = useCallback(
-    (nextWidth: number) => {
-      setSidebarWidth(clampSidebarWidth(nextWidth));
-    },
-    [setSidebarWidth]
-  );
-
-  const flushDragWidth = useCallback(() => {
-    if (pendingDragWidthRef.current === null) {
-      return;
-    }
-    applySidebarWidth(pendingDragWidthRef.current);
-    pendingDragWidthRef.current = null;
-  }, [applySidebarWidth]);
-
-  const scheduleDragUpdate = useCallback(
-    (nextWidth: number) => {
-      pendingDragWidthRef.current = nextWidth;
-      if (typeof window === 'undefined') {
-        flushDragWidth();
-        return;
-      }
-
-      if (dragFrameRef.current !== null) {
-        return;
-      }
-
-      dragFrameRef.current = window.requestAnimationFrame(() => {
-        flushDragWidth();
-        dragFrameRef.current = null;
-      });
-    },
-    [flushDragWidth]
-  );
-
   const handleSearchResultSelect = useCallback(
     (result: SearchResult) => {
       const handled = navigateFromSearchResult(result, {
@@ -227,149 +177,6 @@ const Sidebar: React.FC = () => {
     },
     [navigateTo, openLightbox, isMobile, closeSidebar]
   );
-
-  const handleDragStart = (
-    event: React.MouseEvent | React.TouchEvent | React.PointerEvent
-  ) => {
-    event.preventDefault();
-    setIsDragging(true);
-    resizeHandleRef.current?.focus();
-  };
-
-  // Handle sidebar resize
-  useEffect(() => {
-    if (!isDragging) {
-      return undefined;
-    }
-
-    const handleMouseMove = (event: MouseEvent) => {
-      scheduleDragUpdate(event.clientX);
-    };
-
-    const handleTouchMove = (event: TouchEvent) => {
-      if (!event.touches.length) {
-        return;
-      }
-      const touch = event.touches[0];
-      scheduleDragUpdate(touch.clientX);
-    };
-
-    const stopDrag = () => {
-      setIsDragging(false);
-      flushDragWidth();
-      if (dragFrameRef.current !== null && typeof window !== 'undefined') {
-        window.cancelAnimationFrame(dragFrameRef.current);
-        dragFrameRef.current = null;
-      }
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', stopDrag);
-    document.addEventListener('touchmove', handleTouchMove, {
-      passive: true,
-    });
-    document.addEventListener('touchend', stopDrag, { passive: true });
-    document.addEventListener('touchcancel', stopDrag, { passive: true });
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', stopDrag);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', stopDrag);
-      document.removeEventListener('touchcancel', stopDrag);
-      if (dragFrameRef.current !== null && typeof window !== 'undefined') {
-        window.cancelAnimationFrame(dragFrameRef.current);
-        dragFrameRef.current = null;
-      }
-    };
-  }, [flushDragWidth, isDragging, scheduleDragUpdate]);
-
-  const handleResizeHandleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      const baseStep = event.shiftKey
-        ? KEYBOARD_RESIZE_FAST_STEP
-        : KEYBOARD_RESIZE_STEP;
-
-      switch (event.key) {
-        case 'ArrowLeft':
-        case 'ArrowDown':
-          event.preventDefault();
-          applySidebarWidth(normalizedSidebarWidth - baseStep);
-          break;
-        case 'ArrowRight':
-        case 'ArrowUp':
-          event.preventDefault();
-          applySidebarWidth(normalizedSidebarWidth + baseStep);
-          break;
-        case 'Home':
-          event.preventDefault();
-          applySidebarWidth(SIDEBAR_CONFIG.MIN_WIDTH);
-          break;
-        case 'End':
-          event.preventDefault();
-          applySidebarWidth(SIDEBAR_CONFIG.MAX_WIDTH);
-          break;
-      }
-    },
-    [applySidebarWidth, normalizedSidebarWidth]
-  );
-
-  useEffect(() => {
-    if (supportsInert || !sidebarRef.current) {
-      return;
-    }
-
-    const container = sidebarRef.current;
-
-    const updateFocusableElements = (disable: boolean) => {
-      const focusableElements =
-        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-
-      focusableElements.forEach(element => {
-        if (disable) {
-          if (!element.dataset[DATASET_KEY]) {
-            const existing = element.getAttribute('tabindex');
-            element.dataset[DATASET_KEY] = existing ?? DATASET_NONE;
-          }
-          element.setAttribute('tabindex', '-1');
-          element.setAttribute('aria-hidden', 'true');
-        } else {
-          const stored = element.dataset[DATASET_KEY];
-          if (stored) {
-            if (stored !== DATASET_NONE) {
-              element.setAttribute('tabindex', stored);
-            } else {
-              element.removeAttribute('tabindex');
-            }
-            delete element.dataset[DATASET_KEY];
-          } else {
-            element.removeAttribute('tabindex');
-          }
-          element.removeAttribute('aria-hidden');
-        }
-      });
-    };
-
-    updateFocusableElements(!isSidebarOpen);
-
-    let observer: MutationObserver | null = null;
-
-    if (typeof MutationObserver !== 'undefined') {
-      observer = new MutationObserver(() => {
-        updateFocusableElements(!isSidebarOpen);
-      });
-
-      observer.observe(container, {
-        childList: true,
-        subtree: true,
-      });
-    }
-
-    return () => {
-      observer?.disconnect();
-      updateFocusableElements(false);
-    };
-  }, [supportsInert, isSidebarOpen]);
 
   const handleContextMenu = useCallback(
     (event: React.MouseEvent, item: SidebarEntry) => {
@@ -452,7 +259,7 @@ const Sidebar: React.FC = () => {
         width: isMobile ? undefined : normalizedSidebarWidth,
       }}
       aria-hidden={!isSidebarOpen}
-      {...(supportsInert && !isSidebarOpen && { inert: true })}
+      {...inertProps}
     >
       <SidebarHeader
         allFoldersExpanded={allFoldersExpanded}

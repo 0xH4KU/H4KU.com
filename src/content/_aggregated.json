@@ -42,6 +42,11 @@
   ],
   "socials": [
     {
+      "name": "Bluesky",
+      "code": "BS",
+      "url": "https://bsky.app/profile/h4ku.com"
+    },
+    {
       "name": "Email",
       "code": "EM",
       "url": "mailto:0x@H4KU.com"
@@ -52,12 +57,17 @@
       "url": "https://instagram.com/0xH4KU"
     },
     {
+      "name": "Newgrounds",
+      "code": "NG",
+      "url": "https://0xh4ku.newgrounds.com"
+    },
+    {
       "name": "Twitter",
       "code": "TW",
       "url": "https://twitter.com/0xH4KU"
     }
   ],
-  "_buildTime": "2025-12-17T05:13:47.811Z",
-  "_integrity": "c49ec7f4",
-  "_integritySHA256": "fe692852143c9d98d25627b48bc0d830dbce94731be74b6c3956a9bab63f93ad"
+  "_buildTime": "2026-01-02T06:53:52.797Z",
+  "_integrity": "a9b88f74",
+  "_integritySHA256": "025f8b3b020a11d144a8894aa3d78564730505b51ad258d31f6653f8e4b73d40"
 }

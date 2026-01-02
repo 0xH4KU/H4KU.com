@@ -116,15 +116,16 @@ This message was sent via the H4KU.com contact form.
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #000; color: #0f0; padding: 20px; text-align: center; font-family: monospace; }
-    .content { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #e5e2dd; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a1a; }
+    .header { background: #0f0f0f; color: #c0a88d; padding: 20px; text-align: center; font-family: monospace; border-bottom: 2px solid #c0a88d; }
+    .content { background: #1a1a1a; padding: 20px; border: 1px solid #333; }
     .field { margin-bottom: 15px; }
-    .label { font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase; }
-    .value { margin-top: 5px; }
-    .message { background: #fff; padding: 15px; border-left: 3px solid #0f0; white-space: pre-wrap; }
-    .footer { font-size: 12px; color: #999; margin-top: 20px; text-align: center; }
-    .ref { font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 3px; }
+    .label { font-weight: bold; color: #999; font-size: 12px; text-transform: uppercase; }
+    .value { margin-top: 5px; color: #e5e2dd; }
+    .message { background: #0f0f0f; padding: 15px; border-left: 3px solid #c0a88d; white-space: pre-wrap; color: #e5e2dd; }
+    .footer { font-size: 12px; color: #666; margin-top: 20px; text-align: center; }
+    .ref { font-family: monospace; background: #333; color: #c0a88d; padding: 2px 6px; border-radius: 3px; }
+    a { color: #c0a88d; }
   </style>
 </head>
 <body>

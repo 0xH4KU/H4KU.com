@@ -43,6 +43,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const pendingHistoryPathRef = useRef<string | null>(null);
   const currentPathRef = useRef(currentPath);
   const currentViewRef = useRef<ViewType | null>(currentView);
+  // Track if initial URL has been parsed - prevents race condition on direct URL access
+  const hasInitializedFromUrlRef = useRef(false);
 
   useEffect(() => {
     currentPathRef.current = currentPath;
@@ -120,6 +122,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     [navMap]
   );
 
+  // Effect #1: Parse URL and update app state
   useEffect(() => {
     if (pendingHistoryPathRef.current === pathname) {
       pendingHistoryPathRef.current = null;
@@ -143,9 +146,21 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     if (!viewsMatch) {
       setCurrentView(nextView);
     }
+
+    // Mark initialization complete after first URL parse
+    if (!hasInitializedFromUrlRef.current) {
+      hasInitializedFromUrlRef.current = true;
+    }
   }, [pathname, parsePathname]);
 
+  // Effect #2: Sync app state back to URL
   useEffect(() => {
+    // Skip URL sync until initial URL has been parsed
+    // This prevents the race condition on direct URL access
+    if (!hasInitializedFromUrlRef.current) {
+      return;
+    }
+
     let targetPath = '/';
 
     if (currentPath.length > 1) {

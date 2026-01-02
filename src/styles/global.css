@@ -281,3 +281,62 @@ body::after {
     transform: translate3d(0, 1px, 0);
   }
 }
+
+/* Smart Invert Support (iOS/macOS accessibility feature) */
+/* When Smart Invert is enabled, images are double-inverted to preserve original colors */
+@media (inverted-colors: inverted) {
+  /* Invert images back to their original colors */
+  img,
+  video,
+  picture,
+  canvas,
+  svg:not(.icon),
+  [data-preserve-color] {
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  /* For images that already have filters, use a wrapper approach */
+  .smart-invert-preserve {
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  /* Ensure backdrop-filter elements are also corrected */
+  .backdrop-blur,
+  [data-backdrop] {
+    backdrop-filter: invert(1) hue-rotate(180deg) blur(10px);
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: more) {
+  :root {
+    --color-border: #000;
+    --color-text: #000;
+    --color-text-muted: #333;
+  }
+
+  [data-theme='dark'] {
+    --color-border: #fff;
+    --color-text: #fff;
+    --color-text-muted: #ccc;
+  }
+}
+
+/* Forced Colors Mode Support (Windows High Contrast) */
+@media (forced-colors: active) {
+  *:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  a,
+  button {
+    forced-color-adjust: none;
+  }
+
+  /* Preserve custom styling where critical */
+  .preserve-colors {
+    forced-color-adjust: none;
+  }
+}
+
