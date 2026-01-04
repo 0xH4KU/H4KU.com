@@ -76,7 +76,46 @@ function createEmailHtml(
   referenceId: string,
   clientIp: string
 ): string {
-  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const dateStr = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  const timeStr = new Date().toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  // Brand colors matching h4ku.com
+  const colors = {
+    primary: '#c0a88d', // Chino - brand color
+    background: '#1a1a1a',
+    surface: '#0f0f0f',
+    text: '#e5e2dd', // Wan White
+    textMuted: '#999',
+    textDim: '#666',
+    border: '#333',
+  };
+
+  return `
+·
+`.trim();
+}
+
+function createConfirmationEmailHtml(
+  payload: ContactPayload,
+  referenceId: string
+): string {
+  const colors = {
+    primary: '#c0a88d',
+    background: '#1a1a1a',
+    surface: '#0f0f0f',
+    text: '#e5e2dd',
+    textMuted: '#999',
+    textDim: '#666',
+    border: '#333',
+  };
 
   return `
 <!DOCTYPE html>
@@ -84,108 +123,99 @@ function createEmailHtml(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
-  <meta name="supported-color-schemes" content="light dark">
-  <style>
-    :root { color-scheme: light dark; }
-    @media (prefers-color-scheme: dark) {
-      .email-body, .email-wrapper, .email-container { background-color: #1a1a1a !important; }
-    }
-  </style>
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
 </head>
-<body class="email-body" style="margin: 0; padding: 0; background-color: #1a1a1a !important; font-family: 'Courier New', Courier, monospace;">
-  <div style="display: none; max-height: 0; overflow: hidden; color: #1a1a1a; font-size: 1px;">New message from ${escapeHtml(payload.name)}</div>
-  <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a !important; padding: 40px 20px;" bgcolor="#1a1a1a">
-    <tr>
-      <td align="center" bgcolor="#1a1a1a" style="background-color: #1a1a1a !important;">
-        <table class="email-container" width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%; background-color: #1a1a1a !important;" bgcolor="#1a1a1a">
+<body style="margin: 0; padding: 0; background-color: ${colors.background}; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;">
+  <div style="display: none; max-height: 0; overflow: hidden;">Your message has been received - h4ku.com</div>
 
-          <!-- Top Border Line -->
-          <tr>
-            <td style="border-top: 1px solid #333; padding-top: 30px;"></td>
-          </tr>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.background}; padding: 32px 16px;" bgcolor="${colors.background}">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%;">
 
           <!-- Header -->
           <tr>
-            <td style="padding-bottom: 30px;">
+            <td style="border-top: 2px solid ${colors.border}; padding: 24px 0;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td>
-                    <span style="color: #689696; font-size: 11px; letter-spacing: 3px; text-transform: uppercase;">
-                      H4KU.COM
-                    </span>
-                  </td>
-                  <td align="right">
-                    <span style="color: #666; font-size: 11px;">
-                      ${dateStr}
-                    </span>
+                  <td style="color: ${colors.primary}; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: bold;">
+                    H4KU.COM
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Title -->
+          <!-- Greeting -->
           <tr>
-            <td style="padding-bottom: 30px;">
-              <div style="color: #e8e8e8; font-size: 20px; font-weight: normal; letter-spacing: 1px;">
-                New Message
-              </div>
-              <div style="color: #666; font-size: 12px; margin-top: 8px;">
-                ref: ${escapeHtml(referenceId)}
+            <td style="padding-bottom: 24px;">
+              <div style="color: ${colors.text}; font-size: 15px; line-height: 1.6;">
+                Hi ${escapeHtml(payload.name)},
               </div>
             </td>
           </tr>
 
-          <!-- Divider -->
+          <!-- Main Content -->
           <tr>
-            <td style="border-top: 1px solid #333; padding-top: 30px;"></td>
-          </tr>
-
-          <!-- Sender Section -->
-          <tr>
-            <td style="padding-bottom: 25px;">
-              <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">
-                From
-              </div>
-              <div style="color: #e8e8e8; font-size: 16px;">
-                ${escapeHtml(payload.name)}
-              </div>
-              <div style="margin-top: 4px;">
-                <a href="mailto:${escapeHtml(payload.email)}" style="color: #689696; text-decoration: none; font-size: 13px;">
-                  ${escapeHtml(payload.email)}
-                </a>
-              </div>
+            <td style="padding-bottom: 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.surface}; border: 2px solid ${colors.border};" bgcolor="${colors.surface}">
+                <tr>
+                  <td style="padding: 24px;">
+                    <div style="color: ${colors.text}; font-size: 14px; line-height: 1.8;">
+                      <div style="margin-bottom: 16px;">
+                        <span style="color: ${colors.primary};">&#10003;</span>&nbsp; Your message has been received.
+                      </div>
+                      <div style="margin-bottom: 16px;">
+                        I will get back to you within <strong style="color: ${colors.primary};">3 business days</strong>.
+                      </div>
+                      <div style="color: ${colors.textMuted}; font-size: 12px; border-left: 2px solid ${colors.border}; padding-left: 12px;">
+                        REF: ${escapeHtml(referenceId)}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
-          <!-- Message Section -->
+          <!-- Important Notice -->
           <tr>
-            <td style="padding-bottom: 30px;">
-              <div style="color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;">
-                Message
-              </div>
-              <div style="background-color: #0f0f0f !important; border-left: 2px solid #689696; padding: 20px; color: #ccc; font-size: 14px; line-height: 1.7; white-space: pre-wrap;" bgcolor="#0f0f0f">${escapeHtml(payload.message)}</div>
+            <td style="padding-bottom: 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="color: ${colors.textMuted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 12px;">
+                    Important
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: ${colors.surface}; border-left: 2px solid ${colors.primary}; padding: 16px 20px;" bgcolor="${colors.surface}">
+                    <div style="color: ${colors.text}; font-size: 13px; line-height: 1.8;">
+                      <div style="margin-bottom: 12px;">
+                        <span style="color: ${colors.primary};">&#9632;</span>&nbsp; Please add <strong>@h4ku.com</strong> to your email whitelist to ensure you receive my reply.
+                      </div>
+                      <div style="color: ${colors.textMuted};">
+                        <span style="color: ${colors.primary};">&#9632;</span>&nbsp; If you don't hear back within 3 business days, please check your spam folder.
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
             </td>
-          </tr>
-
-          <!-- Bottom Divider -->
-          <tr>
-            <td style="border-top: 1px solid #333; padding-top: 25px;"></td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td>
+            <td style="border-top: 2px solid ${colors.border}; padding-top: 20px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="color: #666; font-size: 11px; line-height: 1.6;">
-                    <span style="color: #e87722;">●</span> Transmitted via h4ku.com<br>
-                    <span style="color: #444;">Client: ${escapeHtml(clientIp)}</span>
+                  <td style="color: ${colors.textDim}; font-size: 12px; line-height: 1.6;">
+                    Best regards,<br>
+                    <span style="color: ${colors.primary};">HAKU</span>
                   </td>
                   <td align="right" valign="bottom">
-                    <a href="https://h4ku.com" style="color: #689696; text-decoration: none; font-size: 11px;">
-                      h4ku.com →
+                    <a href="https://h4ku.com" style="color: ${colors.primary}; text-decoration: none; font-size: 11px; letter-spacing: 1px;">
+                      h4ku.com &rarr;
                     </a>
                   </td>
                 </tr>
@@ -193,9 +223,9 @@ function createEmailHtml(
             </td>
           </tr>
 
-          <!-- Bottom Border Line -->
+          <!-- Bottom Border -->
           <tr>
-            <td style="padding-top: 30px; border-bottom: 1px solid #333;"></td>
+            <td style="padding-top: 20px; border-bottom: 2px solid ${colors.border};"></td>
           </tr>
 
         </table>
@@ -252,35 +282,58 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const referenceId = generateReferenceId();
   const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-  const html = createEmailHtml(payload, referenceId, clientIp);
+  const notificationHtml = createEmailHtml(payload, referenceId, clientIp);
+  const confirmationHtml = createConfirmationEmailHtml(payload, referenceId);
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
+    // Send notification email to admin
+    const notificationResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'HAKU <0x@h4ku.com>',
+        from: 'HAKU <contact@h4ku.com>',
         to: [env.CONTACT_TO_EMAIL],
         reply_to: payload.email,
         subject: `[H4KU.com] Contact from ${payload.name}`,
-        html: html,
+        html: notificationHtml,
       }),
     });
 
-    const result = await response.json() as Record<string, unknown>;
+    const notificationResult = await notificationResponse.json() as Record<string, unknown>;
 
-    if (!response.ok) {
-      console.error('Resend error:', response.status, JSON.stringify(result));
+    if (!notificationResponse.ok) {
+      console.error('Resend error:', notificationResponse.status, JSON.stringify(notificationResult));
       return Response.json(
         {
           success: false,
-          message: `Email service error: ${(result as { message?: string }).message || response.status}`,
+          message: `Email service error: ${(notificationResult as { message?: string }).message || notificationResponse.status}`,
         },
         { status: 500, headers: corsHeaders }
       );
+    }
+
+    // Send confirmation email to user
+    const confirmationResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'HAKU <contact@h4ku.com>',
+        to: [payload.email],
+        subject: `[H4KU.com] Message Received - ${referenceId}`,
+        html: confirmationHtml,
+      }),
+    });
+
+    if (!confirmationResponse.ok) {
+      const confirmationResult = await confirmationResponse.json();
+      console.error('Failed to send confirmation email:', JSON.stringify(confirmationResult));
+      // Don't fail the request, just log the error
     }
 
     console.log(`Contact form submitted: ${referenceId} from ${payload.email}`);
