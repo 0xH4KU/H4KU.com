@@ -71,6 +71,25 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+// Shared email styles to prevent Gmail dark mode inversion
+const emailStyles = `
+  <style>
+    /* Force dark mode and prevent Gmail inversion */
+    :root { color-scheme: light dark; supported-color-schemes: light dark; }
+    body, .body { background-color: #1a1a1a !important; }
+    /* Gmail dark mode targeting */
+    u + .body .gmail-fix { background-color: #1a1a1a !important; }
+    @media (prefers-color-scheme: dark) {
+      .body, .container, .surface { background-color: #1a1a1a !important; }
+    }
+  </style>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td { font-family: Arial, sans-serif !important; }
+  </style>
+  <![endif]-->
+`;
+
 function createEmailHtml(
   payload: ContactPayload,
   referenceId: string,
@@ -87,19 +106,150 @@ function createEmailHtml(
     hour12: false,
   });
 
-  // Brand colors matching h4ku.com
-  const colors = {
-    primary: '#c0a88d', // Chino - brand color
-    background: '#1a1a1a',
+  const c = {
+    primary: '#c0a88d',
+    bg: '#1a1a1a',
     surface: '#0f0f0f',
-    text: '#e5e2dd', // Wan White
-    textMuted: '#999',
-    textDim: '#666',
-    border: '#333',
+    text: '#e5e2dd',
+    muted: '#999999',
+    dim: '#666666',
+    border: '#333333',
   };
 
   return `
-·
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>New Message - H4KU.com</title>
+  ${emailStyles}
+</head>
+<body class="body" style="margin: 0; padding: 0; width: 100%; background-color: ${c.bg}; -webkit-text-size-adjust: none; -ms-text-size-adjust: none;">
+  <!-- Gmail dark mode fix wrapper -->
+  <div class="gmail-fix" style="display: none; font-size: 1px; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; background-color: ${c.bg};">
+    New message from ${escapeHtml(payload.name)} via h4ku.com
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body" style="background-color: ${c.bg};" bgcolor="${c.bg}">
+    <tr>
+      <td align="center" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="container" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
+
+          <!-- Header -->
+          <tr>
+            <td style="border-top: 2px solid ${c.border}; padding: 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: bold; background-color: ${c.bg};" bgcolor="${c.bg}">
+                    H4KU.COM
+                  </td>
+                  <td align="right" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 11px; letter-spacing: 1px; background-color: ${c.bg};" bgcolor="${c.bg}">
+                    ${dateStr} | ${timeStr}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Title Block -->
+          <tr>
+            <td style="padding: 0 0 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="surface" style="background-color: ${c.surface}; border: 2px solid ${c.border};" bgcolor="${c.surface}">
+                <tr>
+                  <td style="padding: 20px 24px; background-color: ${c.surface};" bgcolor="${c.surface}">
+                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 18px; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 8px;">
+                      NEW MESSAGE
+                    </div>
+                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 11px; letter-spacing: 1px;">
+                      REF: ${escapeHtml(referenceId)}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Sender Info -->
+          <tr>
+            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 10px; background-color: ${c.bg};" bgcolor="${c.bg}">
+                    From
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: ${c.bg};" bgcolor="${c.bg}">
+                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 15px; padding-bottom: 4px;">
+                      ${escapeHtml(payload.name)}
+                    </div>
+                    <div>
+                      <a href="mailto:${escapeHtml(payload.email)}" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; text-decoration: none; font-size: 13px; border-bottom: 1px solid ${c.primary};">
+                        ${escapeHtml(payload.email)}
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Message Content -->
+          <tr>
+            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 12px; background-color: ${c.bg};" bgcolor="${c.bg}">
+                    Message
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: ${c.bg};" bgcolor="${c.bg}">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="surface" style="background-color: ${c.surface}; border-left: 2px solid ${c.primary};" bgcolor="${c.surface}">
+                      <tr>
+                        <td style="padding: 20px; font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 14px; line-height: 1.8; white-space: pre-wrap; background-color: ${c.surface};" bgcolor="${c.surface}">${escapeHtml(payload.message)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="border-top: 2px solid ${c.border}; padding-top: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 10px; letter-spacing: 1px; line-height: 1.8; background-color: ${c.bg};" bgcolor="${c.bg}">
+                    <span style="color: ${c.primary};">&#9632;</span> VIA H4KU.COM<br>
+                    <span style="color: ${c.dim};">CLIENT: ${escapeHtml(clientIp)}</span>
+                  </td>
+                  <td align="right" valign="bottom" style="background-color: ${c.bg};" bgcolor="${c.bg}">
+                    <a href="https://h4ku.com" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; text-decoration: none; font-size: 11px; letter-spacing: 1px;">
+                      h4ku.com &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Bottom Border -->
+          <tr>
+            <td style="padding-top: 20px; border-bottom: 2px solid ${c.border}; background-color: ${c.bg};" bgcolor="${c.bg}"></td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 `.trim();
 }
 
@@ -107,39 +257,45 @@ function createConfirmationEmailHtml(
   payload: ContactPayload,
   referenceId: string
 ): string {
-  const colors = {
+  const c = {
     primary: '#c0a88d',
-    background: '#1a1a1a',
+    bg: '#1a1a1a',
     surface: '#0f0f0f',
     text: '#e5e2dd',
-    textMuted: '#999',
-    textDim: '#666',
-    border: '#333',
+    muted: '#999999',
+    dim: '#666666',
+    border: '#333333',
   };
 
   return `
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
-  <meta name="supported-color-schemes" content="dark">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Message Received - H4KU.com</title>
+  ${emailStyles}
 </head>
-<body style="margin: 0; padding: 0; background-color: ${colors.background}; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;">
-  <div style="display: none; max-height: 0; overflow: hidden;">Your message has been received - h4ku.com</div>
+<body class="body" style="margin: 0; padding: 0; width: 100%; background-color: ${c.bg}; -webkit-text-size-adjust: none; -ms-text-size-adjust: none;">
+  <!-- Gmail dark mode fix wrapper -->
+  <div class="gmail-fix" style="display: none; font-size: 1px; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; background-color: ${c.bg};">
+    Your message has been received - h4ku.com
+  </div>
 
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.background}; padding: 32px 16px;" bgcolor="${colors.background}">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body" style="background-color: ${c.bg};" bgcolor="${c.bg}">
     <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; width: 100%;">
+      <td align="center" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="container" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
 
           <!-- Header -->
           <tr>
-            <td style="border-top: 2px solid ${colors.border}; padding: 24px 0;">
-              <table width="100%" cellpadding="0" cellspacing="0">
+            <td style="border-top: 2px solid ${c.border}; padding: 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="color: ${colors.primary}; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: bold;">
+                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: bold; background-color: ${c.bg};" bgcolor="${c.bg}">
                     H4KU.COM
                   </td>
                 </tr>
@@ -149,8 +305,8 @@ function createConfirmationEmailHtml(
 
           <!-- Greeting -->
           <tr>
-            <td style="padding-bottom: 24px;">
-              <div style="color: ${colors.text}; font-size: 15px; line-height: 1.6;">
+            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 15px; line-height: 1.6;">
                 Hi ${escapeHtml(payload.name)},
               </div>
             </td>
@@ -158,18 +314,18 @@ function createConfirmationEmailHtml(
 
           <!-- Main Content -->
           <tr>
-            <td style="padding-bottom: 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.surface}; border: 2px solid ${colors.border};" bgcolor="${colors.surface}">
+            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="surface" style="background-color: ${c.surface}; border: 2px solid ${c.border};" bgcolor="${c.surface}">
                 <tr>
-                  <td style="padding: 24px;">
-                    <div style="color: ${colors.text}; font-size: 14px; line-height: 1.8;">
+                  <td style="padding: 24px; background-color: ${c.surface};" bgcolor="${c.surface}">
+                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 14px; line-height: 1.8;">
                       <div style="margin-bottom: 16px;">
-                        <span style="color: ${colors.primary};">&#10003;</span>&nbsp; Your message has been received.
+                        <span style="color: ${c.primary};">&#10003;</span>&nbsp; Your message has been received.
                       </div>
                       <div style="margin-bottom: 16px;">
-                        I will get back to you within <strong style="color: ${colors.primary};">3 business days</strong>.
+                        I will get back to you within <strong style="color: ${c.primary};">3 business days</strong>.
                       </div>
-                      <div style="color: ${colors.textMuted}; font-size: 12px; border-left: 2px solid ${colors.border}; padding-left: 12px;">
+                      <div style="color: ${c.muted}; font-size: 12px; border-left: 2px solid ${c.border}; padding-left: 12px;">
                         REF: ${escapeHtml(referenceId)}
                       </div>
                     </div>
@@ -181,21 +337,21 @@ function createConfirmationEmailHtml(
 
           <!-- Important Notice -->
           <tr>
-            <td style="padding-bottom: 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
+            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="color: ${colors.textMuted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 12px;">
+                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 12px; background-color: ${c.bg};" bgcolor="${c.bg}">
                     Important
                   </td>
                 </tr>
                 <tr>
-                  <td style="background-color: ${colors.surface}; border-left: 2px solid ${colors.primary}; padding: 16px 20px;" bgcolor="${colors.surface}">
-                    <div style="color: ${colors.text}; font-size: 13px; line-height: 1.8;">
+                  <td style="background-color: ${c.surface}; border-left: 2px solid ${c.primary}; padding: 16px 20px;" bgcolor="${c.surface}">
+                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 13px; line-height: 1.8;">
                       <div style="margin-bottom: 12px;">
-                        <span style="color: ${colors.primary};">&#9632;</span>&nbsp; Please add <strong>@h4ku.com</strong> to your email whitelist to ensure you receive my reply.
+                        <span style="color: ${c.primary};">&#9632;</span>&nbsp; Please add <strong>@h4ku.com</strong> to your email whitelist to ensure you receive my reply.
                       </div>
-                      <div style="color: ${colors.textMuted};">
-                        <span style="color: ${colors.primary};">&#9632;</span>&nbsp; If you don't hear back within 3 business days, please check your spam folder.
+                      <div style="color: ${c.muted};">
+                        <span style="color: ${c.primary};">&#9632;</span>&nbsp; If you don't hear back within 3 business days, please check your spam folder.
                       </div>
                     </div>
                   </td>
@@ -206,15 +362,15 @@ function createConfirmationEmailHtml(
 
           <!-- Footer -->
           <tr>
-            <td style="border-top: 2px solid ${colors.border}; padding-top: 20px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
+            <td style="border-top: 2px solid ${c.border}; padding-top: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="color: ${colors.textDim}; font-size: 12px; line-height: 1.6;">
+                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 12px; line-height: 1.6; background-color: ${c.bg};" bgcolor="${c.bg}">
                     Best regards,<br>
-                    <span style="color: ${colors.primary};">HAKU</span>
+                    <span style="color: ${c.primary};">HAKU</span>
                   </td>
-                  <td align="right" valign="bottom">
-                    <a href="https://h4ku.com" style="color: ${colors.primary}; text-decoration: none; font-size: 11px; letter-spacing: 1px;">
+                  <td align="right" valign="bottom" style="background-color: ${c.bg};" bgcolor="${c.bg}">
+                    <a href="https://h4ku.com" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; text-decoration: none; font-size: 11px; letter-spacing: 1px;">
                       h4ku.com &rarr;
                     </a>
                   </td>
@@ -225,7 +381,7 @@ function createConfirmationEmailHtml(
 
           <!-- Bottom Border -->
           <tr>
-            <td style="padding-top: 20px; border-bottom: 2px solid ${colors.border};"></td>
+            <td style="padding-top: 20px; border-bottom: 2px solid ${c.border}; background-color: ${c.bg};" bgcolor="${c.bg}"></td>
           </tr>
 
         </table>
