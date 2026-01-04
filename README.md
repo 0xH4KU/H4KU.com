@@ -297,7 +297,7 @@ See [LICENSE.md](./LICENSE.md) for full terms.
 
 For questions, collaboration, or licensing inquiries:
 
-- **Email:** 0x@H4KU.com
+- **Email:** contact@H4KU.com
 - **Website:** https://H4KU.com
 
 ### Cloudflare Email Worker setup (recommended)

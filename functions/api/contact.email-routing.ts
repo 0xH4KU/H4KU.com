@@ -10,10 +10,10 @@
  * 4. Add the send_email binding in Pages Functions settings
  *
  * Required bindings (configure in Cloudflare Dashboard → Pages → Settings → Functions):
- * - send_email: Email Workers binding (type: "send_email", destination_address: "0x@H4KU.com")
+ * - send_email: Email Workers binding (type: "send_email", destination_address: "contact@H4KU.com")
  *
  * Required environment variables:
- * - CONTACT_TO_EMAIL: Recipient email address (e.g., 0x@H4KU.com)
+ * - CONTACT_TO_EMAIL: Recipient email address (e.g., contact@H4KU.com)
  * - CONTACT_FROM_EMAIL: Sender email address (must be configured in Email Routing)
  */
 

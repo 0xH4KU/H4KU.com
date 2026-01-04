@@ -267,7 +267,7 @@ describe('ErrorBoundary', () => {
       );
 
       const emailLink = screen.getByRole('link', { name: /Email support/i });
-      expect(emailLink).toHaveAttribute('href', 'mailto:0x@H4KU.com');
+      expect(emailLink).toHaveAttribute('href', 'mailto:contact@H4KU.com');
     });
   });
 

@@ -223,6 +223,16 @@
   text-decoration: underline;
 }
 
+.text-unavailable {
+  color: #e05050;
+  font-weight: 600;
+}
+
+.text-available {
+  color: #50b050;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .file-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));

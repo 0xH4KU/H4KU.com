@@ -24,6 +24,29 @@ interface TextViewProps {
   onClose: () => void;
 }
 
+function renderContent(content: string): React.ReactNode {
+  // Match both "Not available for commissions" (red) and "Available for commissions" (green)
+  const parts = content.split(/((?:Not )?[Aa]vailable for commissions)/g);
+  return parts.map((part, index) => {
+    const lowerPart = part.toLowerCase();
+    if (lowerPart === 'not available for commissions') {
+      return (
+        <span key={index} className={styles['text-unavailable']}>
+          {part}
+        </span>
+      );
+    }
+    if (lowerPart === 'available for commissions') {
+      return (
+        <span key={index} className={styles['text-available']}>
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
 export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
   const { theme } = useTheme();
   const prefersReducedMotion = useReducedMotion();
@@ -55,8 +78,8 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
         >
           Try again
         </button>
-        <a className={styles['contact-error-link']} href="mailto:0x@H4KU.com">
-          Email 0x@H4KU.com
+        <a className={styles['contact-error-link']} href="mailto:contact@H4KU.com">
+          Email contact@H4KU.com
         </a>
       </div>
     </div>
@@ -104,7 +127,7 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
             ease: DEFAULT_EASE,
           }}
         >
-          <pre>{page.content}</pre>
+          <pre>{renderContent(page.content)}</pre>
           {page.id === 'contact' && (
             <ErrorBoundary key={contactRetryKey} fallback={contactFormFallback}>
               <Suspense

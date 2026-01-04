@@ -21,7 +21,7 @@ Handles contact form submissions and sends email notifications.
 
 3. **Set environment variables** in Cloudflare Dashboard:
    ```
-   CONTACT_TO_EMAIL=0x@H4KU.com
+   CONTACT_TO_EMAIL=contact@H4KU.com
    CONTACT_FROM_EMAIL=noreply@h4ku.com
    ```
 

@@ -6,6 +6,7 @@ interface TooltipProps {
   children: React.ReactElement;
   delay?: number;
   position?: 'top' | 'bottom' | 'auto';
+  clickable?: boolean;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({
@@ -13,6 +14,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   children,
   delay = 0,
   position: positionProp = 'auto',
+  clickable = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -20,30 +22,34 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const timeoutRef = useRef<number | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
+  const showTooltip = (target: HTMLElement) => {
+    const rect = target.getBoundingClientRect();
+
+    // Determine placement based on available space
+    let finalPlacement: 'top' | 'bottom' = 'top';
+
+    if (positionProp === 'auto') {
+      const spaceAbove = rect.top;
+      // If less than 60px space above, show below
+      finalPlacement = spaceAbove < 60 ? 'bottom' : 'top';
+    } else {
+      finalPlacement = positionProp;
+    }
+
+    setPlacement(finalPlacement);
+    setPosition({
+      x: rect.left + rect.width / 2,
+      y: finalPlacement === 'bottom' ? rect.bottom + 8 : rect.top - 8,
+    });
+    setIsVisible(true);
+  };
+
   const handleMouseEnter = (event: React.MouseEvent) => {
     const target = event.currentTarget as HTMLElement;
     triggerRef.current = target;
 
     timeoutRef.current = window.setTimeout(() => {
-      const rect = target.getBoundingClientRect();
-
-      // Determine placement based on available space
-      let finalPlacement: 'top' | 'bottom' = 'top';
-
-      if (positionProp === 'auto') {
-        const spaceAbove = rect.top;
-        // If less than 60px space above, show below
-        finalPlacement = spaceAbove < 60 ? 'bottom' : 'top';
-      } else {
-        finalPlacement = positionProp;
-      }
-
-      setPlacement(finalPlacement);
-      setPosition({
-        x: rect.left + rect.width / 2,
-        y: finalPlacement === 'bottom' ? rect.bottom + 8 : rect.top - 8,
-      });
-      setIsVisible(true);
+      showTooltip(target);
     }, delay);
   };
 
@@ -53,6 +59,33 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }
     setIsVisible(false);
   };
+
+  const handleClick = (event: React.MouseEvent) => {
+    if (!clickable) return;
+
+    const target = event.currentTarget as HTMLElement;
+    triggerRef.current = target;
+
+    if (isVisible) {
+      setIsVisible(false);
+    } else {
+      showTooltip(target);
+    }
+  };
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    if (!clickable || !isVisible) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+        setIsVisible(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [clickable, isVisible]);
 
   useEffect(() => {
     return () => {
@@ -65,6 +98,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const childProps = children.props as {
     onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
+    onClick?: (event: React.MouseEvent<HTMLElement>) => void;
   };
 
   return (
@@ -79,6 +113,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
         onMouseLeave: (event: React.MouseEvent<HTMLElement>) => {
           childProps.onMouseLeave?.(event);
           handleMouseLeave();
+        },
+        onClick: (event: React.MouseEvent<HTMLElement>) => {
+          childProps.onClick?.(event);
+          handleClick(event);
         },
       } as Partial<typeof children.props>)}
       {isVisible && (

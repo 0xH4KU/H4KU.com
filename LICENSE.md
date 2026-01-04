@@ -53,7 +53,7 @@ Some works may be marked with "All Rights Reserved" or similar restrictions. The
 
 ### 2.5 Commercial & Printing Inquiries
 
-Contact **0x@H4KU.com** before any printing or commercial use.
+Contact **contact@H4KU.com** before any printing or commercial use.
 
 ---
 
@@ -125,7 +125,7 @@ THE WORK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. T
 
 For permissions, licensing inquiries, or to report violations:
 
-- **Email:** 0x@H4KU.com
+- **Email:** contact@H4KU.com
 - **Website:** https://H4KU.com
 - **Social:** @0xH4KU
 

@@ -5,11 +5,25 @@ import { mockData, dataIntegrity } from '@/data/mockData';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
 
+// Check commission status from About page content
+function getCommissionStatus(): { available: boolean; text: string } {
+  const aboutPage = mockData.pages.find(p => p.id === 'about');
+  const content = aboutPage?.content?.toLowerCase() ?? '';
+  if (content.includes('not available for commissions')) {
+    return { available: false, text: 'Not accepting commissions' };
+  }
+  if (content.includes('available for commissions')) {
+    return { available: true, text: 'Open for commissions' };
+  }
+  return { available: false, text: 'Commission status unknown' };
+}
+
 const StatusBar: React.FC = () => {
   const { currentView, navigateTo } = useNavigation();
   const { sortOrder, toggleSortOrder, typeOrder, toggleTypeOrder } =
     useSortOrder();
   const { socials } = mockData;
+  const commissionStatus = useMemo(() => getCommissionStatus(), []);
 
   const itemCount = useMemo(() => {
     if (!currentView) {
@@ -49,47 +63,39 @@ const StatusBar: React.FC = () => {
     [navigateTo]
   );
 
-  const socialLinks = useMemo(() => {
-    // Only show these socials in the status bar (to save space)
-    const visibleSocials = ['EM', 'BS', 'TW'];
-    return socials
-      .filter(social => visibleSocials.includes(social.code))
-      .map(social => {
-        const safeUrl = getSafeUrl(social.url);
+  // Get individual social links in order: EM, BS, TW
+  const getSocialLink = useCallback(
+    (code: string) => {
+      const social = socials.find(s => s.code === code);
+      if (!social) return null;
 
-        if (!safeUrl) {
-          return (
-            <span
-              key={social.code}
-              className={styles['status-social-disabled']}
-              aria-disabled="true"
-            >
-              [{social.code}]
-            </span>
-          );
-        }
-
-        const ariaLabelParts = [`[${social.code}], Open ${social.name}`];
-        if (safeUrl.isMailto) {
-          ariaLabelParts.push('(opens email client)');
-        }
-        if (safeUrl.isExternal) {
-          ariaLabelParts.push('(opens in new tab)');
-        }
-
+      const safeUrl = getSafeUrl(social.url);
+      if (!safeUrl) {
         return (
-          <a
-            key={social.code}
-            href={safeUrl.href}
-            target={safeUrl.isExternal ? '_blank' : undefined}
-            rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
-            aria-label={ariaLabelParts.join(' ')}
-          >
+          <span className={styles['status-social-disabled']} aria-disabled="true">
             [{social.code}]
-          </a>
+          </span>
         );
-      });
-  }, [socials]);
+      }
+
+      const ariaLabelParts = [`[${social.code}], Open ${social.name}`];
+      if (safeUrl.isMailto) ariaLabelParts.push('(opens email client)');
+      if (safeUrl.isExternal) ariaLabelParts.push('(opens in new tab)');
+
+      return (
+        <a
+          href={safeUrl.href}
+          target={safeUrl.isExternal ? '_blank' : undefined}
+          rel={safeUrl.isExternal ? 'noopener noreferrer' : undefined}
+          aria-label={ariaLabelParts.join(' ')}
+          className={styles['social-link']}
+        >
+          [{social.code}]
+        </a>
+      );
+    },
+    [socials]
+  );
 
   const integrityAlgorithmLabel =
     dataIntegrity.algorithm === 'sha256' ? 'SHA-256' : 'FNV-1a';
@@ -100,24 +106,42 @@ const StatusBar: React.FC = () => {
         dataIntegrity.expected ?? 'unknown'
       }, actual ${dataIntegrity.actual})`;
 
-  const mismatchSummary = !dataIntegrity.isValid
-    ? `FNV-1a expected ${dataIntegrity.details.fnv1a.expected ?? 'missing'} vs ${
-        dataIntegrity.details.fnv1a.actual
-      } | SHA-256 expected ${
-        dataIntegrity.details.sha256.expected ?? 'missing'
-      } vs ${dataIntegrity.details.sha256.actual}`
-    : '';
-
   return (
     <div className={styles['status-bar']}>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--socials']}`}
-      >
-        <div className={styles['status-socials']}>{socialLinks}</div>
+      {/* Commission Status - Priority 1 */}
+      <div className={`${styles['status-section']} ${styles['status-section--commission']}`}>
+        <span
+          className={`${styles['commission-status']} ${
+            commissionStatus.available
+              ? styles['commission-status--open']
+              : styles['commission-status--closed']
+          }`}
+          role="status"
+        >
+          <span className={styles['commission-dot']} aria-hidden="true" />
+          <span className={styles['commission-label']}>
+            {commissionStatus.available ? 'OPEN' : 'CLOSED'}
+          </span>
+        </span>
       </div>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--sort']}`}
-      >
+
+      {/* Social: EM - Priority 4 */}
+      <div className={`${styles['status-section']} ${styles['status-section--social-em']}`}>
+        {getSocialLink('EM')}
+      </div>
+
+      {/* Social: BS - Priority 5 */}
+      <div className={`${styles['status-section']} ${styles['status-section--social-bs']}`}>
+        {getSocialLink('BS')}
+      </div>
+
+      {/* Social: TW - Priority 6 */}
+      <div className={`${styles['status-section']} ${styles['status-section--social-tw']}`}>
+        {getSocialLink('TW')}
+      </div>
+
+      {/* Sort Order - Priority 7 */}
+      <div className={`${styles['status-section']} ${styles['status-section--sort']}`}>
         <button
           onClick={handleToggleSortOrder}
           className={styles['sort-button']}
@@ -132,12 +156,12 @@ const StatusBar: React.FC = () => {
               : 'Reversed sort: text Z-A, numbers 0-9'
           }
         >
-          [{sortOrder === 'desc' ? 'A-Z|9-0' : 'Z-A|0-9'}]
+          {sortOrder === 'desc' ? 'A-Z|9-0' : 'Z-A|0-9'}
         </button>
       </div>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--type']}`}
-      >
+
+      {/* Type Order - Priority 7 */}
+      <div className={`${styles['status-section']} ${styles['status-section--type']}`}>
         <button
           onClick={handleToggleTypeOrder}
           className={styles['sort-button']}
@@ -152,24 +176,22 @@ const StatusBar: React.FC = () => {
               : 'Type order: Image > Page > Folder'
           }
         >
-          [{typeOrder === 'folders-first' ? 'F>P>Img' : 'Img>P>F'}]
+          {typeOrder === 'folders-first' ? 'F>P>Img' : 'Img>P>F'}
         </button>
       </div>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--count']}`}
-      >
+
+      {/* Item Count - Priority 8 */}
+      <div className={`${styles['status-section']} ${styles['status-section--count']}`}>
         <span>{itemCount} items</span>
       </div>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--hint']}`}
-      >
-        <span className={styles['status-hint']}>
-          Press ESC to toggle crosshair
-        </span>
+
+      {/* Hint - Priority 9 (hide first) */}
+      <div className={`${styles['status-section']} ${styles['status-section--hint']}`}>
+        <span className={styles['status-hint']}>Press ESC to toggle crosshair</span>
       </div>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--integrity']}`}
-      >
+
+      {/* Integrity - Priority 2 */}
+      <div className={`${styles['status-section']} ${styles['status-section--integrity']}`}>
         <span
           className={`${styles['integrity-indicator']} ${
             dataIntegrity.isValid
@@ -180,18 +202,12 @@ const StatusBar: React.FC = () => {
           aria-live={dataIntegrity.isValid ? 'polite' : 'assertive'}
           title={integrityTitle}
         >
-          [{dataIntegrity.isValid ? 'verified' : 'tamper detected'}]
+          {dataIntegrity.isValid ? 'VERIFIED' : 'TAMPERED'}
         </span>
-        {!dataIntegrity.isValid && (
-          <span className={styles['integrity-warning']} role="alert">
-            Integrity mismatch detected. {mismatchSummary} Run{' '}
-            <code>npm run integrity:check</code> to verify.
-          </span>
-        )}
       </div>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--license']}`}
-      >
+
+      {/* License - Priority 3 */}
+      <div className={`${styles['status-section']} ${styles['status-section--license']}`}>
         <a
           href="/page/license"
           onClick={handleLicenseClick}
@@ -199,16 +215,13 @@ const StatusBar: React.FC = () => {
           aria-label="View license information (HPSL-1.0)"
           title="HAKU Personal Source License - Click to view terms"
         >
-          [HPSL-1.0]
+          HPSL-1.0
         </a>
       </div>
-      <div
-        className={`${styles['status-section']} ${styles['status-section--meta']}`}
-      >
-        <span
-          className={styles['status-right']}
-          aria-label={`© ${currentYear} H4KU.com`}
-        >
+
+      {/* Meta - Priority 1 */}
+      <div className={`${styles['status-section']} ${styles['status-section--meta']}`}>
+        <span className={styles['status-right']} aria-label={`© ${currentYear} H4KU.com`}>
           <span className={styles['copyright-symbol']}>©</span>
           <span>{currentYear} H4KU.com</span>
         </span>

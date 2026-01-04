@@ -110,7 +110,7 @@ export const displayConsoleCopyright = (): void => {
 
   // Contact info
   secureLog('%c📧 CONTACT:', styles.warning);
-  secureLog('%c   Email: 0x@H4KU.com', styles.info);
+  secureLog('%c   Email: contact@H4KU.com', styles.info);
   secureLog('%c   License: https://H4KU.com/page/license', styles.license);
 
   secureLog('');

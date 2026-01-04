@@ -165,7 +165,7 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             {this.state.copyStatus === 'error' && (
               <p className={styles['error-copy-status']} role="alert">
-                Unable to copy crash report. Please email 0x@H4KU.com manually.
+                Unable to copy crash report. Please email contact@H4KU.com manually.
               </p>
             )}
             <div className={styles['error-instructions']}>
@@ -181,10 +181,10 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className={styles.helpText}>
                 Still stuck? Email{' '}
                 <a
-                  href="mailto:0x@H4KU.com"
-                  aria-label="Email support at 0x@H4KU.com"
+                  href="mailto:contact@H4KU.com"
+                  aria-label="Email support at contact@H4KU.com"
                 >
-                  0x@H4KU.com
+                  contact@H4KU.com
                 </a>{' '}
                 for help.
               </p>
