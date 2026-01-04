@@ -139,6 +139,15 @@ function createEmailHtml(
       <td align="center" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="container" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
 
+          <!-- Display Issue Notice -->
+          <tr>
+            <td align="center" style="padding-bottom: 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <span style="font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 10px; color: ${c.dim}; letter-spacing: 0.5px;">
+                Email not displaying correctly? Try disabling dark mode.
+              </span>
+            </td>
+          </tr>
+
           <!-- Header -->
           <tr>
             <td style="border-top: 2px solid ${c.border}; padding: 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
@@ -289,6 +298,15 @@ function createConfirmationEmailHtml(
     <tr>
       <td align="center" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="container" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
+
+          <!-- Display Issue Notice -->
+          <tr>
+            <td align="center" style="padding-bottom: 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <span style="font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 10px; color: ${c.dim}; letter-spacing: 0.5px;">
+                Email not displaying correctly? Try disabling dark mode.
+              </span>
+            </td>
+          </tr>
 
           <!-- Header -->
           <tr>
