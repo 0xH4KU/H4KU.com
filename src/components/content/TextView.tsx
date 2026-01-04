@@ -78,7 +78,10 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
         >
           Try again
         </button>
-        <a className={styles['contact-error-link']} href="mailto:contact@H4KU.com">
+        <a
+          className={styles['contact-error-link']}
+          href="mailto:contact@H4KU.com"
+        >
           Email contact@H4KU.com
         </a>
       </div>

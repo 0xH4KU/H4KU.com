@@ -72,7 +72,10 @@ const StatusBar: React.FC = () => {
       const safeUrl = getSafeUrl(social.url);
       if (!safeUrl) {
         return (
-          <span className={styles['status-social-disabled']} aria-disabled="true">
+          <span
+            className={styles['status-social-disabled']}
+            aria-disabled="true"
+          >
             [{social.code}]
           </span>
         );
@@ -106,10 +109,28 @@ const StatusBar: React.FC = () => {
         dataIntegrity.expected ?? 'unknown'
       }, actual ${dataIntegrity.actual})`;
 
+  const integrityLabel = dataIntegrity.isValid
+    ? '[verified]'
+    : '[tamper detected]';
+
+  const mismatchSummary = !dataIntegrity.isValid
+    ? dataIntegrity.details
+      ? `FNV-1a expected ${
+          dataIntegrity.details.fnv1a.expected ?? 'missing'
+        } vs ${dataIntegrity.details.fnv1a.actual} | SHA-256 expected ${
+          dataIntegrity.details.sha256.expected ?? 'missing'
+        } vs ${dataIntegrity.details.sha256.actual}`
+      : `Expected ${dataIntegrity.expected ?? 'missing'} vs ${
+          dataIntegrity.actual
+        }`
+    : '';
+
   return (
     <div className={styles['status-bar']}>
       {/* Commission Status - Priority 1 */}
-      <div className={`${styles['status-section']} ${styles['status-section--commission']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--commission']}`}
+      >
         <span
           className={`${styles['commission-status']} ${
             commissionStatus.available
@@ -126,22 +147,30 @@ const StatusBar: React.FC = () => {
       </div>
 
       {/* Social: EM - Priority 4 */}
-      <div className={`${styles['status-section']} ${styles['status-section--social-em']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--social-em']}`}
+      >
         {getSocialLink('EM')}
       </div>
 
       {/* Social: BS - Priority 5 */}
-      <div className={`${styles['status-section']} ${styles['status-section--social-bs']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--social-bs']}`}
+      >
         {getSocialLink('BS')}
       </div>
 
       {/* Social: TW - Priority 6 */}
-      <div className={`${styles['status-section']} ${styles['status-section--social-tw']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--social-tw']}`}
+      >
         {getSocialLink('TW')}
       </div>
 
       {/* Sort Order - Priority 7 */}
-      <div className={`${styles['status-section']} ${styles['status-section--sort']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--sort']}`}
+      >
         <button
           onClick={handleToggleSortOrder}
           className={styles['sort-button']}
@@ -161,7 +190,9 @@ const StatusBar: React.FC = () => {
       </div>
 
       {/* Type Order - Priority 7 */}
-      <div className={`${styles['status-section']} ${styles['status-section--type']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--type']}`}
+      >
         <button
           onClick={handleToggleTypeOrder}
           className={styles['sort-button']}
@@ -181,17 +212,25 @@ const StatusBar: React.FC = () => {
       </div>
 
       {/* Item Count - Priority 8 */}
-      <div className={`${styles['status-section']} ${styles['status-section--count']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--count']}`}
+      >
         <span>{itemCount} items</span>
       </div>
 
       {/* Hint - Priority 9 (hide first) */}
-      <div className={`${styles['status-section']} ${styles['status-section--hint']}`}>
-        <span className={styles['status-hint']}>Press ESC to toggle crosshair</span>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--hint']}`}
+      >
+        <span className={styles['status-hint']}>
+          Press ESC to toggle crosshair
+        </span>
       </div>
 
       {/* Integrity - Priority 2 */}
-      <div className={`${styles['status-section']} ${styles['status-section--integrity']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--integrity']}`}
+      >
         <span
           className={`${styles['integrity-indicator']} ${
             dataIntegrity.isValid
@@ -202,12 +241,20 @@ const StatusBar: React.FC = () => {
           aria-live={dataIntegrity.isValid ? 'polite' : 'assertive'}
           title={integrityTitle}
         >
-          {dataIntegrity.isValid ? 'VERIFIED' : 'TAMPERED'}
+          {integrityLabel}
         </span>
+        {!dataIntegrity.isValid && (
+          <span className={styles['integrity-warning']} role="alert">
+            Integrity mismatch detected. {mismatchSummary} Run{' '}
+            <code>npm run integrity:check</code> to verify.
+          </span>
+        )}
       </div>
 
       {/* License - Priority 3 */}
-      <div className={`${styles['status-section']} ${styles['status-section--license']}`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--license']}`}
+      >
         <a
           href="/page/license"
           onClick={handleLicenseClick}
@@ -220,8 +267,13 @@ const StatusBar: React.FC = () => {
       </div>
 
       {/* Meta - Priority 1 */}
-      <div className={`${styles['status-section']} ${styles['status-section--meta']}`}>
-        <span className={styles['status-right']} aria-label={`© ${currentYear} H4KU.com`}>
+      <div
+        className={`${styles['status-section']} ${styles['status-section--meta']}`}
+      >
+        <span
+          className={styles['status-right']}
+          aria-label={`© ${currentYear} H4KU.com`}
+        >
           <span className={styles['copyright-symbol']}>©</span>
           <span>{currentYear} H4KU.com</span>
         </span>

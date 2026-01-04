@@ -32,7 +32,7 @@ const applyBasePath = (pathname: string, basePath: string) => {
   return `${basePath}${pathname}`;
 };
 
-const getCurrentPath = () => {
+export const getCurrentPath = () => {
   /* c8 ignore next */
   if (typeof window === 'undefined' || !window.location) {
     return DEFAULT_PATH;

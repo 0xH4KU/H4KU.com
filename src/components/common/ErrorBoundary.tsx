@@ -165,7 +165,8 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             {this.state.copyStatus === 'error' && (
               <p className={styles['error-copy-status']} role="alert">
-                Unable to copy crash report. Please email contact@H4KU.com manually.
+                Unable to copy crash report. Please email contact@H4KU.com
+                manually.
               </p>
             )}
             <div className={styles['error-instructions']}>

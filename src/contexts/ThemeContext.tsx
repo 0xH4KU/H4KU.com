@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useLayoutEffect,
   useRef,
   ReactNode,
 } from 'react';
@@ -20,12 +21,47 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
+const resolveThemeColor = (mode: Theme) => {
+  const fallback =
+    mode === 'light' ? THEME_COLORS.LIGHT.SURFACE : THEME_COLORS.DARK.SURFACE;
+
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return fallback;
+  }
+
+  // Use current computed value; if unavailable, fall back to palette constant
+  const rootStyles = window.getComputedStyle(document.documentElement);
+  const chromeColor = rootStyles.getPropertyValue('--color-chrome').trim();
+  return chromeColor || fallback;
+};
+
+const getInitialSystemTheme = (): Theme => {
+  if (typeof document !== 'undefined') {
+    const preHydrated = document.documentElement.getAttribute('data-theme');
+    if (preHydrated === 'light' || preHydrated === 'dark') {
+      return preHydrated;
+    }
+  }
+
+  try {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    }
+  } catch {
+    /* ignore matchMedia issues */
+  }
+
+  return 'light';
+};
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [storedTheme, setStoredTheme] = useLocalStorage<Theme | null>(
     STORAGE_KEYS.THEME,
     null
   );
-  const [systemTheme, setSystemTheme] = useState<Theme>('light');
+  const [systemTheme, setSystemTheme] = useState<Theme>(getInitialSystemTheme);
 
   // Detect system theme preference
   useEffect(() => {
@@ -83,7 +119,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   // Apply theme to document and update meta tags
-  useEffect(() => {
+  useLayoutEffect(() => {
     /* c8 ignore next */
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
@@ -94,17 +130,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.colorScheme = theme;
     document.body?.setAttribute('data-theme', theme);
 
-    const fallback =
+    const activeColor = resolveThemeColor(theme);
+    const inactiveColor =
       theme === 'light'
-        ? THEME_COLORS.LIGHT.SURFACE
-        : THEME_COLORS.DARK.SURFACE;
+        ? THEME_COLORS.DARK.SURFACE
+        : THEME_COLORS.LIGHT.SURFACE;
 
-    const rootStyles = window.getComputedStyle(document.documentElement);
-    const chromeColor = rootStyles.getPropertyValue('--color-chrome').trim();
-    const color = chromeColor || fallback;
+    // Ensure both theme-color metas exist so the browser has hints for either scheme
+    const activeMeta = ensureThemeMeta(theme);
+    activeMeta.setAttribute('content', activeColor);
 
-    const meta = ensureThemeMeta(theme);
-    meta.setAttribute('content', color);
+    const fallbackMeta = ensureThemeMeta(theme === 'light' ? 'dark' : 'light');
+    fallbackMeta.setAttribute('content', inactiveColor);
   }, [theme]);
 
   const toggleTheme = () => {

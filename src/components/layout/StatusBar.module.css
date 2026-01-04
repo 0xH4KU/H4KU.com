@@ -149,6 +149,18 @@
   color: #e05050;
 }
 
+.integrity-warning {
+  font-size: var(--font-size-xxs);
+  color: #e05050;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+
+.integrity-warning code {
+  font-family: var(--font-primary);
+  padding: 0 4px;
+}
+
 /* License */
 .license-link {
   font-size: var(--font-size-xxs);

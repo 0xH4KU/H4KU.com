@@ -18,7 +18,79 @@ import {
   buildNavigationMap,
   type NavigationMap,
 } from '@/utils/navigation';
-import { useHistoryNavigation } from '@/hooks/useHistoryNavigation';
+import {
+  useHistoryNavigation,
+  getCurrentPath,
+} from '@/hooks/useHistoryNavigation';
+
+// Build navigation map once at module level for initial state parsing
+const initialNavMap = buildNavigationMap(mockData.folders);
+
+const getRouteSegments = (targetPath: string) => {
+  const normalized = targetPath && targetPath !== '' ? targetPath : '/';
+  const segments = normalized.split('/').filter(Boolean);
+  if (segments.length === 0) {
+    return segments;
+  }
+  // Drop any leading prefix (e.g., BASE_URL) before the app route segments
+  const firstRouteIndex = segments.findIndex(
+    segment => segment === 'page' || segment === 'folder'
+  );
+  return firstRouteIndex > 0 ? segments.slice(firstRouteIndex) : segments;
+};
+
+/**
+ * Parse pathname synchronously - used for initial state to avoid flash of wrong content.
+ * This runs at module load time and during initial render.
+ */
+function parsePathnameSync(
+  targetPath: string,
+  navMap: NavigationMap
+): { path: string[]; view: ViewType | null } {
+  const segments = getRouteSegments(targetPath);
+
+  if (segments.length === 0) {
+    return { path: ['home'], view: null };
+  }
+
+  if (segments[0] === 'page' && segments[1]) {
+    const page = mockData.pages.find(p => p.id === segments[1]);
+    if (page) {
+      return {
+        path: ['home', page.id],
+        view: { type: 'txt', data: page } as ViewType,
+      };
+    }
+    return { path: ['home'], view: null };
+  }
+
+  if (segments[0] === 'folder') {
+    const folderIds = segments.slice(1);
+    if (folderIds.length) {
+      const folder = findFolderByPath(mockData.folders, folderIds, navMap);
+      if (folder) {
+        return {
+          path: ['home', ...folderIds],
+          view: { type: 'folder', data: folder } as ViewType,
+        };
+      }
+    }
+  }
+
+  return { path: ['home'], view: null };
+}
+
+/**
+ * Get initial navigation state from URL synchronously.
+ * Called during useState initialization to prevent flash of home page.
+ */
+function getInitialState(): { path: string[]; view: ViewType | null } {
+  const pathname = getCurrentPath();
+  return parsePathnameSync(pathname, initialNavMap);
+}
+
+// Compute initial state once at module level
+const computedInitialState = getInitialState();
 
 interface NavigationContextValue {
   currentPath: string[];
@@ -38,13 +110,16 @@ const NavigationContext = createContext<NavigationContextValue | undefined>(
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const { pathname, navigate: updateHistory } = useHistoryNavigation();
-  const [currentPath, setCurrentPath] = useState<string[]>(['home']);
-  const [currentView, setCurrentView] = useState<ViewType | null>(null);
+  // Initialize state synchronously from URL to prevent flash of home page
+  const [currentPath, setCurrentPath] = useState<string[]>(
+    computedInitialState.path
+  );
+  const [currentView, setCurrentView] = useState<ViewType | null>(
+    computedInitialState.view
+  );
   const pendingHistoryPathRef = useRef<string | null>(null);
   const currentPathRef = useRef(currentPath);
   const currentViewRef = useRef<ViewType | null>(currentView);
-  // Track if initial URL has been parsed - prevents race condition on direct URL access
-  const hasInitializedFromUrlRef = useRef(false);
 
   useEffect(() => {
     currentPathRef.current = currentPath;
@@ -86,8 +161,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const parsePathname = useCallback(
     (targetPath: string) => {
-      const normalized = targetPath && targetPath !== '' ? targetPath : '/';
-      const segments = normalized.split('/').filter(Boolean);
+      const segments = getRouteSegments(targetPath);
 
       if (segments.length === 0) {
         return { path: ['home'], view: null };
@@ -122,7 +196,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     [navMap]
   );
 
-  // Effect #1: Parse URL and update app state
+  // Effect #1: Parse URL and update app state (for browser navigation)
   useEffect(() => {
     if (pendingHistoryPathRef.current === pathname) {
       pendingHistoryPathRef.current = null;
@@ -146,21 +220,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     if (!viewsMatch) {
       setCurrentView(nextView);
     }
-
-    // Mark initialization complete after first URL parse
-    if (!hasInitializedFromUrlRef.current) {
-      hasInitializedFromUrlRef.current = true;
-    }
   }, [pathname, parsePathname]);
 
   // Effect #2: Sync app state back to URL
   useEffect(() => {
-    // Skip URL sync until initial URL has been parsed
-    // This prevents the race condition on direct URL access
-    if (!hasInitializedFromUrlRef.current) {
-      return;
-    }
-
     let targetPath = '/';
 
     if (currentPath.length > 1) {

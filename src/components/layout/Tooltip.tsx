@@ -78,7 +78,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
     if (!clickable || !isVisible) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
         setIsVisible(false);
       }
     };
