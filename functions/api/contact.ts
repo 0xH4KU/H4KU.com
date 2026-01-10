@@ -13,62 +13,32 @@
  * Required environment variables:
  * - RESEND_API_KEY: Your Resend API key
  * - CONTACT_TO_EMAIL: Recipient email address
+ *
+ * Optional environment variables:
+ * - RATE_LIMIT_KV: KV namespace for rate limiting
  */
 
-interface ContactPayload {
-  name: string;
-  email: string;
-  message: string;
-}
+import {
+  checkRateLimit,
+  checkBodySize,
+  getCorsHeaders,
+  corsPreflightResponse,
+  errorResponse,
+  successResponse,
+  rateLimitResponse,
+  fetchWithTimeout,
+  generateSecureReferenceId,
+  validateContactPayload,
+  escapeHtml,
+  maskEmail,
+  API_TIMEOUT_MS,
+  type ContactPayload,
+  type MiddlewareEnv,
+} from './_middleware';
 
-interface Env {
+interface Env extends MiddlewareEnv {
   RESEND_API_KEY: string;
   CONTACT_TO_EMAIL: string;
-}
-
-function generateReferenceId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
-  return `HAKU-${timestamp}-${random}`.toUpperCase();
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-function validatePayload(data: unknown): data is ContactPayload {
-  if (!data || typeof data !== 'object') return false;
-
-  const payload = data as Record<string, unknown>;
-
-  if (typeof payload.name !== 'string' || payload.name.trim().length === 0) {
-    return false;
-  }
-  if (typeof payload.email !== 'string' || !isValidEmail(payload.email)) {
-    return false;
-  }
-  if (
-    typeof payload.message !== 'string' ||
-    payload.message.trim().length === 0
-  ) {
-    return false;
-  }
-
-  if (payload.name.length > 100) return false;
-  if (payload.email.length > 254) return false;
-  if (payload.message.length > 5000) return false;
-
-  return true;
-}
-
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
 }
 
 // Shared email styles to prevent Gmail dark mode inversion
@@ -413,73 +383,76 @@ function createConfirmationEmailHtml(
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
+  const corsHeaders = getCorsHeaders(request);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://h4ku.com',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-  };
+  // Check body size before reading
+  const bodySizeError = checkBodySize(request);
+  if (bodySizeError) {
+    return errorResponse(request, bodySizeError, 413);
+  }
+
+  // Rate limiting
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const rateLimit = await checkRateLimit(clientIp, env);
+  if (rateLimit.limited) {
+    return rateLimitResponse(request, rateLimit.resetIn);
+  }
 
   // Check required env vars
   if (!env.RESEND_API_KEY) {
     console.error('Missing RESEND_API_KEY');
-    return Response.json(
-      { success: false, message: 'Server configuration error: Missing API key' },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Server configuration error: Missing API key', 500);
   }
 
   if (!env.CONTACT_TO_EMAIL) {
     console.error('Missing CONTACT_TO_EMAIL');
-    return Response.json(
-      { success: false, message: 'Server configuration error: Missing recipient' },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Server configuration error: Missing recipient', 500);
   }
 
   let payload: unknown;
   try {
     payload = await request.json();
   } catch {
-    return Response.json(
-      { success: false, message: 'Invalid JSON payload' },
-      { status: 400, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Invalid JSON payload', 400);
   }
 
-  if (!validatePayload(payload)) {
-    return Response.json(
-      { success: false, message: 'Invalid form data' },
-      { status: 400, headers: corsHeaders }
-    );
+  if (!validateContactPayload(payload)) {
+    return errorResponse(request, 'Invalid form data', 400);
   }
 
-  const referenceId = generateReferenceId();
-  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const referenceId = generateSecureReferenceId();
   const notificationHtml = createEmailHtml(payload, referenceId, clientIp);
   const confirmationHtml = createConfirmationEmailHtml(payload, referenceId);
 
   try {
-    // Send notification email to admin
-    const notificationResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+    // Send notification email to admin with timeout
+    const notificationResponse = await fetchWithTimeout(
+      'https://api.resend.com/emails',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: 'HAKU <contact@h4ku.com>',
+          to: [env.CONTACT_TO_EMAIL],
+          reply_to: payload.email,
+          subject: `[H4KU.com] Contact from ${payload.name}`,
+          html: notificationHtml,
+        }),
       },
-      body: JSON.stringify({
-        from: 'HAKU <contact@h4ku.com>',
-        to: [env.CONTACT_TO_EMAIL],
-        reply_to: payload.email,
-        subject: `[H4KU.com] Contact from ${payload.name}`,
-        html: notificationHtml,
-      }),
-    });
+      API_TIMEOUT_MS
+    );
 
-    const notificationResult = await notificationResponse.json() as Record<string, unknown>;
+    const notificationResult = (await notificationResponse.json()) as Record<string, unknown>;
 
     if (!notificationResponse.ok) {
-      console.error('Resend error:', notificationResponse.status, JSON.stringify(notificationResult));
+      console.error(
+        'Resend error:',
+        notificationResponse.status,
+        JSON.stringify(notificationResult)
+      );
       return Response.json(
         {
           success: false,
@@ -489,55 +462,45 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       );
     }
 
-    // Send confirmation email to user
-    const confirmationResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+    // Send confirmation email to user (non-blocking, don't fail on error)
+    fetchWithTimeout(
+      'https://api.resend.com/emails',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: 'HAKU <contact@h4ku.com>',
+          to: [payload.email],
+          subject: `[H4KU.com] Message Received - ${referenceId}`,
+          html: confirmationHtml,
+        }),
       },
-      body: JSON.stringify({
-        from: 'HAKU <contact@h4ku.com>',
-        to: [payload.email],
-        subject: `[H4KU.com] Message Received - ${referenceId}`,
-        html: confirmationHtml,
-      }),
+      API_TIMEOUT_MS
+    ).catch((error) => {
+      // Log but don't fail - confirmation email is nice-to-have
+      console.error('Failed to send confirmation email:', error);
     });
 
-    if (!confirmationResponse.ok) {
-      const confirmationResult = await confirmationResponse.json();
-      console.error('Failed to send confirmation email:', JSON.stringify(confirmationResult));
-      // Don't fail the request, just log the error
-    }
+    // Log with masked email
+    console.log(`Contact form submitted: ${referenceId} from ${maskEmail(payload.email)}`);
 
-    console.log(`Contact form submitted: ${referenceId} from ${payload.email}`);
-
-    return Response.json(
-      {
-        success: true,
-        message: 'Message sent successfully',
-        referenceId,
-      },
-      { headers: corsHeaders }
-    );
+    return successResponse(request, {
+      message: 'Message sent successfully',
+      referenceId,
+    });
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('Email API timeout');
+      return errorResponse(request, 'Email service timeout. Please try again.', 504);
+    }
     console.error('Failed to send email:', error);
-    return Response.json(
-      {
-        success: false,
-        message: 'Failed to send message. Please try again later.',
-      },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Failed to send message. Please try again later.', 500);
   }
 };
 
-export const onRequestOptions: PagesFunction = async () => {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': 'https://h4ku.com',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-    },
-  });
+export const onRequestOptions: PagesFunction = async (context) => {
+  return corsPreflightResponse(context.request);
 };

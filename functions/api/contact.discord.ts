@@ -6,90 +6,63 @@
  *
  * Required environment variables:
  * - DISCORD_WEBHOOK_URL: Discord webhook URL
+ *
+ * Optional environment variables:
+ * - RATE_LIMIT_KV: KV namespace for rate limiting
  */
 
-interface ContactPayload {
-  name: string;
-  email: string;
-  message: string;
-}
+import {
+  checkRateLimit,
+  checkBodySize,
+  corsPreflightResponse,
+  errorResponse,
+  successResponse,
+  rateLimitResponse,
+  fetchWithTimeout,
+  generateSecureReferenceId,
+  validateContactPayload,
+  maskEmail,
+  API_TIMEOUT_MS,
+  type MiddlewareEnv,
+} from './_middleware';
 
-interface Env {
+interface Env extends MiddlewareEnv {
   DISCORD_WEBHOOK_URL: string;
-}
-
-function generateReferenceId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
-  return `HAKU-${timestamp}-${random}`.toUpperCase();
-}
-
-function validatePayload(data: unknown): data is ContactPayload {
-  if (!data || typeof data !== 'object') return false;
-
-  const payload = data as Record<string, unknown>;
-
-  if (typeof payload.name !== 'string' || payload.name.trim().length === 0) {
-    return false;
-  }
-  if (typeof payload.email !== 'string' || !isValidEmail(payload.email)) {
-    return false;
-  }
-  if (
-    typeof payload.message !== 'string' ||
-    payload.message.trim().length === 0
-  ) {
-    return false;
-  }
-
-  if (payload.name.length > 100) return false;
-  if (payload.email.length > 254) return false;
-  if (payload.message.length > 5000) return false;
-
-  return true;
-}
-
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
 }
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://h4ku.com',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-  };
+  // Check body size before reading
+  const bodySizeError = checkBodySize(request);
+  if (bodySizeError) {
+    return errorResponse(request, bodySizeError, 413);
+  }
+
+  // Rate limiting
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const rateLimit = await checkRateLimit(clientIp, env);
+  if (rateLimit.limited) {
+    return rateLimitResponse(request, rateLimit.resetIn);
+  }
 
   if (!env.DISCORD_WEBHOOK_URL) {
     console.error('Missing DISCORD_WEBHOOK_URL');
-    return Response.json(
-      { success: false, message: 'Server configuration error' },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Server configuration error', 500);
   }
 
   let payload: unknown;
   try {
     payload = await request.json();
   } catch {
-    return Response.json(
-      { success: false, message: 'Invalid JSON payload' },
-      { status: 400, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Invalid JSON payload', 400);
   }
 
-  if (!validatePayload(payload)) {
-    return Response.json(
-      { success: false, message: 'Invalid form data' },
-      { status: 400, headers: corsHeaders }
-    );
+  if (!validateContactPayload(payload)) {
+    return errorResponse(request, 'Invalid form data', 400);
   }
 
-  const referenceId = generateReferenceId();
-  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const referenceId = generateSecureReferenceId();
   const timestamp = new Date().toISOString();
 
   // Discord embed message
@@ -98,26 +71,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     avatar_url: 'https://h4ku.com/favicon.ico',
     embeds: [
       {
-        title: '📬 New Contact Form Submission',
+        title: 'New Contact Form Submission',
         color: 0x00ff00, // Green
         fields: [
           {
-            name: '🔖 Reference ID',
+            name: 'Reference ID',
             value: `\`${referenceId}\``,
             inline: true,
           },
           {
-            name: '👤 Name',
+            name: 'Name',
             value: payload.name,
             inline: true,
           },
           {
-            name: '📧 Email',
+            name: 'Email',
             value: payload.email,
             inline: true,
           },
           {
-            name: '💬 Message',
+            name: 'Message',
             value:
               payload.message.length > 1000
                 ? payload.message.substring(0, 1000) + '...'
@@ -134,45 +107,38 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   };
 
   try {
-    const response = await fetch(env.DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(discordPayload),
-    });
+    const response = await fetchWithTimeout(
+      env.DISCORD_WEBHOOK_URL,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(discordPayload),
+      },
+      API_TIMEOUT_MS
+    );
 
     if (!response.ok) {
       console.error('Discord webhook error:', response.status);
       throw new Error(`Discord returned ${response.status}`);
     }
 
-    console.log(`Contact form submitted: ${referenceId} from ${payload.email}`);
+    // Log with masked email
+    console.log(`Contact form submitted: ${referenceId} from ${maskEmail(payload.email)}`);
 
-    return Response.json(
-      {
-        success: true,
-        message: 'Message sent successfully',
-        referenceId,
-      },
-      { headers: corsHeaders }
-    );
+    return successResponse(request, {
+      message: 'Message sent successfully',
+      referenceId,
+    });
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('Discord webhook timeout');
+      return errorResponse(request, 'Service timeout. Please try again.', 504);
+    }
     console.error('Failed to send to Discord:', error);
-    return Response.json(
-      {
-        success: false,
-        message: 'Failed to send message. Please try again later.',
-      },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Failed to send message. Please try again later.', 500);
   }
 };
 
-export const onRequestOptions: PagesFunction = async () => {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': 'https://h4ku.com',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-    },
-  });
+export const onRequestOptions: PagesFunction = async (context) => {
+  return corsPreflightResponse(context.request);
 };

@@ -92,6 +92,14 @@ function getInitialState(): { path: string[]; view: ViewType | null } {
 // Compute initial state once at module level
 const computedInitialState = getInitialState();
 
+/**
+ * Navigation state combining path and view to avoid out-of-sync issues
+ */
+interface NavigationState {
+  path: string[];
+  view: ViewType | null;
+}
+
 interface NavigationContextValue {
   currentPath: string[];
   currentView: ViewType | null;
@@ -108,26 +116,22 @@ const NavigationContext = createContext<NavigationContextValue | undefined>(
   undefined
 );
 
+/** Navigation update source to prevent circular updates */
+type UpdateSource = 'browser' | 'app';
+
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const { pathname, navigate: updateHistory } = useHistoryNavigation();
-  // Initialize state synchronously from URL to prevent flash of home page
-  const [currentPath, setCurrentPath] = useState<string[]>(
-    computedInitialState.path
-  );
-  const [currentView, setCurrentView] = useState<ViewType | null>(
-    computedInitialState.view
-  );
-  const pendingHistoryPathRef = useRef<string | null>(null);
-  const currentPathRef = useRef(currentPath);
-  const currentViewRef = useRef<ViewType | null>(currentView);
 
-  useEffect(() => {
-    currentPathRef.current = currentPath;
-  }, [currentPath]);
+  // Single source of truth for navigation state
+  const [navState, setNavState] = useState<NavigationState>({
+    path: computedInitialState.path,
+    view: computedInitialState.view,
+  });
 
-  useEffect(() => {
-    currentViewRef.current = currentView;
-  }, [currentView]);
+  // Track the source of the last update to prevent circular effects
+  const lastUpdateSourceRef = useRef<UpdateSource>('browser');
+  // Track the last pathname we pushed to history
+  const lastPushedPathnameRef = useRef<string | null>(null);
 
   // Build navigation map once for O(1) lookups
   const navMap = useMemo<NavigationMap>(
@@ -139,7 +143,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const breadcrumbSegments = useMemo(
     () =>
-      currentPath.map((segment, index) => {
+      navState.path.map((segment, index) => {
         if (index === 0) {
           return { id: segment, label: 'home' };
         }
@@ -154,13 +158,13 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         }
         return { id: segment, label: segment };
       }),
-    [currentPath, navMap]
+    [navState.path, navMap]
   );
 
-  const activePath = useMemo(() => currentPath.join('/'), [currentPath]);
+  const activePath = useMemo(() => navState.path.join('/'), [navState.path]);
 
   const parsePathname = useCallback(
-    (targetPath: string) => {
+    (targetPath: string): NavigationState => {
       const segments = getRouteSegments(targetPath);
 
       if (segments.length === 0) {
@@ -196,163 +200,236 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     [navMap]
   );
 
-  // Effect #1: Parse URL and update app state (for browser navigation)
+  // Convert current state to URL pathname
+  const stateToPathname = useCallback((state: NavigationState): string => {
+    if (state.path.length <= 1) {
+      return '/';
+    }
+
+    const lastSegment = state.path[state.path.length - 1];
+    const page = mockData.pages.find(p => p.id === lastSegment);
+
+    if (page) {
+      return `/page/${page.id}`;
+    }
+
+    const folderPath = state.path.slice(1).join('/');
+    return `/folder/${folderPath}`;
+  }, []);
+
+  // Effect: Handle browser navigation (back/forward)
   useEffect(() => {
-    if (pendingHistoryPathRef.current === pathname) {
-      pendingHistoryPathRef.current = null;
+    // Skip if this pathname change was caused by our own push
+    if (lastPushedPathnameRef.current === pathname) {
+      lastPushedPathnameRef.current = null;
       return;
     }
 
-    const { path: nextPath, view: nextView } = parsePathname(pathname);
-    const pathsMatch =
-      currentPathRef.current.length === nextPath.length &&
-      currentPathRef.current.every(
-        (segment, index) => segment === nextPath[index]
-      );
-    if (!pathsMatch) {
-      setCurrentPath(nextPath);
-    }
+    // Browser navigation occurred - update state
+    const nextState = parsePathname(pathname);
 
-    const viewsMatch =
-      (currentViewRef.current === null && nextView === null) ||
-      (currentViewRef.current?.type === nextView?.type &&
-        currentViewRef.current?.data === nextView?.data);
-    if (!viewsMatch) {
-      setCurrentView(nextView);
-    }
+    setNavState(currentState => {
+      const pathsMatch =
+        currentState.path.length === nextState.path.length &&
+        currentState.path.every((segment, index) => segment === nextState.path[index]);
+
+      const viewsMatch =
+        (currentState.view === null && nextState.view === null) ||
+        (currentState.view?.type === nextState.view?.type &&
+          currentState.view?.data === nextState.view?.data);
+
+      if (pathsMatch && viewsMatch) {
+        return currentState;
+      }
+
+      lastUpdateSourceRef.current = 'browser';
+      return nextState;
+    });
   }, [pathname, parsePathname]);
 
-  // Effect #2: Sync app state back to URL
+  // Effect: Sync app-initiated state changes to URL
   useEffect(() => {
-    let targetPath = '/';
-
-    if (currentPath.length > 1) {
-      const lastSegment = currentPath[currentPath.length - 1];
-      const page = mockData.pages.find(p => p.id === lastSegment);
-
-      if (page) {
-        targetPath = `/page/${page.id}`;
-      } else {
-        const folderPath = currentPath.slice(1).join('/');
-        targetPath = `/folder/${folderPath}`;
-      }
+    // Only sync if the last update was from the app (not browser navigation)
+    if (lastUpdateSourceRef.current !== 'app') {
+      return;
     }
+
+    const targetPath = stateToPathname(navState);
 
     if (pathname === targetPath) {
       return;
     }
 
-    pendingHistoryPathRef.current = targetPath;
+    lastPushedPathnameRef.current = targetPath;
     updateHistory(targetPath, { replace: true });
-  }, [currentPath, pathname, updateHistory]);
+  }, [navState, pathname, stateToPathname, updateHistory]);
 
-  const openFolder = (folder: Folder, pathOverride?: string[]) => {
-    // O(1) lookup using navigation map
-    const resolvedPath =
-      pathOverride ?? findFolderPathById(mockData.folders, folder.id, navMap);
-    if (!resolvedPath || resolvedPath.length === 0) {
-      return;
-    }
-    const canonicalFolder =
-      findFolderByPath(mockData.folders, resolvedPath, navMap) ?? folder;
-    setCurrentPath(['home', ...resolvedPath]);
-    setCurrentView({ type: 'folder', data: canonicalFolder });
-  };
+  const updateNavState = useCallback((newState: NavigationState) => {
+    lastUpdateSourceRef.current = 'app';
+    setNavState(newState);
+  }, []);
 
-  const normalizePath = (pathOverride?: string[]) => {
+  const openFolder = useCallback(
+    (folder: Folder, pathOverride?: string[]) => {
+      // O(1) lookup using navigation map
+      const resolvedPath =
+        pathOverride ?? findFolderPathById(mockData.folders, folder.id, navMap);
+      if (!resolvedPath || resolvedPath.length === 0) {
+        return;
+      }
+      const canonicalFolder =
+        findFolderByPath(mockData.folders, resolvedPath, navMap) ?? folder;
+      updateNavState({
+        path: ['home', ...resolvedPath],
+        view: { type: 'folder', data: canonicalFolder },
+      });
+    },
+    [navMap, updateNavState]
+  );
+
+  const normalizePath = useCallback((pathOverride?: string[]) => {
     if (!pathOverride || pathOverride.length === 0) {
       return ['home'];
     }
     return pathOverride[0] === 'home'
       ? [...pathOverride]
       : ['home', ...pathOverride];
-  };
+  }, []);
 
-  const openPage = (page: Page, pathOverride?: string[]) => {
-    const basePath = normalizePath(pathOverride);
-    const nextPath = [...basePath, page.id];
-    setCurrentPath(nextPath);
-    setCurrentView({ type: 'txt', data: page });
-  };
+  const openPage = useCallback(
+    (page: Page, pathOverride?: string[]) => {
+      const basePath = normalizePath(pathOverride);
+      const nextPath = [...basePath, page.id];
+      updateNavState({
+        path: nextPath,
+        view: { type: 'txt', data: page },
+      });
+    },
+    [normalizePath, updateNavState]
+  );
 
-  const navigateTo = (item: Folder | Page, pathOverride?: string[]) => {
-    if (item.type === 'folder') {
-      openFolder(item, pathOverride);
-    } else if (item.type === 'txt') {
-      openPage(item, pathOverride);
-    }
-  };
+  const navigateTo = useCallback(
+    (item: Folder | Page, pathOverride?: string[]) => {
+      if (item.type === 'folder') {
+        openFolder(item, pathOverride);
+      } else if (item.type === 'txt') {
+        openPage(item, pathOverride);
+      }
+    },
+    [openFolder, openPage]
+  );
 
-  const navigateBack = () => {
-    if (currentPath.length <= 1) {
-      return;
-    }
+  const resetToHome = useCallback(() => {
+    updateNavState({ path: ['home'], view: null });
+  }, [updateNavState]);
 
-    const nextPath = currentPath.slice(0, -1);
+  const navigateBack = useCallback(() => {
+    setNavState(currentState => {
+      if (currentState.path.length <= 1) {
+        return currentState;
+      }
 
-    if (nextPath.length <= 1) {
-      resetToHome();
-      return;
-    }
+      const nextPath = currentState.path.slice(0, -1);
 
-    const targetId = nextPath[nextPath.length - 1];
-    // O(1) lookup using navigation map
-    const folder = findFolderById(mockData.folders, targetId, navMap);
-    if (folder) {
-      openFolder(folder, nextPath.slice(1));
-      return;
-    }
+      if (nextPath.length <= 1) {
+        lastUpdateSourceRef.current = 'app';
+        return { path: ['home'], view: null };
+      }
 
-    const page = mockData.pages.find(item => item.id === targetId);
-    if (page) {
-      openPage(page, nextPath.slice(0, -1));
-      return;
-    }
+      const targetId = nextPath[nextPath.length - 1];
+      // O(1) lookup using navigation map
+      const folder = findFolderById(mockData.folders, targetId, navMap);
+      if (folder) {
+        const resolvedPath = nextPath.slice(1);
+        const canonicalFolder =
+          findFolderByPath(mockData.folders, resolvedPath, navMap) ?? folder;
+        lastUpdateSourceRef.current = 'app';
+        return {
+          path: nextPath,
+          view: { type: 'folder', data: canonicalFolder },
+        };
+      }
 
-    resetToHome();
-  };
+      const page = mockData.pages.find(item => item.id === targetId);
+      if (page) {
+        lastUpdateSourceRef.current = 'app';
+        return {
+          path: nextPath,
+          view: { type: 'txt', data: page },
+        };
+      }
 
-  const resetToHome = () => {
-    setCurrentPath(['home']);
-    setCurrentView(null);
-  };
+      lastUpdateSourceRef.current = 'app';
+      return { path: ['home'], view: null };
+    });
+  }, [navMap]);
 
-  const handleBreadcrumbSelect = (id: string, index: number) => {
-    if (index === 0) {
-      resetToHome();
-      return;
-    }
+  const handleBreadcrumbSelect = useCallback(
+    (id: string, index: number) => {
+      if (index === 0) {
+        resetToHome();
+        return;
+      }
 
-    const targetPath = currentPath.slice(0, index + 1);
-    const targetId = targetPath[targetPath.length - 1];
+      setNavState(currentState => {
+        const targetPath = currentState.path.slice(0, index + 1);
+        const targetId = targetPath[targetPath.length - 1];
 
-    // O(1) lookup using navigation map
-    const folder = findFolderById(mockData.folders, targetId, navMap);
-    if (folder) {
-      openFolder(folder, targetPath.slice(1));
-      return;
-    }
+        // O(1) lookup using navigation map
+        const folder = findFolderById(mockData.folders, targetId, navMap);
+        if (folder) {
+          const resolvedPath = targetPath.slice(1);
+          const canonicalFolder =
+            findFolderByPath(mockData.folders, resolvedPath, navMap) ?? folder;
+          lastUpdateSourceRef.current = 'app';
+          return {
+            path: targetPath,
+            view: { type: 'folder', data: canonicalFolder },
+          };
+        }
 
-    const page = mockData.pages.find(item => item.id === targetId);
-    if (page) {
-      openPage(page, targetPath.slice(0, -1));
-    }
-  };
+        const page = mockData.pages.find(item => item.id === targetId);
+        if (page) {
+          lastUpdateSourceRef.current = 'app';
+          return {
+            path: targetPath,
+            view: { type: 'txt', data: page },
+          };
+        }
+
+        return currentState;
+      });
+    },
+    [navMap, resetToHome]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      currentPath: navState.path,
+      currentView: navState.view,
+      allFolders,
+      breadcrumbSegments,
+      activePath,
+      navigateTo,
+      navigateBack,
+      resetToHome,
+      handleBreadcrumbSelect,
+    }),
+    [
+      navState.path,
+      navState.view,
+      allFolders,
+      breadcrumbSegments,
+      activePath,
+      navigateTo,
+      navigateBack,
+      resetToHome,
+      handleBreadcrumbSelect,
+    ]
+  );
 
   return (
-    <NavigationContext.Provider
-      value={{
-        currentPath,
-        currentView,
-        allFolders,
-        breadcrumbSegments,
-        activePath,
-        navigateTo,
-        navigateBack,
-        resetToHome,
-        handleBreadcrumbSelect,
-      }}
-    >
+    <NavigationContext.Provider value={contextValue}>
       {children}
     </NavigationContext.Provider>
   );

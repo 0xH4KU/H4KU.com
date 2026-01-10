@@ -1,3 +1,11 @@
+/**
+ * FNV-1a (Fowler-Noll-Vo) Hash Constants
+ *
+ * FNV-1a is a non-cryptographic hash function known for its simplicity and speed.
+ * It's used here for quick integrity checks where cryptographic security isn't required.
+ *
+ * @see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+ */
 const FNV_OFFSET = 0x811c9dc5;
 const FNV_PRIME = 0x01000193;
 
@@ -31,11 +39,27 @@ const toUtf8Bytes = (value: string): Uint8Array => {
   return encodeUtf8Fallback(value);
 };
 
+/**
+ * SHA-256 Initial Hash Values
+ *
+ * These are the first 32 bits of the fractional parts of the square roots
+ * of the first 8 prime numbers (2, 3, 5, 7, 11, 13, 17, 19).
+ *
+ * @see FIPS 180-4 Section 5.3.3
+ */
 const SHA256_INITIAL: readonly number[] = [
   0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
   0x1f83d9ab, 0x5be0cd19,
 ];
 
+/**
+ * SHA-256 Round Constants
+ *
+ * These are the first 32 bits of the fractional parts of the cube roots
+ * of the first 64 prime numbers (2..311).
+ *
+ * @see FIPS 180-4 Section 4.2.2
+ */
 const SHA256_CONSTANTS: readonly number[] = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
   0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -147,16 +171,33 @@ export const computeIntegrityHash = (payload: unknown): string => {
 };
 
 /**
- * SHA-256 hash (enhanced security)
- * Provided in both async and sync forms for shared browser/Node usage
+ * SHA-256 hash using Web Crypto API (async, hardware-accelerated)
+ * Falls back to synchronous implementation if crypto.subtle is unavailable
+ */
+export const computeSHA256Hash = async (payload: unknown): Promise<string> => {
+  const input = serializePayload(payload);
+
+  // Use Web Crypto API when available (browser, modern Node.js)
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Fallback to synchronous implementation
+  return sha256Internal(input);
+};
+
+/**
+ * SHA-256 hash (synchronous fallback)
+ * Use computeSHA256Hash for better performance when async is acceptable
  */
 export const computeSHA256HashSync = (payload: unknown): string => {
   const input = serializePayload(payload);
   return sha256Internal(input);
 };
-
-export const computeSHA256Hash = async (payload: unknown): Promise<string> =>
-  Promise.resolve(computeSHA256HashSync(payload));
 
 export interface IntegrityCheckResult {
   expected: string | null;
