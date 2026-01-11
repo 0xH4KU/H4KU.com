@@ -53,6 +53,7 @@ export interface Page {
   folderId?: string | null;
   date?: string;
   order?: number;
+  hidden?: boolean;
 }
 
 export interface Social {

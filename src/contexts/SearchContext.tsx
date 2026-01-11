@@ -95,11 +95,13 @@ const buildFolderIndex = (): FolderIndexEntry[] => {
 };
 
 const buildStandalonePageIndex = (): StandalonePageEntry[] =>
-  mockData.pages.map(page => ({
-    page,
-    searchableName: page.name.toLowerCase(),
-    searchableContent: page.content.toLowerCase(),
-  }));
+  mockData.pages
+    .filter(page => !page.hidden)
+    .map(page => ({
+      page,
+      searchableName: page.name.toLowerCase(),
+      searchableContent: page.content.toLowerCase(),
+    }));
 
 const buildHomeFolder = (): Folder | null => {
   if (mockData.homeItems.length === 0) {

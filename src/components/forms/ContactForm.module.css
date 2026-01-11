@@ -63,6 +63,7 @@
     'Droid Sans Mono', monospace;
   font-size: 14px;
   padding: 12px 24px;
+  width: 100%;
   background: var(--color-primary);
   color: var(--color-background);
   border: 2px solid var(--color-primary);
@@ -114,22 +115,6 @@
   background: var(--color-surface-hover);
 }
 
-.turnstileWrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.turnstileWrapper :global(.cf-turnstile) {
-  width: 100%;
-  max-width: 360px;
-  min-width: 280px;
-}
-
-.turnstileWrapper :global(.cf-turnstile iframe) {
-  width: 100% !important;
-}
-
 @media (max-width: 540px) {
   .contactForm {
     padding: 16px 12px;
@@ -137,14 +122,5 @@
 
   .form {
     gap: 16px;
-  }
-
-  .turnstileWrapper {
-    padding: 4px 0 8px;
-  }
-
-  .turnstileWrapper :global(.cf-turnstile) {
-    max-width: 100%;
-    min-width: 0;
   }
 }

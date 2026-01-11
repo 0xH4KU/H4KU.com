@@ -6,6 +6,10 @@ This directory contains serverless functions that run on Cloudflare Pages.
 
 Handles contact form submissions with human verification and email notifications.
 
+The frontend uses a two-step flow:
+1. **ContactForm** - User fills out the form, data is saved to sessionStorage
+2. **ContactVerify** - Turnstile verification is completed, then the API is called
+
 ### Security Features
 
 - **Cloudflare Turnstile** - Free CAPTCHA alternative for bot protection

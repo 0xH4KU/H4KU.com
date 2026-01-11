@@ -261,6 +261,8 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+    // Ensure a single React instance across lazy chunks and deps
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     // Optimize bundle size
@@ -338,7 +340,7 @@ export default defineConfig({
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion'],
+    include: ['react', 'react-dom', 'framer-motion', '@marsidev/react-turnstile'],
   },
   // Development server configuration
   server: {

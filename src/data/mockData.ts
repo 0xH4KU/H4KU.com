@@ -32,6 +32,7 @@ interface PageFile {
   title?: string;
   folderId?: string | null;
   order?: number | string;
+  hidden?: boolean;
 }
 
 interface ImageFile {
@@ -266,6 +267,7 @@ const parsedPages: Page[] = pagesData.map(pageData => {
     folderId,
     date: undefined,
     order: normalizeOrder(pageData.order),
+    hidden: Boolean(pageData.hidden),
   };
 });
 
@@ -374,9 +376,25 @@ const folders: Folder[] = rootFolders
 
 const socials: Social[] = socialsData;
 
+const specialPages: Page[] = [
+  {
+    id: 'contact-verify',
+    name: 'Contact Verification',
+    filename: 'contact-verify.txt',
+    type: 'txt',
+    content:
+      'Verify to send your message.\n\nComplete the verification below to finish sending your message.',
+    folderId: null,
+    order: ORDER_FALLBACK - 1,
+    hidden: true,
+  },
+];
+
+const allStandalonePages = [...standalonePages, ...specialPages];
+
 export const mockData: MockData = {
   folders,
-  pages: standalonePages,
+  pages: allStandalonePages,
   homeItems: sortWorkItems(homeItems),
   socials,
 };

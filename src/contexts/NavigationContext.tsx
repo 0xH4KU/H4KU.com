@@ -23,6 +23,8 @@ import {
   getCurrentPath,
 } from '@/hooks/useHistoryNavigation';
 
+const CONTACT_VERIFY_PAGE_ID = 'contact-verify';
+
 // Build navigation map once at module level for initial state parsing
 const initialNavMap = buildNavigationMap(mockData.folders);
 
@@ -48,6 +50,18 @@ function parsePathnameSync(
   navMap: NavigationMap
 ): { path: string[]; view: ViewType | null } {
   const segments = getRouteSegments(targetPath);
+
+  if (segments[0] === 'contact' && segments[1] === 'verify') {
+    const verifyPage = mockData.pages.find(
+      page => page.id === CONTACT_VERIFY_PAGE_ID
+    );
+    if (verifyPage) {
+      return {
+        path: ['home', CONTACT_VERIFY_PAGE_ID],
+        view: { type: 'txt', data: verifyPage } as ViewType,
+      };
+    }
+  }
 
   if (segments.length === 0) {
     return { path: ['home'], view: null };
@@ -167,6 +181,18 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     (targetPath: string): NavigationState => {
       const segments = getRouteSegments(targetPath);
 
+      if (segments[0] === 'contact' && segments[1] === 'verify') {
+        const verifyPage = mockData.pages.find(
+          page => page.id === CONTACT_VERIFY_PAGE_ID
+        );
+        if (verifyPage) {
+          return {
+            path: ['home', CONTACT_VERIFY_PAGE_ID],
+            view: { type: 'txt', data: verifyPage } as ViewType,
+          };
+        }
+      }
+
       if (segments.length === 0) {
         return { path: ['home'], view: null };
       }
@@ -207,6 +233,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
 
     const lastSegment = state.path[state.path.length - 1];
+
+    if (lastSegment === CONTACT_VERIFY_PAGE_ID) {
+      return '/contact/verify';
+    }
+
     const page = mockData.pages.find(p => p.id === lastSegment);
 
     if (page) {

@@ -1,23 +1,11 @@
-import { useState, useEffect, useRef, useId, FormEvent } from 'react';
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
-import {
-  submitContactRequest,
-  ContactSubmissionError,
-} from '@/services/contact';
+import { useState, useEffect, useRef, useMemo, useId, FormEvent } from 'react';
+import { useNavigation } from '@/contexts/NavigationContext';
+import { mockData } from '@/data/mockData';
+import { savePendingContact } from '@/services/contact';
 import { isValidEmail, normalizeEmail } from '@/shared/emailValidation';
 import styles from './ContactForm.module.css';
 
-/**
- * Turnstile Site Key - uses test key in E2E/test environments for CI compatibility.
- * Test key '1x00000000000000000000AA' always passes verification.
- * @see https://developers.cloudflare.com/turnstile/troubleshooting/testing/
- */
-const TURNSTILE_SITE_KEY =
-  import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAACLxl-ExAnPcpHy3';
-const TURNSTILE_BYPASS_TOKEN =
-  import.meta.env.VITE_TURNSTILE_BYPASS_TOKEN ?? null;
-const INITIAL_TURNSTILE_TOKEN = TURNSTILE_BYPASS_TOKEN || null;
-const SHOULD_RENDER_TURNSTILE = !TURNSTILE_BYPASS_TOKEN;
+const CONTACT_VERIFY_PAGE_ID = 'contact-verify';
 
 interface FormData {
   name: string;
@@ -32,6 +20,7 @@ interface FormStatus {
 
 export function ContactForm() {
   const statusMessageId = useId();
+  const { navigateTo } = useNavigation();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -40,24 +29,14 @@ export function ContactForm() {
 
   const [status, setStatus] = useState<FormStatus>({ type: 'idle' });
   const statusMessageRef = useRef<HTMLDivElement | null>(null);
-  const activeRequestRef = useRef<AbortController | null>(null);
-  const turnstileRef = useRef<TurnstileInstance | null>(null);
-
-  // Turnstile token state
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(
-    INITIAL_TURNSTILE_TOKEN
+  const verifyPage = useMemo(
+    () => mockData.pages.find(page => page.id === CONTACT_VERIFY_PAGE_ID),
+    []
   );
-  const [turnstileError, setTurnstileError] = useState<string | null>(null);
 
   // Anti-spam protection (honeypot)
   const [honeypot, setHoneypot] = useState('');
   const [formStartTime, setFormStartTime] = useState<number>(() => Date.now());
-
-  useEffect(() => {
-    return () => {
-      activeRequestRef.current?.abort();
-    };
-  }, []);
 
   useEffect(() => {
     if (status.message && statusMessageRef.current) {
@@ -109,71 +88,33 @@ export function ContactForm() {
       return;
     }
 
-    // Turnstile verification check
-    if (!turnstileToken) {
+    try {
+      savePendingContact({
+        name: formData.name,
+        email: normalizedEmail,
+        message: formData.message,
+      });
+    } catch (error) {
+      console.error('Failed to save pending contact submission', error);
       setStatus({
         type: 'error',
-        message: turnstileError || 'Please complete the verification',
+        message:
+          'Could not prepare your submission. Please try again or email contact@H4KU.com',
       });
       return;
     }
 
-    activeRequestRef.current?.abort();
-    const controller = new AbortController();
-    activeRequestRef.current = controller;
+    setStatus({
+      type: 'loading',
+      message: 'Redirecting to verification…',
+    });
 
-    setStatus({ type: 'loading' });
+    setFormStartTime(Date.now());
 
-    try {
-      const result = await submitContactRequest(
-        {
-          name: formData.name,
-          email: normalizedEmail,
-          message: formData.message,
-          turnstileToken,
-        },
-        controller.signal
-      );
-
-      const reference = result?.referenceId
-        ? ` (reference: ${result.referenceId})`
-        : '';
-      setStatus({
-        type: 'success',
-        message: `Message sent successfully! I'll get back to you soon.${reference}`,
-      });
-      setFormStartTime(Date.now());
-      setFormData({ name: '', email: '', message: '' });
-      // Reset Turnstile for next submission
-      setTurnstileToken(INITIAL_TURNSTILE_TOKEN);
-      if (!TURNSTILE_BYPASS_TOKEN) {
-        turnstileRef.current?.reset();
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        setStatus({
-          type: 'error',
-          message: 'The request was canceled. Please try again.',
-        });
-        activeRequestRef.current = null;
-        setFormStartTime(Date.now());
-        return;
-      }
-      const fallbackMessage =
-        error instanceof ContactSubmissionError
-          ? error.message
-          : 'Failed to send message. Please try again or email directly at contact@H4KU.com';
-      console.error('Contact submission error:', error);
-      setStatus({
-        type: 'error',
-        message: fallbackMessage,
-      });
-      setFormStartTime(Date.now());
-      // Reset Turnstile on error for retry
-      setTurnstileToken(INITIAL_TURNSTILE_TOKEN);
-      if (!TURNSTILE_BYPASS_TOKEN) {
-        turnstileRef.current?.reset();
-      }
+    if (verifyPage) {
+      navigateTo(verifyPage);
+    } else {
+      window.location.href = '/contact/verify';
     }
   };
 
@@ -273,41 +214,12 @@ export function ContactForm() {
           />
         </div>
 
-        {SHOULD_RENDER_TURNSTILE && (
-          <div className={styles.field}>
-            <div className={styles.turnstileWrapper}>
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={TURNSTILE_SITE_KEY}
-                onSuccess={token => {
-                  setTurnstileToken(token);
-                  setTurnstileError(null);
-                }}
-                onError={() => {
-                  setTurnstileToken(null);
-                  setTurnstileError('Verification failed. Please try again.');
-                }}
-                onExpire={() => {
-                  setTurnstileToken(null);
-                  setTurnstileError(
-                    'Verification expired. Please verify again.'
-                  );
-                }}
-                options={{
-                  theme: 'dark',
-                  size: 'flexible',
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         <button
           type="submit"
-          disabled={status.type === 'loading' || !turnstileToken}
+          disabled={status.type === 'loading'}
           className={styles.button}
         >
-          {status.type === 'loading' ? 'Sending...' : 'Send Message'}
+          {status.type === 'loading' ? 'Redirecting…' : 'Verify & Send'}
         </button>
 
         {status.message && (

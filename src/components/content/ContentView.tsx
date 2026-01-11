@@ -94,7 +94,8 @@ const ContentView: React.FC = () => {
       sortOrder,
       getFolderLabel
     );
-    const sortedPages = sortByLabel(mockData.pages, sortOrder, getPageLabel);
+    const visiblePages = mockData.pages.filter(page => !page.hidden);
+    const sortedPages = sortByLabel(visiblePages, sortOrder, getPageLabel);
     const sortedHomeItems = sortByLabel(
       mockData.homeItems,
       sortOrder,

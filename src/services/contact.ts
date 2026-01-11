@@ -18,10 +18,83 @@ const DEFAULT_HEADERS = {
   'X-Requested-With': 'H4KU.com-contact-form',
 };
 
+const PENDING_CONTACT_KEY = 'contact:pending-submission';
+const PENDING_CONTACT_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+export type PendingContactPayload = Omit<ContactPayload, 'turnstileToken'>;
+
 export class ContactSubmissionError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'ContactSubmissionError';
+  }
+}
+
+const canUseSessionStorage = () =>
+  typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
+
+export function savePendingContact(payload: PendingContactPayload) {
+  if (!canUseSessionStorage()) return;
+
+  try {
+    const envelope = {
+      ...payload,
+      createdAt: Date.now(),
+    };
+    window.sessionStorage.setItem(
+      PENDING_CONTACT_KEY,
+      JSON.stringify(envelope)
+    );
+  } catch (error) {
+    // Swallow storage errors (Safari private mode, quota, etc.)
+    if (import.meta.env.DEV) {
+      console.warn('[contact] failed to save pending payload', error);
+    }
+  }
+}
+
+export function loadPendingContact(): PendingContactPayload | null {
+  if (!canUseSessionStorage()) return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(PENDING_CONTACT_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as PendingContactPayload & {
+      createdAt?: number;
+    };
+    const createdAt = typeof parsed.createdAt === 'number' ? parsed.createdAt : 0;
+    const isExpired = createdAt
+      ? Date.now() - createdAt > PENDING_CONTACT_TTL_MS
+      : true;
+
+    if (isExpired) {
+      window.sessionStorage.removeItem(PENDING_CONTACT_KEY);
+      return null;
+    }
+
+    const { name, email, message } = parsed;
+    if (!name || !email || !message) {
+      return null;
+    }
+
+    return { name, email, message };
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('[contact] failed to load pending payload', error);
+    }
+    return null;
+  }
+}
+
+export function clearPendingContact() {
+  if (!canUseSessionStorage()) return;
+  try {
+    window.sessionStorage.removeItem(PENDING_CONTACT_KEY);
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('[contact] failed to clear pending payload', error);
+    }
   }
 }
 

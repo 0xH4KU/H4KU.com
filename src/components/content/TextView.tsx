@@ -18,6 +18,11 @@ const ContactForm = lazy(() =>
     default: module.ContactForm,
   }))
 );
+const ContactVerify = lazy(() =>
+  import('@/components/forms/ContactVerify').then(module => ({
+    default: module.ContactVerify,
+  }))
+);
 
 interface TextViewProps {
   page: Page;
@@ -88,6 +93,12 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
     </div>
   );
 
+  const contactVerifyFallback = (
+    <div className={styles['contact-loading']} role="status">
+      Preparing verification…
+    </div>
+  );
+
   return (
     <m.div
       className={styles['txt-viewer-wrapper']}
@@ -141,6 +152,13 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
                 }
               >
                 <ContactForm />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+          {page.id === 'contact-verify' && (
+            <ErrorBoundary fallback={contactVerifyFallback}>
+              <Suspense fallback={contactVerifyFallback}>
+                <ContactVerify />
               </Suspense>
             </ErrorBoundary>
           )}

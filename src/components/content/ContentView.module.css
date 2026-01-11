@@ -133,14 +133,14 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  padding-inline: clamp(16px, 4vw, 96px);
+  padding-inline: clamp(8px, 4vw, 96px);
   box-sizing: border-box;
 }
 
 .txt-viewer {
   width: 100%;
   /* Let the desktop page width scale with the viewport so it doesn't hug the left edge */
-  max-width: clamp(600px, 80vw, 1400px);
+  max-width: clamp(320px, 92vw, 1400px);
   margin: 0 auto;
   border: 2px solid var(--color-text);
   background: var(--color-background);
@@ -175,7 +175,7 @@
 }
 
 .txt-content {
-  padding: clamp(20px, 3vw, 40px);
+  padding: clamp(16px, 3vw, 40px);
 }
 
 .txt-content pre {

@@ -13,7 +13,8 @@ H4KU.com/
 │   │   ├── content/         # Content rendering logic
 │   │   │   └── ContentView.tsx
 │   │   ├── forms/           # Form components
-│   │   │   └── ContactForm.tsx
+│   │   │   ├── ContactForm.tsx
+│   │   │   └── ContactVerify.tsx
 │   │   ├── layout/          # Core layout components
 │   │   │   ├── Breadcrumb.tsx
 │   │   │   ├── ContextMenu.tsx
@@ -243,7 +244,7 @@ After editing any of the above, run `npm run build:data` and commit the refreshe
 ## Testing
 
 - Runner: Vitest 4 + Testing Library (jsdom)
-- Suite size: 43 spec files / 540+ tests (as of January 2026)
+- Suite size: 44 spec files / 567 tests (as of January 2026)
 - Coverage: 90% global thresholds (lines/functions/statements) and 85% for branches
 
 Focus areas:
@@ -314,11 +315,20 @@ For questions, collaboration, or licensing inquiries:
 
 ### Contact Form Setup
 
-The contact form uses Cloudflare Turnstile for bot protection and Resend for email delivery.
+The contact form uses a two-step flow: form submission → verification page. This separates the user input from Turnstile verification for better UX on small screens.
+
+**Flow:**
+1. User fills out the contact form (`ContactForm.tsx`)
+2. Form data is saved to sessionStorage (15-minute TTL)
+3. User is redirected to the verification page (`ContactVerify.tsx`)
+4. Turnstile verification is completed on the verification page
+5. Upon success, the message is sent via the backend API
+
+**Setup:**
 
 1. **Configure Turnstile** in [Cloudflare Dashboard](https://dash.cloudflare.com/) → Turnstile
    - Create a site and get your Site Key and Secret Key
-   - The Site Key is hardcoded in `ContactForm.tsx`
+   - The Site Key is configured in `ContactVerify.tsx`
    - Add `TURNSTILE_SECRET_KEY` to Pages environment variables
 
 2. **Configure Email** via [Resend](https://resend.com)
