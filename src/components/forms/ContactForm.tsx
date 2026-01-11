@@ -275,26 +275,30 @@ export function ContactForm() {
 
         {SHOULD_RENDER_TURNSTILE && (
           <div className={styles.field}>
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={TURNSTILE_SITE_KEY}
-              onSuccess={token => {
-                setTurnstileToken(token);
-                setTurnstileError(null);
-              }}
-              onError={() => {
-                setTurnstileToken(null);
-                setTurnstileError('Verification failed. Please try again.');
-              }}
-              onExpire={() => {
-                setTurnstileToken(null);
-                setTurnstileError('Verification expired. Please verify again.');
-              }}
-              options={{
-                theme: 'dark',
-                size: 'flexible',
-              }}
-            />
+            <div className={styles.turnstileWrapper}>
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={token => {
+                  setTurnstileToken(token);
+                  setTurnstileError(null);
+                }}
+                onError={() => {
+                  setTurnstileToken(null);
+                  setTurnstileError('Verification failed. Please try again.');
+                }}
+                onExpire={() => {
+                  setTurnstileToken(null);
+                  setTurnstileError(
+                    'Verification expired. Please verify again.'
+                  );
+                }}
+                options={{
+                  theme: 'dark',
+                  size: 'flexible',
+                }}
+              />
+            </div>
           </div>
         )}
 
