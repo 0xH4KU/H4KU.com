@@ -2,7 +2,7 @@
  * Shared middleware for contact API endpoints
  *
  * Provides:
- * - Rate limiting (IP-based, in-memory with Cloudflare KV fallback)
+ * - Turnstile human verification (Cloudflare's free CAPTCHA alternative)
  * - CORS with allowed domains list
  * - Request body size limits
  * - Request timeout via AbortSignal
@@ -19,14 +19,11 @@ import { isValidEmail } from '../../src/shared/emailValidation';
 /** Maximum request body size in bytes (32KB) */
 export const MAX_BODY_SIZE = 32 * 1024;
 
-/** Rate limit: max requests per window */
-export const RATE_LIMIT_MAX = 5;
-
-/** Rate limit window in seconds */
-export const RATE_LIMIT_WINDOW = 60;
-
 /** External API timeout in milliseconds */
 export const API_TIMEOUT_MS = 10000;
+
+/** Turnstile verification endpoint */
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 /** Allowed CORS origins */
 export const ALLOWED_ORIGINS = [
@@ -43,100 +40,63 @@ export const ALLOWED_ORIGINS = [
 // Types
 // =============================================================================
 
-export interface RateLimitStore {
-  get(key: string): Promise<{ count: number; expires: number } | null>;
-  put(key: string, value: { count: number; expires: number }, ttl: number): Promise<void>;
-}
-
 export interface MiddlewareEnv {
-  RATE_LIMIT_KV?: KVNamespace;
+  TURNSTILE_SECRET_KEY: string;
+}
+
+interface TurnstileVerifyResponse {
+  success: boolean;
+  'error-codes'?: string[];
+  challenge_ts?: string;
+  hostname?: string;
 }
 
 // =============================================================================
-// In-memory rate limit store (fallback)
-// =============================================================================
-
-const memoryStore = new Map<string, { count: number; expires: number }>();
-
-const inMemoryRateLimitStore: RateLimitStore = {
-  async get(key: string) {
-    const entry = memoryStore.get(key);
-    if (!entry) return null;
-    if (Date.now() > entry.expires) {
-      memoryStore.delete(key);
-      return null;
-    }
-    return entry;
-  },
-  async put(key: string, value: { count: number; expires: number }, _ttl: number) {
-    memoryStore.set(key, value);
-    // Cleanup old entries periodically
-    if (memoryStore.size > 1000) {
-      const now = Date.now();
-      for (const [k, v] of memoryStore) {
-        if (now > v.expires) memoryStore.delete(k);
-      }
-    }
-  },
-};
-
-// =============================================================================
-// KV-based rate limit store
-// =============================================================================
-
-function createKVRateLimitStore(kv: KVNamespace): RateLimitStore {
-  return {
-    async get(key: string) {
-      const value = await kv.get(key, 'json');
-      return value as { count: number; expires: number } | null;
-    },
-    async put(key: string, value: { count: number; expires: number }, ttl: number) {
-      await kv.put(key, JSON.stringify(value), { expirationTtl: ttl });
-    },
-  };
-}
-
-// =============================================================================
-// Rate Limiting
+// Turnstile Verification
 // =============================================================================
 
 /**
- * Check and update rate limit for an IP address
- * @returns true if rate limited (should block), false if allowed
+ * Verify a Turnstile token with Cloudflare's API
+ * @returns true if verification passed, false otherwise
  */
-export async function checkRateLimit(
+export async function verifyTurnstile(
+  token: string,
   clientIp: string,
-  env?: MiddlewareEnv
-): Promise<{ limited: boolean; remaining: number; resetIn: number }> {
-  const store = env?.RATE_LIMIT_KV
-    ? createKVRateLimitStore(env.RATE_LIMIT_KV)
-    : inMemoryRateLimitStore;
-
-  const key = `rate:contact:${clientIp}`;
-  const now = Date.now();
-  const windowEnd = now + RATE_LIMIT_WINDOW * 1000;
-
-  const entry = await store.get(key);
-
-  if (!entry) {
-    // First request in window
-    await store.put(key, { count: 1, expires: windowEnd }, RATE_LIMIT_WINDOW);
-    return { limited: false, remaining: RATE_LIMIT_MAX - 1, resetIn: RATE_LIMIT_WINDOW };
+  secretKey: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!token) {
+    return { success: false, error: 'Missing verification token' };
   }
 
-  if (entry.count >= RATE_LIMIT_MAX) {
-    const resetIn = Math.ceil((entry.expires - now) / 1000);
-    return { limited: true, remaining: 0, resetIn: Math.max(0, resetIn) };
+  if (!secretKey) {
+    console.error('Missing TURNSTILE_SECRET_KEY');
+    return { success: false, error: 'Server configuration error' };
   }
 
-  // Increment counter
-  await store.put(key, { count: entry.count + 1, expires: entry.expires }, RATE_LIMIT_WINDOW);
-  const resetIn = Math.ceil((entry.expires - now) / 1000);
-  return {
-    limited: false,
-    remaining: RATE_LIMIT_MAX - entry.count - 1,
-    resetIn: Math.max(0, resetIn),
-  };
+  try {
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: secretKey,
+        response: token,
+        remoteip: clientIp,
+      }),
+    });
+
+    const result = (await response.json()) as TurnstileVerifyResponse;
+
+    if (!result.success) {
+      const errorCodes = result['error-codes']?.join(', ') || 'unknown';
+      console.warn(`Turnstile verification failed: ${errorCodes}`);
+      return { success: false, error: 'Human verification failed. Please try again.' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Turnstile verification error:', error);
+    return { success: false, error: 'Verification service unavailable' };
+  }
 }
 
 // =============================================================================
@@ -327,27 +287,6 @@ export function successResponse(
   );
 }
 
-/**
- * Create rate limit exceeded response
- */
-export function rateLimitResponse(request: Request, resetIn: number): Response {
-  return Response.json(
-    {
-      success: false,
-      message: `Too many requests. Please try again in ${resetIn} seconds.`,
-    },
-    {
-      status: 429,
-      headers: {
-        ...getCorsHeaders(request),
-        'Retry-After': String(resetIn),
-        'X-RateLimit-Remaining': '0',
-        'X-RateLimit-Reset': String(Math.ceil(Date.now() / 1000) + resetIn),
-      },
-    }
-  );
-}
-
 // =============================================================================
 // Common Validation
 // =============================================================================
@@ -356,10 +295,11 @@ export interface ContactPayload {
   name: string;
   email: string;
   message: string;
+  turnstileToken: string;
 }
 
 /**
- * Simple but effective email validation
+ * Validate contact form payload
  */
 export function validateContactPayload(data: unknown): data is ContactPayload {
   if (!data || typeof data !== 'object') return false;
@@ -373,6 +313,9 @@ export function validateContactPayload(data: unknown): data is ContactPayload {
     return false;
   }
   if (typeof payload.message !== 'string' || payload.message.trim().length === 0) {
+    return false;
+  }
+  if (typeof payload.turnstileToken !== 'string' || payload.turnstileToken.trim().length === 0) {
     return false;
   }
 

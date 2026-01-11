@@ -6,18 +6,15 @@
  *
  * Required environment variables:
  * - DISCORD_WEBHOOK_URL: Discord webhook URL
- *
- * Optional environment variables:
- * - RATE_LIMIT_KV: KV namespace for rate limiting
+ * - TURNSTILE_SECRET_KEY: Cloudflare Turnstile secret key
  */
 
 import {
-  checkRateLimit,
+  verifyTurnstile,
   checkBodySize,
   corsPreflightResponse,
   errorResponse,
   successResponse,
-  rateLimitResponse,
   fetchWithTimeout,
   generateSecureReferenceId,
   validateContactPayload,
@@ -39,13 +36,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return errorResponse(request, bodySizeError, 413);
   }
 
-  // Rate limiting
-  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-  const rateLimit = await checkRateLimit(clientIp, env);
-  if (rateLimit.limited) {
-    return rateLimitResponse(request, rateLimit.resetIn);
-  }
-
   if (!env.DISCORD_WEBHOOK_URL) {
     console.error('Missing DISCORD_WEBHOOK_URL');
     return errorResponse(request, 'Server configuration error', 500);
@@ -60,6 +50,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!validateContactPayload(payload)) {
     return errorResponse(request, 'Invalid form data', 400);
+  }
+
+  // Turnstile human verification
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const turnstileResult = await verifyTurnstile(
+    payload.turnstileToken,
+    clientIp,
+    env.TURNSTILE_SECRET_KEY
+  );
+  if (!turnstileResult.success) {
+    return errorResponse(request, turnstileResult.error || 'Verification failed', 403);
   }
 
   const referenceId = generateSecureReferenceId();

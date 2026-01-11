@@ -3,6 +3,15 @@ import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ContactForm } from '../ContactForm';
 
+// Mock Turnstile component
+let mockTurnstileCallback: ((token: string) => void) | null = null;
+vi.mock('@marsidev/react-turnstile', () => ({
+  Turnstile: vi.fn(({ onSuccess }) => {
+    mockTurnstileCallback = onSuccess;
+    return <div data-testid="turnstile-mock">Turnstile Mock</div>;
+  }),
+}));
+
 vi.mock('@/services/contact', () => {
   return {
     submitContactRequest: vi.fn(),
@@ -27,6 +36,7 @@ describe('ContactForm', () => {
 
   beforeEach(() => {
     mockedSubmit.mockReset();
+    mockTurnstileCallback = null;
     now = baseTime;
     vi.spyOn(Date, 'now').mockImplementation(() => now);
   });
@@ -51,6 +61,12 @@ describe('ContactForm', () => {
     await userEvent.type(screen.getByLabelText(/Message/i), message);
   };
 
+  const simulateTurnstileSuccess = () => {
+    if (mockTurnstileCallback) {
+      mockTurnstileCallback('mock-turnstile-token');
+    }
+  };
+
   const submit = async () => {
     await userEvent.click(
       screen.getByRole('button', { name: /send message/i })
@@ -64,6 +80,7 @@ describe('ContactForm', () => {
     await userEvent.type(screen.getByLabelText(/Email/i), 'user@example'); // no TLD
     await userEvent.type(screen.getByLabelText(/Message/i), 'Hello');
     now += 2000; // satisfy minimum fill time
+    simulateTurnstileSuccess();
 
     await userEvent.click(
       screen.getByRole('button', { name: /send message/i })
@@ -90,6 +107,7 @@ describe('ContactForm', () => {
     );
     await userEvent.type(screen.getByLabelText(/Message/i), 'Hello there');
     now += 2000; // satisfy minimum fill time
+    simulateTurnstileSuccess();
 
     await userEvent.click(
       screen.getByRole('button', { name: /send message/i })
@@ -97,7 +115,12 @@ describe('ContactForm', () => {
 
     await waitFor(() =>
       expect(mockedSubmit).toHaveBeenCalledWith(
-        { name: 'Tester', email: 'user@example.com', message: 'Hello there' },
+        {
+          name: 'Tester',
+          email: 'user@example.com',
+          message: 'Hello there',
+          turnstileToken: 'mock-turnstile-token',
+        },
         expect.any(AbortSignal)
       )
     );
@@ -121,6 +144,7 @@ describe('ContactForm', () => {
     form.setAttribute('novalidate', 'true');
 
     now += 2000; // satisfy minimum fill time
+    simulateTurnstileSuccess();
     await submit();
 
     expect(
@@ -140,6 +164,7 @@ describe('ContactForm', () => {
       'https://spam.test'
     );
     now += 2000;
+    simulateTurnstileSuccess();
 
     await submit();
 
@@ -155,6 +180,7 @@ describe('ContactForm', () => {
 
     await fillValidForm();
     now += 500; // below 1s threshold
+    simulateTurnstileSuccess();
 
     await submit();
 
@@ -164,21 +190,17 @@ describe('ContactForm', () => {
     ).toBeInTheDocument();
   });
 
-  it('rate limits submissions made within 60 seconds', async () => {
-    mockedSubmit.mockResolvedValue({ success: true });
+  it('requires Turnstile verification before submitting', async () => {
     render(<ContactForm />);
 
     await fillValidForm();
     now += 2000;
-    await submit();
-    await screen.findByText(/Message sent successfully!/i);
+    // Do NOT call simulateTurnstileSuccess()
 
-    now = baseTime + 61000; // within cooldown window (< 60s since last submit at 2000)
-    await fillValidForm({ message: 'Second attempt' });
-    await submit();
-
-    expect(mockedSubmit).toHaveBeenCalledTimes(1);
-    expect(await screen.findByText(/1 minute cooldown/i)).toBeInTheDocument();
+    // Button should be disabled without Turnstile token
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    expect(submitButton).toBeDisabled();
+    expect(mockedSubmit).not.toHaveBeenCalled();
   });
 
   it('surfaces ContactSubmissionError messages', async () => {
@@ -189,6 +211,7 @@ describe('ContactForm', () => {
     render(<ContactForm />);
     await fillValidForm();
     now += 2000;
+    simulateTurnstileSuccess();
     await submit();
 
     expect(
@@ -204,6 +227,7 @@ describe('ContactForm', () => {
     render(<ContactForm />);
     await fillValidForm();
     now += 2000;
+    simulateTurnstileSuccess();
     await submit();
 
     expect(
@@ -217,6 +241,7 @@ describe('ContactForm', () => {
     render(<ContactForm />);
     await fillValidForm();
     now += 2000;
+    simulateTurnstileSuccess();
     await submit();
 
     expect(mockedSubmit).toHaveBeenCalledTimes(1);

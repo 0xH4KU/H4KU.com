@@ -5,7 +5,6 @@ import {
   computeSHA256HashSync,
   verifyIntegrity,
   verifyIntegritySHA256,
-  verifyIntegritySHA256Sync,
   verifyIntegrityDual,
   verifyIntegrityDualSync,
 } from '../integrity';

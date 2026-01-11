@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef, useId, FormEvent } from 'react';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import {
   submitContactRequest,
   ContactSubmissionError,
 } from '@/services/contact';
 import { isValidEmail, normalizeEmail } from '@/shared/emailValidation';
 import styles from './ContactForm.module.css';
+
+/** Turnstile Site Key - get from Cloudflare Dashboard */
+const TURNSTILE_SITE_KEY = '0x4AAAAAACLxl-ExAnPcpHy3';
 
 interface FormData {
   name: string;
@@ -28,11 +32,15 @@ export function ContactForm() {
   const [status, setStatus] = useState<FormStatus>({ type: 'idle' });
   const statusMessageRef = useRef<HTMLDivElement | null>(null);
   const activeRequestRef = useRef<AbortController | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
 
-  // 🛡️ Anti-spam protection (free safeguards)
-  const [honeypot, setHoneypot] = useState(''); // Honeypot field
-  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0); // Rate limiting
-  const [formStartTime, setFormStartTime] = useState<number>(() => Date.now()); // Form start timestamp
+  // Turnstile token state
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
+
+  // Anti-spam protection (honeypot)
+  const [honeypot, setHoneypot] = useState('');
+  const [formStartTime, setFormStartTime] = useState<number>(() => Date.now());
 
   useEffect(() => {
     return () => {
@@ -49,11 +57,9 @@ export function ContactForm() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 🛡️ Anti-spam Check 1: Honeypot validation
-    // Hidden field filled in means a bot submission
+    // Honeypot validation - hidden field filled means bot
     if (honeypot) {
-      console.warn('🤖 Bot detected via honeypot');
-      // Pretend success but avoid sending anything
+      console.warn('Bot detected via honeypot');
       setStatus({
         type: 'success',
         message: "Message sent successfully! I'll get back to you soon.",
@@ -62,20 +68,8 @@ export function ContactForm() {
       return;
     }
 
-    // 🛡️ Anti-spam Check 2: Rate limiting
-    // Only allow one submission per 60 seconds
+    // Minimum fill time check (1 second)
     const now = Date.now();
-    if (now - lastSubmitTime < 60000) {
-      setStatus({
-        type: 'error',
-        message:
-          'Please wait a moment before sending another message (1 minute cooldown)',
-      });
-      return;
-    }
-
-    // 🛡️ Anti-spam Check 3: Minimum fill time
-    // Require at least one second before submission to deter instant bot posts
     const fillTime = now - formStartTime;
     if (fillTime < 1000) {
       setStatus({
@@ -104,6 +98,15 @@ export function ContactForm() {
       return;
     }
 
+    // Turnstile verification check
+    if (!turnstileToken) {
+      setStatus({
+        type: 'error',
+        message: turnstileError || 'Please complete the verification',
+      });
+      return;
+    }
+
     activeRequestRef.current?.abort();
     const controller = new AbortController();
     activeRequestRef.current = controller;
@@ -116,6 +119,7 @@ export function ContactForm() {
           name: formData.name,
           email: normalizedEmail,
           message: formData.message,
+          turnstileToken,
         },
         controller.signal
       );
@@ -127,13 +131,13 @@ export function ContactForm() {
         type: 'success',
         message: `Message sent successfully! I'll get back to you soon.${reference}`,
       });
-      setLastSubmitTime(now);
       setFormStartTime(Date.now());
-      // Reset form
       setFormData({ name: '', email: '', message: '' });
+      // Reset Turnstile for next submission
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
-        // Treat aborted/timeout requests as a safe recoverable state
         setStatus({
           type: 'error',
           message: 'The request was canceled. Please try again.',
@@ -152,6 +156,9 @@ export function ContactForm() {
         message: fallbackMessage,
       });
       setFormStartTime(Date.now());
+      // Reset Turnstile on error for retry
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
     }
   };
 
@@ -226,7 +233,7 @@ export function ContactForm() {
           />
         </div>
 
-        {/* 🍯 Honeypot Field - Invisible bot trap */}
+        {/* Honeypot Field - Invisible bot trap */}
         <div
           style={{
             position: 'absolute',
@@ -251,9 +258,33 @@ export function ContactForm() {
           />
         </div>
 
+        {/* Cloudflare Turnstile - Human verification */}
+        <div className={styles.field}>
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={TURNSTILE_SITE_KEY}
+            onSuccess={(token) => {
+              setTurnstileToken(token);
+              setTurnstileError(null);
+            }}
+            onError={() => {
+              setTurnstileToken(null);
+              setTurnstileError('Verification failed. Please try again.');
+            }}
+            onExpire={() => {
+              setTurnstileToken(null);
+              setTurnstileError('Verification expired. Please verify again.');
+            }}
+            options={{
+              theme: 'dark',
+              size: 'flexible',
+            }}
+          />
+        </div>
+
         <button
           type="submit"
-          disabled={status.type === 'loading'}
+          disabled={status.type === 'loading' || !turnstileToken}
           className={styles.button}
         >
           {status.type === 'loading' ? 'Sending...' : 'Send Message'}

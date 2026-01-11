@@ -38,6 +38,7 @@
     "postinstall": "npm run deps:prune"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.4.1",
     "@sentry/browser": "^10.26.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.554.0",

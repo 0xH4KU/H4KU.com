@@ -15,19 +15,16 @@
  * Required environment variables:
  * - CONTACT_TO_EMAIL: Recipient email address (e.g., contact@H4KU.com)
  * - CONTACT_FROM_EMAIL: Sender email address (must be configured in Email Routing)
- *
- * Optional environment variables:
- * - RATE_LIMIT_KV: KV namespace for rate limiting
+ * - TURNSTILE_SECRET_KEY: Cloudflare Turnstile secret key
  */
 
 import {
-  checkRateLimit,
+  verifyTurnstile,
   checkBodySize,
   getCorsHeaders,
   corsPreflightResponse,
   errorResponse,
   successResponse,
-  rateLimitResponse,
   generateSecureReferenceId,
   validateContactPayload,
   escapeHtml,
@@ -138,13 +135,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return errorResponse(request, bodySizeError, 413);
   }
 
-  // Rate limiting
-  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-  const rateLimit = await checkRateLimit(clientIp, env);
-  if (rateLimit.limited) {
-    return rateLimitResponse(request, rateLimit.resetIn);
-  }
-
   // Handle preflight
   if (request.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -171,6 +161,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!validateContactPayload(payload)) {
     return errorResponse(request, 'Invalid form data', 400);
+  }
+
+  // Turnstile human verification
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const turnstileResult = await verifyTurnstile(
+    payload.turnstileToken,
+    clientIp,
+    env.TURNSTILE_SECRET_KEY
+  );
+  if (!turnstileResult.success) {
+    return errorResponse(request, turnstileResult.error || 'Verification failed', 403);
   }
 
   const referenceId = generateSecureReferenceId();

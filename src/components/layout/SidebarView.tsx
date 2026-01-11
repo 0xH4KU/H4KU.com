@@ -21,7 +21,7 @@ interface SidebarViewProps {
   isMobile: boolean;
   normalizedSidebarWidth: number;
   inertProps: Record<string, unknown>;
-  sidebarRef: React.RefObject<HTMLDivElement>;
+  sidebarRef: React.RefObject<HTMLDivElement | null>;
   resetToHome: () => void;
   closeSidebar: () => void;
   allFoldersExpanded: boolean;
@@ -42,9 +42,9 @@ interface SidebarViewProps {
   onNavigate: (item: SidebarEntry) => void;
   onContextMenu: (event: React.MouseEvent, item: SidebarEntry) => void;
   socials: Social[];
-  resizeHandleRef: React.RefObject<HTMLDivElement>;
+  resizeHandleRef: React.RefObject<HTMLDivElement | null>;
   onResizeStart: (event: React.MouseEvent | React.TouchEvent) => void;
-  onResizeKeyDown: (event: React.KeyboardEvent) => void;
+  onResizeKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   contextMenu: ContextMenuState | null;
   onCloseContextMenu: () => void;
   onTogglePin: (id: string) => void;

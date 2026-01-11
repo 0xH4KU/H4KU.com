@@ -13,19 +13,16 @@
  * Required environment variables:
  * - RESEND_API_KEY: Your Resend API key
  * - CONTACT_TO_EMAIL: Recipient email address
- *
- * Optional environment variables:
- * - RATE_LIMIT_KV: KV namespace for rate limiting
+ * - TURNSTILE_SECRET_KEY: Cloudflare Turnstile secret key
  */
 
 import {
-  checkRateLimit,
+  verifyTurnstile,
   checkBodySize,
   getCorsHeaders,
   corsPreflightResponse,
   errorResponse,
   successResponse,
-  rateLimitResponse,
   fetchWithTimeout,
   generateSecureReferenceId,
   validateContactPayload,
@@ -391,13 +388,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return errorResponse(request, bodySizeError, 413);
   }
 
-  // Rate limiting
-  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-  const rateLimit = await checkRateLimit(clientIp, env);
-  if (rateLimit.limited) {
-    return rateLimitResponse(request, rateLimit.resetIn);
-  }
-
   // Check required env vars
   if (!env.RESEND_API_KEY) {
     console.error('Missing RESEND_API_KEY');
@@ -418,6 +408,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   if (!validateContactPayload(payload)) {
     return errorResponse(request, 'Invalid form data', 400);
+  }
+
+  // Turnstile human verification
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const turnstileResult = await verifyTurnstile(
+    payload.turnstileToken,
+    clientIp,
+    env.TURNSTILE_SECRET_KEY
+  );
+  if (!turnstileResult.success) {
+    return errorResponse(request, turnstileResult.error || 'Verification failed', 403);
   }
 
   const referenceId = generateSecureReferenceId();
@@ -463,26 +464,29 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     // Send confirmation email to user (non-blocking, don't fail on error)
-    fetchWithTimeout(
-      'https://api.resend.com/emails',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+    // Use waitUntil to ensure the promise completes even after response is sent
+    context.waitUntil(
+      fetchWithTimeout(
+        'https://api.resend.com/emails',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: 'HAKU <contact@h4ku.com>',
+            to: [payload.email],
+            subject: `[H4KU.com] Message Received - ${referenceId}`,
+            html: confirmationHtml,
+          }),
         },
-        body: JSON.stringify({
-          from: 'HAKU <contact@h4ku.com>',
-          to: [payload.email],
-          subject: `[H4KU.com] Message Received - ${referenceId}`,
-          html: confirmationHtml,
-        }),
-      },
-      API_TIMEOUT_MS
-    ).catch((error) => {
-      // Log but don't fail - confirmation email is nice-to-have
-      console.error('Failed to send confirmation email:', error);
-    });
+        API_TIMEOUT_MS
+      ).catch((error) => {
+        // Log but don't fail - confirmation email is nice-to-have
+        console.error('Failed to send confirmation email:', error);
+      })
+    );
 
     // Log with masked email
     console.log(`Contact form submitted: ${referenceId} from ${maskEmail(payload.email)}`);

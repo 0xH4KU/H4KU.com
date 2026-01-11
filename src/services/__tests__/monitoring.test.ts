@@ -23,7 +23,7 @@ const restoreNavigator = (original: Navigator | undefined) => {
 
 const setupMonitoringModule = async (
   env: Record<string, string> = {},
-  sentryFactory?: () => unknown
+  sentryFactory?: () => Record<string, unknown>
 ) => {
   vi.resetModules();
   vi.clearAllMocks();
@@ -34,7 +34,7 @@ const setupMonitoringModule = async (
 
   const sentryMock = {
     init: vi.fn(),
-    captureException: vi.fn((error, scopeFn?: (scope: any) => void) => {
+    captureException: vi.fn((error, scopeFn?: (scope: { setContext: ReturnType<typeof vi.fn>; setTag: ReturnType<typeof vi.fn>; setExtra: ReturnType<typeof vi.fn> }) => void) => {
       if (scopeFn) {
         const scope = {
           setContext: vi.fn(),
@@ -111,7 +111,7 @@ describe('monitoring service', () => {
       userAgent: 'Chrome',
       connection: { saveData: true },
       deviceMemory: 1,
-    } as Navigator);
+    } as unknown as Navigator);
     const { module } = await setupMonitoringModule({
       VITE_SENTRY_DSN: 'https://example-dsn.ingest.sentry.io/123',
     });
