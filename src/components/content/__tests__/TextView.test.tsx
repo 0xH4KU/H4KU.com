@@ -243,13 +243,16 @@ describe('TextView', () => {
         id: 'mixed',
         name: 'Mixed',
         type: 'txt',
-        content: 'Currently: Available for commissions\nPreviously: Not available for commissions',
+        content:
+          'Currently: Available for commissions\nPreviously: Not available for commissions',
       };
 
       render(<TextView page={mockPage} onClose={mockOnClose} />);
 
       expect(screen.getByText('Available for commissions')).toBeInTheDocument();
-      expect(screen.getByText('Not available for commissions')).toBeInTheDocument();
+      expect(
+        screen.getByText('Not available for commissions')
+      ).toBeInTheDocument();
     });
   });
 

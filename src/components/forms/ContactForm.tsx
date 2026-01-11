@@ -263,7 +263,7 @@ export function ContactForm() {
           <Turnstile
             ref={turnstileRef}
             siteKey={TURNSTILE_SITE_KEY}
-            onSuccess={(token) => {
+            onSuccess={token => {
               setTurnstileToken(token);
               setTurnstileError(null);
             }}

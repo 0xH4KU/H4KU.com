@@ -45,6 +45,13 @@ test.describe('H4KU.com smoke E2E', () => {
       });
     });
 
+    // Wait for Turnstile to render and simulate successful verification
+    // by enabling the submit button (Turnstile cannot verify in CI)
+    await page.waitForSelector('[class*="turnstile"]', { timeout: 5000 }).catch(() => {});
+    await page.locator('form button[type="submit"]').evaluate(btn => {
+      (btn as HTMLButtonElement).disabled = false;
+    });
+
     // Missing fields + potential too-fast submit -> should show a visible error
     await page.getByRole('button', { name: contactSelectors.submit }).click();
     const initialError = page.getByText(
@@ -57,12 +64,20 @@ test.describe('H4KU.com smoke E2E', () => {
     await page.getByLabel(contactSelectors.name).fill('Playwright Bot');
     await page.getByLabel(contactSelectors.email).fill('bot@example');
     await page.getByLabel(contactSelectors.message).fill('Hello');
+    // Re-enable button after form interaction (Turnstile resets state)
+    await page.locator('form button[type="submit"]').evaluate(btn => {
+      (btn as HTMLButtonElement).disabled = false;
+    });
     await page.getByRole('button', { name: contactSelectors.submit }).click();
     await expect(page.getByText(/valid email address/i)).toBeVisible();
 
     // Valid submission (network mocked by service) should show success toast
     await page.waitForTimeout(1100);
     await page.getByLabel(contactSelectors.email).fill('bot@example.com');
+    // Re-enable button for final submission
+    await page.locator('form button[type="submit"]').evaluate(btn => {
+      (btn as HTMLButtonElement).disabled = false;
+    });
     await page.getByRole('button', { name: contactSelectors.submit }).click();
     await expect(
       page.getByText(/Message sent successfully!/i)

@@ -231,7 +231,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setNavState(currentState => {
       const pathsMatch =
         currentState.path.length === nextState.path.length &&
-        currentState.path.every((segment, index) => segment === nextState.path[index]);
+        currentState.path.every(
+          (segment, index) => segment === nextState.path[index]
+        );
 
       const viewsMatch =
         (currentState.view === null && nextState.view === null) ||

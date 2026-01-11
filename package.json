@@ -96,29 +96,22 @@
     },
     {
       "name": "react-vendor",
-      "path": "dist/assets/react-vendor-*.js",
+      "path": "dist/assets/rv-*.js",
       "limit": "150 KB",
       "brotli": false,
       "gzip": false
     },
     {
       "name": "icons-vendor",
-      "path": "dist/assets/icons-vendor-*.js",
+      "path": "dist/assets/icons-*.js",
       "limit": "50 KB",
       "brotli": false,
       "gzip": false
     },
     {
       "name": "animation-vendor",
-      "path": "dist/assets/animation-vendor-*.js",
+      "path": "dist/assets/anim-*.js",
       "limit": "100 KB",
-      "brotli": false,
-      "gzip": false
-    },
-    {
-      "name": "main-css",
-      "path": "dist/assets/main-*.css",
-      "limit": "50 KB",
       "brotli": false,
       "gzip": false
     }

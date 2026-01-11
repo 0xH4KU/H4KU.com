@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<Props, State> {
   private createReferenceId() {
     const randomBytes = crypto.getRandomValues(new Uint8Array(4));
     const random = Array.from(randomBytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
+      .map(b => b.toString(16).padStart(2, '0'))
       .join('')
       .slice(0, 6);
     return `${Date.now().toString(36)}-${random}`;

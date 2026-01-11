@@ -34,17 +34,26 @@ const setupMonitoringModule = async (
 
   const sentryMock = {
     init: vi.fn(),
-    captureException: vi.fn((error, scopeFn?: (scope: { setContext: ReturnType<typeof vi.fn>; setTag: ReturnType<typeof vi.fn>; setExtra: ReturnType<typeof vi.fn> }) => void) => {
-      if (scopeFn) {
-        const scope = {
-          setContext: vi.fn(),
-          setTag: vi.fn(),
-          setExtra: vi.fn(),
-        };
-        scopeFn(scope);
+    captureException: vi.fn(
+      (
+        error,
+        scopeFn?: (scope: {
+          setContext: ReturnType<typeof vi.fn>;
+          setTag: ReturnType<typeof vi.fn>;
+          setExtra: ReturnType<typeof vi.fn>;
+        }) => void
+      ) => {
+        if (scopeFn) {
+          const scope = {
+            setContext: vi.fn(),
+            setTag: vi.fn(),
+            setExtra: vi.fn(),
+          };
+          scopeFn(scope);
+        }
+        return error;
       }
-      return error;
-    }),
+    ),
     captureEvent: vi.fn(),
   };
 
