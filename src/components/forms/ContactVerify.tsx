@@ -22,7 +22,7 @@ const TURNSTILE_BYPASS_TOKEN =
   import.meta.env.VITE_TURNSTILE_BYPASS_TOKEN ?? null;
 const SHOULD_RENDER_TURNSTILE = !TURNSTILE_BYPASS_TOKEN;
 
-type VerifyStatus = 'idle' | 'verifying' | 'loading' | 'success' | 'error';
+type VerifyStatus = 'idle' | 'verifying' | 'verified' | 'loading' | 'success' | 'error';
 
 export function ContactVerify() {
   const { navigateTo } = useNavigation();
@@ -31,6 +31,7 @@ export function ContactVerify() {
     useState<PendingContactPayload | null>(null);
   const [status, setStatus] = useState<VerifyStatus>('idle');
   const [message, setMessage] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
     const payload = loadPendingContact();
@@ -55,7 +56,7 @@ export function ContactVerify() {
     window.location.href = '/page/contact';
   };
 
-  const sendSubmission = async (turnstileToken: string) => {
+  const sendSubmission = async (token: string) => {
     if (!pendingPayload) {
       setStatus('error');
       setMessage(
@@ -70,7 +71,7 @@ export function ContactVerify() {
     try {
       const result = await submitContactRequest({
         ...pendingPayload,
-        turnstileToken,
+        turnstileToken: token,
       });
 
       clearPendingContact();
@@ -92,10 +93,12 @@ export function ContactVerify() {
       }
 
       setStatus('error');
+      setTurnstileToken(null);
       turnstileRef.current?.reset();
     }
   };
 
+  // Auto-send for bypass token (E2E tests)
   useEffect(() => {
     if (pendingPayload && TURNSTILE_BYPASS_TOKEN) {
       void sendSubmission(TURNSTILE_BYPASS_TOKEN);
@@ -106,13 +109,26 @@ export function ContactVerify() {
   const isReady = Boolean(pendingPayload);
   const isProcessing = status === 'verifying' || status === 'loading';
 
+  const handleSend = () => {
+    if (turnstileToken) {
+      void sendSubmission(turnstileToken);
+    }
+  };
+
+  const handleRetry = () => {
+    setStatus('verifying');
+    setMessage('Verifying you are human…');
+    setTurnstileToken(null);
+    turnstileRef.current?.reset();
+  };
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.card}>
         <div className={styles.header}>
           <p className={styles.title}>Verify &amp; send</p>
           <p className={styles.subtitle}>
-            Complete the verification to finish sending your message.
+            Complete the verification to send your message.
           </p>
         </div>
 
@@ -138,7 +154,9 @@ export function ContactVerify() {
             ref={turnstileRef}
             siteKey={TURNSTILE_SITE_KEY}
             onSuccess={token => {
-              void sendSubmission(token);
+              setTurnstileToken(token);
+              setStatus('verified');
+              setMessage('Verification complete. Ready to send.');
             }}
             onError={() => {
               setStatus('error');
@@ -155,10 +173,17 @@ export function ContactVerify() {
           />
         )}
 
-        {/* Custom verifying/loading UI */}
+        {/* Verifying/Loading state */}
         {isProcessing && (
           <div className={`${styles.banner} ${styles.info}`} role="status">
             <span className={styles.spinner} aria-hidden="true" />
+            {message}
+          </div>
+        )}
+
+        {/* Verified - ready to send */}
+        {status === 'verified' && (
+          <div className={`${styles.banner} ${styles.info}`} role="status">
             {message}
           </div>
         )}
@@ -180,25 +205,31 @@ export function ContactVerify() {
             type="button"
             className={styles.secondary}
             onClick={goBackToContact}
+            disabled={status === 'loading'}
           >
-            Back
+            {status === 'success' ? 'Done' : 'Back'}
           </button>
-          <button
-            type="button"
-            className={styles.primary}
-            onClick={() => {
-              if (TURNSTILE_BYPASS_TOKEN) {
-                void sendSubmission(TURNSTILE_BYPASS_TOKEN);
-              } else {
-                setStatus('verifying');
-                setMessage('Verifying you are human…');
-                turnstileRef.current?.reset();
-              }
-            }}
-            disabled={!isReady || isProcessing || status === 'success'}
-          >
-            {status === 'success' ? 'Sent' : 'Retry'}
-          </button>
+
+          {status === 'verified' && (
+            <button
+              type="button"
+              className={styles.primary}
+              onClick={handleSend}
+            >
+              Send
+            </button>
+          )}
+
+          {status === 'error' && (
+            <button
+              type="button"
+              className={styles.primary}
+              onClick={handleRetry}
+              disabled={!isReady}
+            >
+              Retry
+            </button>
+          )}
         </div>
       </div>
     </div>

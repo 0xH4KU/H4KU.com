@@ -204,12 +204,19 @@ describe('ContactVerify', () => {
     ).toBeInTheDocument();
   });
 
-  it('submits pending payload after Turnstile verification and shows success', async () => {
+  it('submits pending payload after Turnstile verification and user clicks Send', async () => {
     seedPendingPayload();
     mockSubmit.mockResolvedValueOnce({ success: true, referenceId: 'ref-123' });
 
     render(<ContactVerify />);
     await triggerTurnstile();
+
+    // User must click Send after verification
+    expect(
+      await screen.findByText(/Verification complete/i)
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
     await waitFor(() =>
       expect(mockSubmit).toHaveBeenCalledWith({
@@ -234,6 +241,10 @@ describe('ContactVerify', () => {
 
     render(<ContactVerify />);
     await triggerTurnstile();
+
+    // User must click Send after verification
+    await screen.findByText(/Verification complete/i);
+    await userEvent.click(screen.getByRole('button', { name: /send/i }));
 
     expect(
       await screen.findByText(/Endpoint misconfigured/i)
