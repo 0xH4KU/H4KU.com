@@ -7,8 +7,13 @@ import {
 import { isValidEmail, normalizeEmail } from '@/shared/emailValidation';
 import styles from './ContactForm.module.css';
 
-/** Turnstile Site Key - get from Cloudflare Dashboard */
-const TURNSTILE_SITE_KEY = '0x4AAAAAACLxl-ExAnPcpHy3';
+/**
+ * Turnstile Site Key - uses test key in E2E/test environments for CI compatibility.
+ * Test key '1x00000000000000000000AA' always passes verification.
+ * @see https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+ */
+const TURNSTILE_SITE_KEY =
+  import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAACLxl-ExAnPcpHy3';
 
 interface FormData {
   name: string;

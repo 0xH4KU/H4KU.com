@@ -19,6 +19,9 @@ jobs:
       run: npx playwright install --with-deps
     - name: Run Playwright tests
       run: npx playwright test
+      env:
+        # Use Cloudflare Turnstile test key that always passes verification
+        VITE_TURNSTILE_SITE_KEY: '1x00000000000000000000AA'
     - uses: actions/upload-artifact@v6
       if: ${{ !cancelled() }}
       with:

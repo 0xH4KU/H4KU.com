@@ -140,6 +140,8 @@ jobs:
     env:
       VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || '/api/contact' }}
       VITE_CONTACT_TIMEOUT: 10000
+      # Use Cloudflare Turnstile test key that always passes verification
+      VITE_TURNSTILE_SITE_KEY: '1x00000000000000000000AA'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
