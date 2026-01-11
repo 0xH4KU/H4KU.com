@@ -38,6 +38,55 @@ const createPageResult = (): SearchResult => {
   };
 };
 
+const createWorkImageResult = (): SearchResult => {
+  const folder: Folder = {
+    id: 'gallery-folder',
+    name: 'Gallery',
+    type: 'folder',
+    children: [],
+    items: [],
+  };
+
+  return {
+    type: 'work',
+    id: 'work-img-1',
+    label: 'artwork.jpg',
+    path: ['gallery-folder'],
+    folder,
+    work: {
+      id: 'work-img-1',
+      filename: 'artwork.jpg',
+      itemType: 'work',
+      thumb: '/thumb.jpg',
+      full: '/full.jpg',
+    },
+  };
+};
+
+const createWorkPageResult = (): SearchResult => {
+  const folder: Folder = {
+    id: 'docs-folder',
+    name: 'Docs',
+    type: 'folder',
+    children: [],
+    items: [],
+  };
+
+  return {
+    type: 'work',
+    id: 'work-page-1',
+    label: 'readme.txt',
+    path: ['docs-folder'],
+    folder,
+    work: {
+      id: 'work-page-1',
+      filename: 'readme.txt',
+      itemType: 'page',
+      content: 'readme content',
+    },
+  };
+};
+
 describe('SidebarSearchResults', () => {
   it('renders empty state when there are no results', () => {
     const onSelect = vi.fn();
@@ -89,5 +138,53 @@ describe('SidebarSearchResults', () => {
     fireEvent.click(screen.getByRole('button', { name: /Doc/i }));
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith(pageResult);
+  });
+
+  it('renders work-image results with image meta', () => {
+    const workImageResult = createWorkImageResult();
+    const onSelect = vi.fn();
+
+    render(
+      <SidebarSearchResults
+        results={[workImageResult]}
+        focusedIndex={0}
+        onSelect={onSelect}
+      />
+    );
+
+    expect(screen.getByText('artwork.jpg')).toBeInTheDocument();
+    expect(screen.getByText(/Image/)).toBeInTheDocument();
+  });
+
+  it('renders work-page results with text meta', () => {
+    const workPageResult = createWorkPageResult();
+    const onSelect = vi.fn();
+
+    render(
+      <SidebarSearchResults
+        results={[workPageResult]}
+        focusedIndex={0}
+        onSelect={onSelect}
+      />
+    );
+
+    expect(screen.getByText('readme.txt')).toBeInTheDocument();
+    expect(screen.getByText(/Text/)).toBeInTheDocument();
+  });
+
+  it('invokes onSelect for work result', () => {
+    const workImageResult = createWorkImageResult();
+    const onSelect = vi.fn();
+
+    render(
+      <SidebarSearchResults
+        results={[workImageResult]}
+        focusedIndex={0}
+        onSelect={onSelect}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /artwork.jpg/i }));
+    expect(onSelect).toHaveBeenCalledWith(workImageResult);
   });
 });

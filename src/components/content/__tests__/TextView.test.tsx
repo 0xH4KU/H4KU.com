@@ -207,6 +207,50 @@ describe('TextView', () => {
       expect(preElement).toBeInTheDocument();
       expect(preElement?.textContent).toBe('');
     });
+
+    it('should highlight "Not available for commissions" text', () => {
+      const mockPage: Page = {
+        id: 'commissions',
+        name: 'Commissions',
+        type: 'txt',
+        content: 'Status: Not available for commissions. Check back later.',
+      };
+
+      render(<TextView page={mockPage} onClose={mockOnClose} />);
+
+      const unavailableText = screen.getByText('Not available for commissions');
+      expect(unavailableText).toBeInTheDocument();
+      expect(unavailableText.tagName).toBe('SPAN');
+    });
+
+    it('should highlight "Available for commissions" text', () => {
+      const mockPage: Page = {
+        id: 'commissions',
+        name: 'Commissions',
+        type: 'txt',
+        content: 'Status: Available for commissions. Contact me!',
+      };
+
+      render(<TextView page={mockPage} onClose={mockOnClose} />);
+
+      const availableText = screen.getByText('Available for commissions');
+      expect(availableText).toBeInTheDocument();
+      expect(availableText.tagName).toBe('SPAN');
+    });
+
+    it('should handle mixed content with both availability states', () => {
+      const mockPage: Page = {
+        id: 'mixed',
+        name: 'Mixed',
+        type: 'txt',
+        content: 'Currently: Available for commissions\nPreviously: Not available for commissions',
+      };
+
+      render(<TextView page={mockPage} onClose={mockOnClose} />);
+
+      expect(screen.getByText('Available for commissions')).toBeInTheDocument();
+      expect(screen.getByText('Not available for commissions')).toBeInTheDocument();
+    });
   });
 
   describe('Accessibility', () => {
