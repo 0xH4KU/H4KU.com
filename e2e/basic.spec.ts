@@ -45,6 +45,12 @@ test.describe('H4KU.com smoke E2E', () => {
       });
     });
 
+    // Wait for Turnstile to complete verification (uses test key in CI)
+    await page.waitForFunction(
+      () => !document.querySelector('form button[type="submit"]')?.hasAttribute('disabled'),
+      { timeout: 10000 }
+    ).catch(() => {});
+
     // Missing fields + potential too-fast submit -> should show a visible error
     await page.getByRole('button', { name: contactSelectors.submit }).click();
     const initialError = page.getByText(

@@ -96,7 +96,7 @@ public/content/**/* (source assets)
 ### Integrity Verification Pipeline
 
 - `scripts/build-data.js` writes `_integrity` (FNV-1a) and `_integritySHA256` plus `_buildTime` when aggregating content.
-- `scripts/check-integrity.ts` drives `npm run integrity:check`; `-- --write` updates hashes for intentional content changes.
+- `scripts/check-integrity.js` drives `npm run integrity:check`; `-- --write` updates hashes for intentional content changes.
 - `src/data/mockData.ts` recomputes both hashes at runtime; the layout surfaces the status so tamper warnings are visible.
 - Tests cover hash verification and tamper UI in `src/components/layout/__tests__/StatusBar.test.tsx`.
 

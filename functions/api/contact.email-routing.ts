@@ -15,7 +15,23 @@
  * Required environment variables:
  * - CONTACT_TO_EMAIL: Recipient email address (e.g., contact@H4KU.com)
  * - CONTACT_FROM_EMAIL: Sender email address (must be configured in Email Routing)
+ * - TURNSTILE_SECRET_KEY: Cloudflare Turnstile secret key
  */
+
+import {
+  verifyTurnstile,
+  checkBodySize,
+  getCorsHeaders,
+  corsPreflightResponse,
+  errorResponse,
+  successResponse,
+  generateSecureReferenceId,
+  validateContactPayload,
+  escapeHtml,
+  maskEmail,
+  type ContactPayload,
+  type MiddlewareEnv,
+} from './_middleware';
 
 // Email message structure for Cloudflare Email Workers
 interface EmailMessage {
@@ -27,64 +43,12 @@ interface EmailMessage {
   replyTo?: string;
 }
 
-interface ContactPayload {
-  name: string;
-  email: string;
-  message: string;
-}
-
-interface Env {
+interface Env extends MiddlewareEnv {
   send_email: {
     send: (message: EmailMessage) => Promise<void>;
   };
   CONTACT_TO_EMAIL: string;
   CONTACT_FROM_EMAIL: string;
-}
-
-function generateReferenceId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
-  return `HAKU-${timestamp}-${random}`.toUpperCase();
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-function validatePayload(data: unknown): data is ContactPayload {
-  if (!data || typeof data !== 'object') return false;
-
-  const payload = data as Record<string, unknown>;
-
-  if (typeof payload.name !== 'string' || payload.name.trim().length === 0) {
-    return false;
-  }
-  if (typeof payload.email !== 'string' || !isValidEmail(payload.email)) {
-    return false;
-  }
-  if (
-    typeof payload.message !== 'string' ||
-    payload.message.trim().length === 0
-  ) {
-    return false;
-  }
-
-  // Length limits
-  if (payload.name.length > 100) return false;
-  if (payload.email.length > 254) return false;
-  if (payload.message.length > 5000) return false;
-
-  return true;
-}
-
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
 }
 
 function createEmailContent(
@@ -163,13 +127,13 @@ This message was sent via the H4KU.com contact form.
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
+  const corsHeaders = getCorsHeaders(request);
 
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://h4ku.com',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-  };
+  // Check body size before reading
+  const bodySizeError = checkBodySize(request);
+  if (bodySizeError) {
+    return errorResponse(request, bodySizeError, 413);
+  }
 
   // Handle preflight
   if (request.method === 'OPTIONS') {
@@ -179,18 +143,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   // Verify required env vars and bindings
   if (!env.CONTACT_TO_EMAIL || !env.CONTACT_FROM_EMAIL) {
     console.error('Missing required environment variables');
-    return Response.json(
-      { success: false, message: 'Server configuration error' },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Server configuration error', 500);
   }
 
   if (!env.send_email) {
     console.error('Missing send_email binding');
-    return Response.json(
-      { success: false, message: 'Email service not configured' },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Email service not configured', 500);
   }
 
   // Parse and validate payload
@@ -198,21 +156,25 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     payload = await request.json();
   } catch {
-    return Response.json(
-      { success: false, message: 'Invalid JSON payload' },
-      { status: 400, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Invalid JSON payload', 400);
   }
 
-  if (!validatePayload(payload)) {
-    return Response.json(
-      { success: false, message: 'Invalid form data' },
-      { status: 400, headers: corsHeaders }
-    );
+  if (!validateContactPayload(payload)) {
+    return errorResponse(request, 'Invalid form data', 400);
   }
 
-  const referenceId = generateReferenceId();
+  // Turnstile human verification
   const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const turnstileResult = await verifyTurnstile(
+    payload.turnstileToken,
+    clientIp,
+    env.TURNSTILE_SECRET_KEY
+  );
+  if (!turnstileResult.success) {
+    return errorResponse(request, turnstileResult.error || 'Verification failed', 403);
+  }
+
+  const referenceId = generateSecureReferenceId();
 
   // Create email content
   const { text, html } = createEmailContent(payload, referenceId, clientIp);
@@ -228,35 +190,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       replyTo: payload.email,
     });
 
-    console.log(`Contact form submitted: ${referenceId} from ${payload.email}`);
+    // Log with masked email
+    console.log(`Contact form submitted: ${referenceId} from ${maskEmail(payload.email)}`);
 
-    return Response.json(
-      {
-        success: true,
-        message: 'Message sent successfully',
-        referenceId,
-      },
-      { headers: corsHeaders }
-    );
+    return successResponse(request, {
+      message: 'Message sent successfully',
+      referenceId,
+    });
   } catch (error) {
     console.error('Failed to send email:', error);
-    return Response.json(
-      {
-        success: false,
-        message: 'Failed to send message. Please try again later.',
-      },
-      { status: 500, headers: corsHeaders }
-    );
+    return errorResponse(request, 'Failed to send message. Please try again later.', 500);
   }
 };
 
 // Handle OPTIONS for CORS preflight
-export const onRequestOptions: PagesFunction = async () => {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': 'https://h4ku.com',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
-    },
-  });
+export const onRequestOptions: PagesFunction = async (context) => {
+  return corsPreflightResponse(context.request);
 };

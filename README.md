@@ -190,6 +190,14 @@ Development server runs at `http://localhost:5173`
 | `VITE_APP_VERSION`      | (Optional) Overrides the release tag reported to monitoring.                                                                                       |
 | `VITE_APP_ENV`          | (Optional) Sets the monitoring environment label (`prod`, `staging`, etc.).                                                                        |
 
+#### Server-side Environment Variables (Cloudflare Pages)
+
+| Variable                | Description                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `TURNSTILE_SECRET_KEY`  | Cloudflare Turnstile secret key for human verification (required for contact form).           |
+| `RESEND_API_KEY`        | Resend API key for sending emails.                                                            |
+| `CONTACT_TO_EMAIL`      | Recipient email address for contact form submissions.                                         |
+
 ### Available Scripts
 
 | Command                   | Description                                                           |
@@ -235,7 +243,7 @@ After editing any of the above, run `npm run build:data` and commit the refreshe
 ## Testing
 
 - Runner: Vitest 4 + Testing Library (jsdom)
-- Suite size: 41 spec files / 530+ tests (as of January 2025)
+- Suite size: 43 spec files / 540+ tests (as of January 2026)
 - Coverage: 90% global thresholds (lines/functions/statements) and 85% for branches
 
 Focus areas:
@@ -261,7 +269,11 @@ npx wrangler pages deploy --project-name h4ku-com dist
 ```
 
 - Adjust `pages_build_output_dir` or `name` inside `wrangler.toml` if your project slug differs.
-- Set `VITE_CONTACT_ENDPOINT` (and any optional vars) through the Cloudflare Pages dashboard or by editing the `[vars]` block before deploying.
+- Set environment variables through the Cloudflare Pages dashboard:
+  - `TURNSTILE_SECRET_KEY` - Required for contact form human verification
+  - `RESEND_API_KEY` - For email notifications
+  - `CONTACT_TO_EMAIL` - Recipient email address
+  - `VITE_SENTRY_DSN` - Optional, for error monitoring
 - Security headers (CSP, HSTS, Permissions-Policy, etc.) live in `public/_headers`. Update the `connect-src` directive there if your contact endpoint uses a different domain.
 
 `vite-plugin-sitemap` runs during `vite build`, generating a fresh `dist/sitemap.xml` from the aggregated content so you no longer need to maintain a static `public/sitemap.xml`.
@@ -300,14 +312,20 @@ For questions, collaboration, or licensing inquiries:
 - **Email:** contact@H4KU.com
 - **Website:** https://H4KU.com
 
-### Cloudflare Email Worker setup (recommended)
+### Contact Form Setup
 
-Deploy a CF Worker (or Pages Function) that accepts `POST /api/contact` and sends email using the Email Worker binding. Keeping it on the same domain keeps CSP/CORS simple.
+The contact form uses Cloudflare Turnstile for bot protection and Resend for email delivery.
 
-1. Map the Worker route to `/api/contact` on your Pages domain (or use `https://<subdomain>.workers.dev/contact`).
-2. Set `VITE_CONTACT_ENDPOINT` accordingly; default `/api/contact` already works for same-domain routes.
-3. If you use a workers.dev hostname, CSP already allows `https://*.workers.dev`.
-4. Optional: adjust `VITE_CONTACT_TIMEOUT` (ms) to your SLA.
+1. **Configure Turnstile** in [Cloudflare Dashboard](https://dash.cloudflare.com/) → Turnstile
+   - Create a site and get your Site Key and Secret Key
+   - The Site Key is hardcoded in `ContactForm.tsx`
+   - Add `TURNSTILE_SECRET_KEY` to Pages environment variables
+
+2. **Configure Email** via [Resend](https://resend.com)
+   - Get your API key and verify your domain
+   - Set `RESEND_API_KEY` and `CONTACT_TO_EMAIL` in Pages settings
+
+See [functions/README.md](./functions/README.md) for detailed setup instructions and alternative email providers.
 
 ---
 

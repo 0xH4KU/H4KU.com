@@ -10,10 +10,16 @@ echo ""
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Use workspace-local tmp to avoid sandboxed tmp issues
-TMPDIR="${TMPDIR:-$SCRIPT_DIR/../.tmp}"
-mkdir -p "$TMPDIR"
+# Use workspace-local directories to stay within the sandbox
+TMPDIR="$SCRIPT_DIR/../.tmp"
+NPM_CONFIG_CACHE="$SCRIPT_DIR/../.npm-cache"
+PLAYWRIGHT_BROWSERS_PATH="$SCRIPT_DIR/../.playwright-browsers"
+
+mkdir -p "$TMPDIR" "$NPM_CONFIG_CACHE" "$PLAYWRIGHT_BROWSERS_PATH"
+
 export TMPDIR
+export NPM_CONFIG_CACHE
+export PLAYWRIGHT_BROWSERS_PATH
 
 # Make scripts executable
 chmod +x "$SCRIPT_DIR"/*.sh

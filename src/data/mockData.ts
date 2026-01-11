@@ -75,7 +75,7 @@ const integrityPayload = {
   socials: rawAggregatedData.socials ?? [],
 };
 
-const integrityResults = verifyIntegrityDual(
+const integrityResults = await verifyIntegrityDual(
   integrityPayload,
   rawAggregatedData._integrity,
   rawAggregatedData._integritySHA256

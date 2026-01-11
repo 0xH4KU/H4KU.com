@@ -6,7 +6,7 @@ _Testing philosophy, tooling, and expectations for H4KU.com._
 
 - **Runner**: Vitest 4 (jsdom)
 - **Library**: React Testing Library (`@testing-library/react` + `@testing-library/user-event`)
-- **Suite size**: 41 spec files / 530+ tests (expand as you add features)
+- **Suite size**: 43 spec files / 540+ tests (expand as you add features)
 - **Coverage**: 90% global thresholds (lines/functions/statements), 85% branches
 - **E2E**: Playwright smoke suite (`npm run test:e2e`) targets `/page/about` & `/page/contact` with mocked contact API; expand flows as you add features.
 - **Philosophy**: test behaviours, not implementation details; keep suites fast and deterministic.

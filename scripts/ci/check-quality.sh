@@ -2,6 +2,15 @@
 # Unified quality check script for GitHub Actions CI
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TMPDIR="$SCRIPT_DIR/../.tmp"
+NPM_CONFIG_CACHE="${NPM_CONFIG_CACHE:-$SCRIPT_DIR/../.npm-cache}"
+
+mkdir -p "$TMPDIR" "$NPM_CONFIG_CACHE"
+
+export TMPDIR
+export NPM_CONFIG_CACHE
+
 echo "🔍 Running quality checks..."
 echo ""
 

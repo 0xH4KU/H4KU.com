@@ -7,13 +7,26 @@ interface MonitoringContext {
   extra?: Record<string, unknown>;
 }
 
-let isInitialized = false;
-let monitoringEnabled = false;
-let sentryClient: SentryClient | null = null;
-let sentryClientPromise: Promise<SentryClient> | null = null;
-let monitoringInitPromise: Promise<SentryClient | null> | null = null;
-let idleInitScheduled = false;
-let interactionInitHooked = false;
+/**
+ * Monitoring initialization state machine
+ *
+ * States:
+ * - idle: Not initialized, not started
+ * - scheduled: Idle/interaction init scheduled
+ * - loading: Sentry module is being loaded
+ * - ready: Sentry initialized and ready
+ * - disabled: Monitoring disabled (no DSN, low device, etc.)
+ * - error: Failed to initialize
+ */
+type MonitoringState =
+  | { status: 'idle' }
+  | { status: 'scheduled' }
+  | { status: 'loading'; promise: Promise<SentryClient | null> }
+  | { status: 'ready'; client: SentryClient }
+  | { status: 'disabled' }
+  | { status: 'error' };
+
+let state: MonitoringState = { status: 'idle' };
 
 const getEnv = (key: string) => {
   const value = (import.meta.env as Record<string, string | undefined>)[key];
@@ -57,29 +70,33 @@ const isLowPriorityDevice = () => {
 const shouldLoadMonitoring = () =>
   Boolean(SENTRY_DSN) && !isAutomatedAgent() && !isLowPriorityDevice();
 
-const loadSentryClient = async (): Promise<SentryClient> => {
-  if (sentryClient) {
-    return sentryClient;
+/**
+ * Get the Sentry client, initializing if needed
+ */
+const getClient = async (): Promise<SentryClient | null> => {
+  // Already ready
+  if (state.status === 'ready') {
+    return state.client;
   }
-  if (!sentryClientPromise) {
-    sentryClientPromise = import('@sentry/browser').then(module => {
-      sentryClient = module;
-      return module;
-    });
-  }
-  return sentryClientPromise;
-};
 
-const beginMonitoringInit = async (): Promise<SentryClient | null> => {
-  if (monitoringInitPromise) {
-    return monitoringInitPromise;
+  // Already loading - wait for it
+  if (state.status === 'loading') {
+    return state.promise;
   }
-  if (!shouldLoadMonitoring()) {
-    monitoringEnabled = false;
+
+  // Disabled or errored - return null
+  if (state.status === 'disabled' || state.status === 'error') {
     return null;
   }
 
-  monitoringInitPromise = loadSentryClient()
+  // Check if we should load
+  if (!shouldLoadMonitoring()) {
+    state = { status: 'disabled' };
+    return null;
+  }
+
+  // Start loading
+  const loadPromise = import('@sentry/browser')
     .then(Sentry => {
       Sentry.init({
         dsn: SENTRY_DSN,
@@ -95,42 +112,55 @@ const beginMonitoringInit = async (): Promise<SentryClient | null> => {
           return event;
         },
       });
-      monitoringEnabled = true;
+      state = { status: 'ready', client: Sentry };
       return Sentry;
     })
     .catch(error => {
       if (import.meta.env.DEV) {
         console.warn('[monitoring] Failed to load Sentry:', error);
       }
-      monitoringEnabled = false;
-      monitoringInitPromise = null;
-      sentryClientPromise = null;
-      sentryClient = null;
+      state = { status: 'error' };
       return null;
     });
-  return monitoringInitPromise;
+
+  state = { status: 'loading', promise: loadPromise };
+  return loadPromise;
 };
 
-const scheduleMonitoringInit = () => {
+/**
+ * Schedule deferred initialization on idle or first interaction
+ */
+const scheduleInit = () => {
   if (
-    idleInitScheduled ||
-    monitoringEnabled ||
-    monitoringInitPromise ||
-    typeof window === 'undefined'
+    state.status !== 'idle' ||
+    typeof window === 'undefined' ||
+    !shouldLoadMonitoring()
   ) {
     return;
   }
-  if (!shouldLoadMonitoring()) {
-    return;
-  }
 
-  idleInitScheduled = true;
+  state = { status: 'scheduled' };
 
   const runInit = () => {
-    idleInitScheduled = false;
-    void beginMonitoringInit();
+    if (state.status === 'scheduled') {
+      void getClient();
+    }
   };
 
+  // Init on first interaction
+  const onFirstInteraction = () => {
+    window.removeEventListener('pointerdown', onFirstInteraction);
+    window.removeEventListener('keydown', onFirstInteraction);
+    runInit();
+  };
+
+  window.addEventListener('pointerdown', onFirstInteraction, {
+    passive: true,
+    once: true,
+  });
+  window.addEventListener('keydown', onFirstInteraction, { once: true });
+
+  // Init during idle time
   const idleWindow = window as typeof window & {
     requestIdleCallback?: (
       callback: IdleRequestCallback,
@@ -138,45 +168,20 @@ const scheduleMonitoringInit = () => {
     ) => number;
   };
 
-  if (!interactionInitHooked) {
-    const onFirstInteraction = () => {
-      window.removeEventListener('pointerdown', onFirstInteraction);
-      window.removeEventListener('keydown', onFirstInteraction);
-      runInit();
-    };
-    window.addEventListener('pointerdown', onFirstInteraction, {
-      passive: true,
-      once: true,
-    });
-    window.addEventListener('keydown', onFirstInteraction, { once: true });
-    interactionInitHooked = true;
-  }
-
   if (typeof idleWindow.requestIdleCallback === 'function') {
-    idleWindow.requestIdleCallback(
-      () => {
-        runInit();
-      },
-      { timeout: 4000 }
-    );
+    idleWindow.requestIdleCallback(runInit, { timeout: 4000 });
   } else {
     window.setTimeout(runInit, 4000);
   }
 };
 
 export const initializeMonitoring = async (): Promise<boolean> => {
-  if (isInitialized) {
-    return monitoringEnabled;
-  }
-
-  isInitialized = true;
-
   if (typeof window === 'undefined' || !shouldLoadMonitoring()) {
-    monitoringEnabled = false;
+    state = { status: 'disabled' };
     return false;
   }
 
-  scheduleMonitoringInit();
+  scheduleInit();
   return true;
 };
 
@@ -185,7 +190,7 @@ export const reportError = (
   info?: ErrorInfo,
   context?: MonitoringContext
 ): void => {
-  if (!monitoringEnabled || typeof window === 'undefined') {
+  if (state.status === 'disabled' || typeof window === 'undefined') {
     return;
   }
 
@@ -193,11 +198,7 @@ export const reportError = (
     error instanceof Error ? error : new Error(String(error));
 
   const sendToSentry = async () => {
-    const ongoingInit = monitoringInitPromise;
-    const client =
-      sentryClient ??
-      (ongoingInit ? await ongoingInit : null) ??
-      (await beginMonitoringInit());
+    const client = await getClient();
     if (!client) {
       return;
     }
@@ -249,9 +250,6 @@ export const reportWebVital = (entry: WebVitalEntry): void => {
     if (entry.rating === 'poor') {
       return 'warning' as const;
     }
-    if (entry.rating === 'needs-improvement') {
-      return 'info' as const;
-    }
     return 'info' as const;
   };
 
@@ -271,12 +269,7 @@ export const reportWebVital = (entry: WebVitalEntry): void => {
   const thresholdBucket = getThresholdBucket();
 
   const send = async () => {
-    const client = monitoringEnabled
-      ? (sentryClient ??
-        (monitoringInitPromise
-          ? await monitoringInitPromise
-          : await beginMonitoringInit()))
-      : null;
+    const client = await getClient();
 
     if (client) {
       client.captureEvent({

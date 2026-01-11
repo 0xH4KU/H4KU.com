@@ -20,6 +20,15 @@
       "@types/react",
       "@types/react-dom"
     ],
+    "plugins": [
+      {
+        "name": "typescript-plugin-css-modules",
+        "options": {
+          "classnameTransform": "camelCaseOnly",
+          "customMatcher": "\\.module\\.css$"
+        }
+      }
+    ],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

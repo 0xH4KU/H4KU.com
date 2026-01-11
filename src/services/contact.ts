@@ -4,6 +4,7 @@ export interface ContactPayload {
   name: string;
   email: string;
   message: string;
+  turnstileToken: string;
 }
 
 export interface ContactApiResponse {
