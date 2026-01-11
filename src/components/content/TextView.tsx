@@ -1,4 +1,11 @@
-import React, { lazy, Suspense, useMemo, useState } from 'react';
+import React, {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { m } from 'framer-motion';
 import paperIcon from '@/assets/paper.gif';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -56,6 +63,9 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
   const { theme } = useTheme();
   const prefersReducedMotion = useReducedMotion();
   const [contactRetryKey, setContactRetryKey] = useState(0);
+  const [showInfoBlock, setShowInfoBlock] = useState(false);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const preRef = useRef<HTMLPreElement | null>(null);
 
   const pageVariants = useMemo(
     () => createPageVariants(prefersReducedMotion),
@@ -71,6 +81,117 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
     () => createCloseButtonAnimation(prefersReducedMotion),
     [prefersReducedMotion]
   );
+
+  const infoBlockData = useMemo(() => {
+    const content = page.content ?? '';
+    const encoder =
+      typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
+    const sizeBytes = encoder ? encoder.encode(content).length : content.length;
+    const sizeKb = sizeBytes / 1024;
+    const lineCount = content.split(/\r?\n/).length;
+    const pathLabel =
+      typeof window !== 'undefined' && window.location?.pathname
+        ? window.location.pathname
+        : '/';
+
+    return [
+      { label: 'Type', value: 'TXT' },
+      { label: 'Size', value: `${sizeKb.toFixed(1)} KB` },
+      { label: 'Lines', value: `${lineCount}` },
+      { label: 'Loc', value: pathLabel },
+      { label: 'Status', value: 'Read-only' },
+    ];
+  }, [page.content]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const contentEl = contentRef.current;
+    const preEl = preRef.current;
+
+    if (!contentEl || !preEl) {
+      return undefined;
+    }
+
+    const canvas = document.createElement('canvas');
+    let context: CanvasRenderingContext2D | null = null;
+
+    try {
+      context = canvas.getContext('2d');
+    } catch {
+      context = null;
+    }
+    if (!context) {
+      return undefined;
+    }
+
+    let frameId: number | null = null;
+
+    const measure = () => {
+      const containerWidth = contentEl.clientWidth;
+      if (containerWidth <= 0) {
+        return;
+      }
+
+      if (containerWidth < 640) {
+        setShowInfoBlock(false);
+        return;
+      }
+
+      const font = window.getComputedStyle(preEl).font;
+      context.font = font;
+
+      const lines = (page.content ?? '').split(/\r?\n/);
+      let maxLineWidth = 0;
+
+      for (const line of lines) {
+        const width = context.measureText(line).width;
+        if (width > maxLineWidth) {
+          maxLineWidth = width;
+        }
+        if (maxLineWidth / containerWidth >= 0.8) {
+          break;
+        }
+      }
+
+      const ratio = maxLineWidth / containerWidth;
+      if (ratio >= 0.8) {
+        setShowInfoBlock(false);
+        return;
+      }
+      if (ratio <= 0.3) {
+        setShowInfoBlock(true);
+        return;
+      }
+
+      setShowInfoBlock(false);
+    };
+
+    const scheduleMeasure = () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+      frameId = window.requestAnimationFrame(measure);
+    };
+
+    scheduleMeasure();
+
+    const resizeObserver =
+      'ResizeObserver' in window ? new ResizeObserver(scheduleMeasure) : null;
+
+    resizeObserver?.observe(contentEl);
+    window.addEventListener('resize', scheduleMeasure);
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', scheduleMeasure);
+    };
+  }, [page.content]);
 
   const contactFormFallback = (
     <div className={styles['contact-error']} role="alert">
@@ -133,6 +254,7 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
         </m.div>
         <m.div
           className={styles['txt-content']}
+          ref={contentRef}
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{
@@ -141,27 +263,45 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
             ease: DEFAULT_EASE,
           }}
         >
-          <pre>{renderContent(page.content)}</pre>
-          {page.id === 'contact' && (
-            <ErrorBoundary key={contactRetryKey} fallback={contactFormFallback}>
-              <Suspense
-                fallback={
-                  <div className={styles['contact-loading']} role="status">
-                    Loading secure contact form…
+          {showInfoBlock && (
+            <aside className={styles['info-block']} aria-label="File info">
+              <div className={styles['info-block-title']}>File info</div>
+              <dl className={styles['info-block-list']}>
+                {infoBlockData.map(item => (
+                  <div key={item.label} className={styles['info-block-item']}>
+                    <dt className={styles['info-block-term']}>{item.label}</dt>
+                    <dd className={styles['info-block-value']}>{item.value}</dd>
                   </div>
-                }
+                ))}
+              </dl>
+            </aside>
+          )}
+          <pre ref={preRef}>{renderContent(page.content)}</pre>
+          <div className={styles['txt-content-extra']}>
+            {page.id === 'contact' && (
+              <ErrorBoundary
+                key={contactRetryKey}
+                fallback={contactFormFallback}
               >
-                <ContactForm />
-              </Suspense>
-            </ErrorBoundary>
-          )}
-          {page.id === 'contact-verify' && (
-            <ErrorBoundary fallback={contactVerifyFallback}>
-              <Suspense fallback={contactVerifyFallback}>
-                <ContactVerify />
-              </Suspense>
-            </ErrorBoundary>
-          )}
+                <Suspense
+                  fallback={
+                    <div className={styles['contact-loading']} role="status">
+                      Loading secure contact form…
+                    </div>
+                  }
+                >
+                  <ContactForm />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+            {page.id === 'contact-verify' && (
+              <ErrorBoundary fallback={contactVerifyFallback}>
+                <Suspense fallback={contactVerifyFallback}>
+                  <ContactVerify />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </div>
         </m.div>
       </div>
     </m.div>

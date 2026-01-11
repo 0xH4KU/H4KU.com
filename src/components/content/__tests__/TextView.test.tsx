@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -58,9 +58,27 @@ vi.mock('@/components/forms/ContactForm', () => ({
 
 describe('TextView', () => {
   const mockOnClose = vi.fn();
+  const originalTextEncoder = globalThis.TextEncoder;
+  const originalClientWidthDescriptor = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    'clientWidth'
+  );
 
   beforeEach(() => {
     mockOnClose.mockClear();
+  });
+
+  afterEach(() => {
+    globalThis.TextEncoder = originalTextEncoder;
+    if (originalClientWidthDescriptor) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        'clientWidth',
+        originalClientWidthDescriptor
+      );
+    }
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   describe('Basic Rendering', () => {
@@ -310,6 +328,120 @@ describe('TextView', () => {
       const closeButton = screen.getByRole('button', { name: /×/ });
       expect(closeButton).toBeInTheDocument();
       expect(closeButton.tagName).toBe('BUTTON');
+    });
+  });
+
+  describe('Info block layout', () => {
+    const mockPage: Page = {
+      id: 'about',
+      name: 'About',
+      type: 'txt',
+      content: 'Short line',
+    };
+
+    const mockMeasurement = ({
+      containerWidth,
+      lineWidth,
+    }: {
+      containerWidth: number;
+      lineWidth: number;
+    }) => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+        configurable: true,
+        get: () => containerWidth,
+      });
+
+      vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
+        callback(0);
+        return 1;
+      });
+      vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+        () =>
+          ({
+            measureText: () => ({ width: lineWidth }),
+            font: '',
+          }) as unknown as CanvasRenderingContext2D
+      );
+
+      class MockResizeObserver {
+        constructor(private callback: ResizeObserverCallback) {}
+        observe() {
+          this.callback([], this as unknown as ResizeObserver);
+        }
+        disconnect() {}
+      }
+
+      vi.stubGlobal('ResizeObserver', MockResizeObserver);
+
+      render(<TextView page={mockPage} onClose={mockOnClose} />);
+    };
+
+    it('shows the info block when content is narrow', async () => {
+      mockMeasurement({ containerWidth: 1000, lineWidth: 200 });
+
+      await waitFor(() => {
+        expect(screen.getByText(/File info/i)).toBeInTheDocument();
+      });
+    });
+
+    it('hides the info block when content is wide', async () => {
+      mockMeasurement({ containerWidth: 800, lineWidth: 720 });
+
+      await waitFor(() => {
+        expect(screen.queryByText(/File info/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('hides the info block when content is mid-range', async () => {
+      mockMeasurement({ containerWidth: 1000, lineWidth: 520 });
+
+      await waitFor(() => {
+        expect(screen.queryByText(/File info/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('hides the info block when the container is too narrow', async () => {
+      mockMeasurement({ containerWidth: 500, lineWidth: 100 });
+
+      await waitFor(() => {
+        expect(screen.queryByText(/File info/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('hides the info block when the container width is zero', async () => {
+      mockMeasurement({ containerWidth: 0, lineWidth: 0 });
+
+      await waitFor(() => {
+        expect(screen.queryByText(/File info/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it('falls back to string length when TextEncoder is unavailable', async () => {
+      globalThis.TextEncoder = undefined as unknown as typeof TextEncoder;
+      mockMeasurement({ containerWidth: 1000, lineWidth: 200 });
+
+      await waitFor(() => {
+        expect(screen.getByText(/Size/i)).toBeInTheDocument();
+      });
+    });
+
+    it('skips measurement when canvas context is unavailable', () => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+        configurable: true,
+        get: () => 1000,
+      });
+
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+        () => {
+          throw new Error('Canvas context unavailable');
+        }
+      );
+
+      render(<TextView page={mockPage} onClose={mockOnClose} />);
+
+      expect(screen.queryByText(/File info/i)).not.toBeInTheDocument();
     });
   });
 });

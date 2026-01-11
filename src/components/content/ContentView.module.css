@@ -138,9 +138,9 @@
 }
 
 .txt-viewer {
-  width: 100%;
-  /* Let the desktop page width scale with the viewport so it doesn't hug the left edge */
-  max-width: clamp(320px, 92vw, 1400px);
+  width: min(92vw, 800px);
+  min-width: 320px;
+  max-width: min(92vw, 800px);
   margin: 0 auto;
   border: 2px solid var(--color-text);
   background: var(--color-background);
@@ -176,6 +176,53 @@
 
 .txt-content {
   padding: clamp(16px, 3vw, 40px);
+}
+
+.info-block {
+  float: right;
+  width: clamp(160px, 18%, 220px);
+  margin: 4px 0 12px 24px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 12px;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+.info-block-title {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+.info-block-list {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.info-block-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.info-block-term {
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.info-block-value {
+  text-align: right;
+  font-weight: 600;
+}
+
+.txt-content-extra {
+  clear: both;
+  margin-top: 16px;
 }
 
 .txt-content pre {
@@ -241,5 +288,9 @@
 
   .works-grid {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .info-block {
+    display: none;
   }
 }
