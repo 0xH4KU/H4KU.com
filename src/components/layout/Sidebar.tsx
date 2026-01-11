@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSearchExecutor } from '@/contexts/SearchContext';
 import { useSidebarContext } from '@/contexts/SidebarContext';
@@ -19,15 +13,8 @@ import { Folder, Page, SearchResult } from '@/types';
 import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG } from '@/config/constants';
 import { buildAppUrl, buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
 import { navigateFromSearchResult } from '@/utils/searchNavigation';
-import { ContextMenu } from './ContextMenu';
-import { SidebarHeader } from './SidebarHeader';
-import { SidebarFooter } from './SidebarFooter';
-import { SidebarFilter } from './SidebarFilter';
-import { SidebarSearchResults } from './SidebarSearchResults';
-import { SidebarSections } from './SidebarSections';
-import styles from './Sidebar.module.css';
-
-type SidebarEntry = Folder | Page;
+import { SidebarView } from './SidebarView';
+import type { SidebarEntry } from './Sidebar.types';
 
 const Sidebar: React.FC = () => {
   const {
@@ -257,87 +244,41 @@ const Sidebar: React.FC = () => {
   });
 
   return (
-    <nav
-      id="app-sidebar"
-      ref={sidebarRef}
-      className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
-      style={{
-        width: isMobile ? undefined : normalizedSidebarWidth,
-      }}
-      aria-hidden={!isSidebarOpen}
-      {...inertProps}
-    >
-      <SidebarHeader
-        allFoldersExpanded={allFoldersExpanded}
-        onToggleAll={handleToggleAll}
-        onLogoClick={() => {
-          resetToHome();
-          if (isMobile) {
-            closeSidebar();
-          }
-        }}
-      />
-
-      <SidebarFilter query={sidebarQuery} onQueryChange={setSidebarQuery} />
-
-      <div className={styles['sidebar-content']}>
-        {sidebarQuery.trim() ? (
-          <SidebarSearchResults
-            results={sidebarResults}
-            focusedIndex={focusedIndex}
-            onSelect={handleSearchResultSelect}
-          />
-        ) : (
-          <SidebarSections
-            pinnedFolders={pinnedFolders}
-            pinnedPages={pinnedPages}
-            unpinnedFolders={unpinnedFolders}
-            unpinnedPages={unpinnedPages}
-            activePathSegments={activePathSegments}
-            expandedFolders={expandedFolders}
-            pinnedItems={pinnedItems}
-            onToggleFolder={toggleFolder}
-            onNavigate={handleNavigate}
-            onContextMenu={handleContextMenu}
-          />
-        )}
-      </div>
-
-      <SidebarFooter socials={socials} />
-
-      <div
-        ref={resizeHandleRef}
-        className={styles['resize-handle']}
-        role="separator"
-        tabIndex={0}
-        aria-label="Resize sidebar"
-        aria-controls="app-sidebar"
-        aria-orientation="vertical"
-        aria-valuemin={SIDEBAR_CONFIG.MIN_WIDTH}
-        aria-valuemax={SIDEBAR_CONFIG.MAX_WIDTH}
-        aria-valuenow={Math.round(normalizedSidebarWidth)}
-        aria-valuetext={`${Math.round(normalizedSidebarWidth)} pixels`}
-        onMouseDown={handleDragStart}
-        onTouchStart={handleDragStart}
-        onKeyDown={handleResizeHandleKeyDown}
-      />
-
-      {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onClose={() => setContextMenu(null)}
-          itemId={contextMenu.item.id}
-          itemName={contextMenu.item.name}
-          itemType={contextMenu.item.type === 'folder' ? 'folder' : 'page'}
-          isPinned={pinnedItems.has(contextMenu.item.id)}
-          onTogglePin={() => togglePin(contextMenu.item.id)}
-          onCopyLink={() => handleCopyLink(contextMenu.item)}
-          onOpen={() => handleNavigate(contextMenu.item)}
-          onOpenInNewTab={() => handleOpenInNewTab(contextMenu.item)}
-        />
-      )}
-    </nav>
+    <SidebarView
+      isSidebarOpen={isSidebarOpen}
+      isMobile={isMobile}
+      normalizedSidebarWidth={normalizedSidebarWidth}
+      inertProps={inertProps}
+      sidebarRef={sidebarRef}
+      resetToHome={resetToHome}
+      closeSidebar={closeSidebar}
+      allFoldersExpanded={allFoldersExpanded}
+      onToggleAll={handleToggleAll}
+      sidebarQuery={sidebarQuery}
+      setSidebarQuery={setSidebarQuery}
+      sidebarResults={sidebarResults}
+      focusedIndex={focusedIndex}
+      onSearchResultSelect={handleSearchResultSelect}
+      pinnedFolders={pinnedFolders}
+      pinnedPages={pinnedPages}
+      unpinnedFolders={unpinnedFolders}
+      unpinnedPages={unpinnedPages}
+      activePathSegments={activePathSegments}
+      expandedFolders={expandedFolders}
+      pinnedItems={pinnedItems}
+      onToggleFolder={toggleFolder}
+      onNavigate={handleNavigate}
+      onContextMenu={handleContextMenu}
+      socials={socials}
+      resizeHandleRef={resizeHandleRef}
+      onResizeStart={handleDragStart}
+      onResizeKeyDown={handleResizeHandleKeyDown}
+      contextMenu={contextMenu}
+      onCloseContextMenu={() => setContextMenu(null)}
+      onTogglePin={id => togglePin(id)}
+      onCopyLink={handleCopyLink}
+      onOpenInNewTab={handleOpenInNewTab}
+    />
   );
 };
 

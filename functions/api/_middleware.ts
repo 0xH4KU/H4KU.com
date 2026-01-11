@@ -10,6 +10,8 @@
  * - Secure reference ID generation
  */
 
+import { isValidEmail } from '../../src/shared/emailValidation';
+
 // =============================================================================
 // Configuration
 // =============================================================================
@@ -359,15 +361,6 @@ export interface ContactPayload {
 /**
  * Simple but effective email validation
  */
-export function isValidEmail(email: string): boolean {
-  // RFC 5322 simplified - covers 99.99% of real emails
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-/**
- * Validate contact form payload
- */
 export function validateContactPayload(data: unknown): data is ContactPayload {
   if (!data || typeof data !== 'object') return false;
 
@@ -389,7 +382,6 @@ export function validateContactPayload(data: unknown): data is ContactPayload {
 
   return true;
 }
-
 /**
  * Escape HTML special characters
  */

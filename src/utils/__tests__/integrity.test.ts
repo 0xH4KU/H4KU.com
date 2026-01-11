@@ -5,7 +5,9 @@ import {
   computeSHA256HashSync,
   verifyIntegrity,
   verifyIntegritySHA256,
+  verifyIntegritySHA256Sync,
   verifyIntegrityDual,
+  verifyIntegrityDualSync,
 } from '../integrity';
 
 describe('integrity utilities', () => {
@@ -40,7 +42,7 @@ describe('integrity utilities', () => {
     expect(result.actual).toBe(computeIntegrityHash(payload));
   });
 
-  it('computes SHA-256 hashes deterministically', () => {
+  it('computes SHA-256 hashes deterministically (sync fallback)', () => {
     const payload = { foo: 'secure' };
     const hashA = computeSHA256HashSync(payload);
     const hashB = computeSHA256HashSync(payload);
@@ -54,25 +56,25 @@ describe('integrity utilities', () => {
     expect(hash).toHaveLength(64);
   });
 
-  it('verifies SHA-256 payloads', () => {
+  it('verifies SHA-256 payloads (async)', async () => {
     const payload = { foo: 'secure' };
     const checksum = computeSHA256HashSync(payload);
-    const result = verifyIntegritySHA256(payload, checksum);
+    const result = await verifyIntegritySHA256(payload, checksum);
     expect(result.algorithm).toBe('sha256');
     expect(result.isValid).toBe(true);
   });
 
-  it('reports invalid SHA-256 payloads', () => {
+  it('reports invalid SHA-256 payloads (async)', async () => {
     const payload = { foo: 'secure' };
     const checksum = computeSHA256HashSync(payload);
-    const tampered = verifyIntegritySHA256({ foo: 'tampered' }, checksum);
+    const tampered = await verifyIntegritySHA256({ foo: 'tampered' }, checksum);
     expect(tampered.isValid).toBe(false);
     expect(tampered.algorithm).toBe('sha256');
   });
 
-  it('combines both algorithms in dual verification', () => {
+  it('combines both algorithms in dual verification (async)', async () => {
     const payload = { value: 'dual' };
-    const dual = verifyIntegrityDual(
+    const dual = await verifyIntegrityDual(
       payload,
       computeIntegrityHash(payload),
       computeSHA256HashSync(payload)
@@ -89,7 +91,7 @@ describe('integrity utilities', () => {
     );
   });
 
-  it('uses the UTF-8 fallback when TextEncoder is unavailable', async () => {
+  it('uses the UTF-8 fallback when TextEncoder is unavailable (sync path)', async () => {
     const originalEncoder = globalThis.TextEncoder;
     vi.resetModules();
     try {
@@ -101,12 +103,22 @@ describe('integrity utilities', () => {
       const hash = module.computeSHA256HashSync(payload);
       expect(hash).toHaveLength(64);
 
-      const result = module.verifyIntegritySHA256(payload, hash);
+      const result = module.verifyIntegritySHA256Sync(payload, hash);
       expect(result.isValid).toBe(true);
     } finally {
       (globalThis as { TextEncoder?: typeof TextEncoder }).TextEncoder =
         originalEncoder;
       vi.resetModules();
     }
+  });
+
+  it('supports synchronous dual verification fallback', () => {
+    const payload = { fallback: true };
+    const dual = verifyIntegrityDualSync(
+      payload,
+      computeIntegrityHash(payload),
+      computeSHA256HashSync(payload)
+    );
+    expect(dual.isFullyValid).toBe(true);
   });
 });

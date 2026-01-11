@@ -82,4 +82,21 @@ describe('useHistoryNavigation', () => {
 
     expect(result.current.pathname).toBe('/first');
   });
+
+  it('handles BASE_URL stripping and reapplication', () => {
+    vi.stubEnv('BASE_URL', '/app/');
+    window.history.replaceState({}, '', '/app/current');
+    const pushSpy = vi.spyOn(window.history, 'pushState');
+
+    const { result } = renderHook(() => useHistoryNavigation());
+    expect(result.current.pathname).toBe('/current');
+
+    act(() => {
+      result.current.navigate('/next');
+    });
+
+    expect(pushSpy).toHaveBeenCalledWith(null, '', '/app/next');
+    expect(result.current.pathname).toBe('/next');
+    vi.unstubAllEnvs();
+  });
 });

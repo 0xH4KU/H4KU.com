@@ -32,14 +32,9 @@ export default mergeConfig(
           'dist/',
           '.eslintrc.cjs',
           'scripts/',
-          'src/services/monitoring.ts',
-          'src/components/common/ErrorBoundary.tsx',
           'src/hooks/useCrosshair.ts',
-          'src/hooks/useHistoryNavigation.ts',
           'src/hooks/use100vh.ts',
-          'src/hooks/useLocalStorage.ts',
           'src/hooks/useReducedMotion.ts',
-          'src/components/layout/SearchPanel.tsx',
         ],
         // Global thresholds kept realistic with current suite
         thresholds: {

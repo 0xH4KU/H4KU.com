@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useId, FormEvent } from 'react';
-import isEmail from 'validator/lib/isEmail';
-import type { IsEmailOptions } from 'validator/lib/isEmail';
 import {
   submitContactRequest,
   ContactSubmissionError,
 } from '@/services/contact';
+import { isValidEmail, normalizeEmail } from '@/shared/emailValidation';
 import styles from './ContactForm.module.css';
 
 interface FormData {
@@ -17,16 +16,6 @@ interface FormStatus {
   type: 'idle' | 'loading' | 'success' | 'error';
   message?: string;
 }
-
-const EMAIL_VALIDATION_OPTIONS: IsEmailOptions = {
-  allow_display_name: false,
-  allow_utf8_local_part: true,
-  allow_ip_domain: false,
-  require_tld: true,
-};
-
-const isValidEmailAddress = (email: string) =>
-  isEmail(email.trim(), EMAIL_VALIDATION_OPTIONS);
 
 export function ContactForm() {
   const statusMessageId = useId();
@@ -105,9 +94,9 @@ export function ContactForm() {
       return;
     }
 
-    const normalizedEmail = formData.email.trim();
+    const normalizedEmail = normalizeEmail(formData.email);
 
-    if (!isValidEmailAddress(normalizedEmail)) {
+    if (!isValidEmail(normalizedEmail)) {
       setStatus({
         type: 'error',
         message: 'Please enter a valid email address',

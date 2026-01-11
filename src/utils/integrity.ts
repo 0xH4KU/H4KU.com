@@ -224,7 +224,29 @@ export const verifyIntegrity = (
   };
 };
 
-export const verifyIntegritySHA256 = (
+/**
+ * Async SHA-256 verification (uses Web Crypto where available to avoid blocking)
+ */
+export const verifyIntegritySHA256 = async (
+  payload: unknown,
+  expected?: string | null
+): Promise<IntegrityCheckResult> => {
+  const normalizedExpected = normalizeExpected(expected);
+  const actual = await computeSHA256Hash(payload);
+
+  return {
+    expected: normalizedExpected,
+    actual,
+    isValid: normalizedExpected !== null && normalizedExpected === actual,
+    algorithm: 'sha256',
+  };
+};
+
+/**
+ * Synchronous SHA-256 verification (fallback)
+ * Prefer verifyIntegritySHA256 for non-blocking validation.
+ */
+export const verifyIntegritySHA256Sync = (
   payload: unknown,
   expected?: string | null
 ): IntegrityCheckResult => {
@@ -249,13 +271,33 @@ export interface DualIntegrityCheckResult {
  * Dual-algorithm verification (both FNV-1a and SHA-256)
  * Provides backward compatibility while enforcing stronger security
  */
-export const verifyIntegrityDual = (
+export const verifyIntegrityDual = async (
+  payload: unknown,
+  expectedFNV?: string | null,
+  expectedSHA256?: string | null
+): Promise<DualIntegrityCheckResult> => {
+  const [fnv1aResult, sha256Result] = await Promise.all([
+    Promise.resolve(verifyIntegrity(payload, expectedFNV)),
+    verifyIntegritySHA256(payload, expectedSHA256),
+  ]);
+
+  return {
+    fnv1a: fnv1aResult,
+    sha256: sha256Result,
+    isFullyValid: fnv1aResult.isValid && sha256Result.isValid,
+  };
+};
+
+/**
+ * Synchronous dual verification (falls back to sync SHA-256)
+ */
+export const verifyIntegrityDualSync = (
   payload: unknown,
   expectedFNV?: string | null,
   expectedSHA256?: string | null
 ): DualIntegrityCheckResult => {
   const fnv1aResult = verifyIntegrity(payload, expectedFNV);
-  const sha256Result = verifyIntegritySHA256(payload, expectedSHA256);
+  const sha256Result = verifyIntegritySHA256Sync(payload, expectedSHA256);
 
   return {
     fnv1a: fnv1aResult,

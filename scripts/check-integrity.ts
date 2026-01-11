@@ -6,7 +6,7 @@ import process from 'node:process';
 import {
   verifyIntegrityDual,
   computeIntegrityHash,
-  computeSHA256HashSync,
+  computeSHA256Hash,
 } from '../src/utils/integrity';
 
 type CliArgs = {
@@ -47,7 +47,7 @@ const log = (message: string) => {
   console.log(`[integrity] ${message}`);
 };
 
-function main() {
+async function main() {
   const { file, write } = parseArgs();
 
   if (!fs.existsSync(file)) {
@@ -73,7 +73,7 @@ function main() {
       ? (aggregated._integritySHA256 as string)
       : null;
 
-  const result = verifyIntegrityDual(payload, expectedFnv, expectedSha);
+  const result = await verifyIntegrityDual(payload, expectedFnv, expectedSha);
 
   log(`Checking ${path.relative(process.cwd(), file)}`);
   log(
@@ -99,14 +99,14 @@ function main() {
   const updated = {
     ...aggregated,
     _integrity: computeIntegrityHash(payload),
-    _integritySHA256: computeSHA256HashSync(payload),
+    _integritySHA256: await computeSHA256Hash(payload),
   };
   fs.writeFileSync(file, `${JSON.stringify(updated, null, 2)}\n`, 'utf-8');
   log('✅ Checksum updated.');
 }
 
 try {
-  main();
+  await main();
 } catch (error) {
   console.error('[integrity] Unexpected error:', error);
   process.exit(1);

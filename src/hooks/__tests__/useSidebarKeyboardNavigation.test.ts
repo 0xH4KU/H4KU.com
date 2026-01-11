@@ -158,4 +158,48 @@ describe('useSidebarKeyboardNavigation', () => {
     expect(handleSearchResultSelect).toHaveBeenCalledTimes(1);
     // 具體 index 行為由上層搜尋元件測試覆蓋
   });
+
+  it('resets focus on Escape in search mode', () => {
+    const hookResult = setup({
+      sidebarQuery: 'doc',
+      sidebarResults: [createPageResult()],
+    });
+    const { setFocusedIndex } = hookResult.result.current;
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+
+    expect(setFocusedIndex).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it('ignores key events originating inside the sidebar element', () => {
+    const items: SidebarEntry[] = [createFolder()];
+    const hookResult = setup({
+      allVisibleItems: items,
+    });
+    const innerButton = document.createElement('button');
+    sidebarElement.appendChild(innerButton);
+
+    act(() => {
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown' });
+      Object.defineProperty(event, 'target', { value: innerButton });
+      window.dispatchEvent(event);
+    });
+
+    expect(hookResult.result.current.handleNavigate).not.toHaveBeenCalled();
+  });
+
+  it('resets focus on Escape in normal mode', () => {
+    const hookResult = setup({
+      allVisibleItems: [createFolder()],
+    });
+    const { setFocusedIndex } = hookResult.result.current;
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+
+    expect(setFocusedIndex).toHaveBeenCalledWith(expect.any(Function));
+  });
 });
