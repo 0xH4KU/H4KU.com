@@ -4,50 +4,68 @@ This directory contains serverless functions that run on Cloudflare Pages.
 
 ## Contact Form (`/api/contact`)
 
-Handles contact form submissions and sends email notifications.
+Handles contact form submissions with human verification and email notifications.
 
-### Setup Options
+### Security Features
 
-#### Option 1: Cloudflare Email Routing (Recommended)
+- **Cloudflare Turnstile** - Free CAPTCHA alternative for bot protection
+- **CORS whitelist** - Supports `h4ku.com` and `*.h4ku-com.pages.dev` preview deployments
+- **Body size limit** - 32KB maximum request size
+- **Email masking** - Logs use masked emails (e.g., `us***@ex***.com`)
+- **Secure reference IDs** - Generated using `crypto.getRandomValues`
 
-1. **Enable Email Routing** in Cloudflare Dashboard:
-   - Go to your domain → Email → Email Routing
-   - Add a custom address (e.g., `contact@h4ku.com`)
-   - Route it to your personal email
+### Required Environment Variables
 
-2. **Create Email Workers binding**:
-   - Go to Workers & Pages → Your project → Settings → Functions
-   - Add binding: `EMAIL` → Select your email routing
+| Variable | Description |
+|----------|-------------|
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key (required) |
+| `RESEND_API_KEY` | Resend API key for sending emails |
+| `CONTACT_TO_EMAIL` | Recipient email address |
 
-3. **Set environment variables** in Cloudflare Dashboard:
-   ```
-   CONTACT_TO_EMAIL=contact@H4KU.com
-   CONTACT_FROM_EMAIL=noreply@h4ku.com
-   ```
+### Setup
 
-#### Option 2: MailChannels (Free, No Setup)
+#### 1. Configure Turnstile
 
-Replace `functions/api/contact.ts` with `functions/api/contact.mailchannels.ts`:
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → Turnstile
+2. Create a new site and get your Site Key and Secret Key
+3. Add `TURNSTILE_SECRET_KEY` to Pages environment variables
 
-MailChannels is free for Cloudflare Workers and requires no additional setup.
+#### 2. Choose Email Provider
 
-#### Option 3: Webhook (Discord/Telegram)
+**Option A: Resend (Recommended)**
 
-Use `functions/api/contact.webhook.ts` to send notifications to Discord or Telegram instead of email.
+Use `functions/api/contact.ts`:
 
-### Testing Locally
+1. Sign up at [resend.com](https://resend.com)
+2. Get your API key and verify your domain
+3. Set `RESEND_API_KEY` and `CONTACT_TO_EMAIL` in Pages settings
 
-```bash
-# Install wrangler if not already
-npm install -g wrangler
+**Option B: Cloudflare Email Routing**
 
-# Run local dev server with functions
-wrangler pages dev dist --binding CONTACT_TO_EMAIL=test@example.com CONTACT_FROM_EMAIL=noreply@h4ku.com
-```
+Use `functions/api/contact.email-routing.ts`:
 
-### Deployment
+1. Enable Email Routing in Cloudflare Dashboard
+2. Add `send_email` binding in Pages Functions settings
+3. Set `CONTACT_TO_EMAIL` and `CONTACT_FROM_EMAIL`
 
-Functions are automatically deployed with your Pages project. Just push to your repository.
+**Option C: Discord Webhook**
+
+Use `functions/api/contact.discord.ts`:
+
+1. Create a webhook in your Discord server
+2. Set `DISCORD_WEBHOOK_URL` in Pages settings
+
+### Shared Middleware
+
+All contact endpoints use `_middleware.ts` which provides:
+
+- `verifyTurnstile()` - Human verification
+- `checkBodySize()` - Request size validation
+- `getCorsHeaders()` - CORS with whitelist
+- `validateContactPayload()` - Input validation
+- `maskEmail()` - Email masking for logs
+- `generateSecureReferenceId()` - Cryptographically secure IDs
+- `fetchWithTimeout()` - External API calls with timeout
 
 ### API Specification
 
@@ -59,11 +77,12 @@ Content-Type: application/json
 {
   "name": "John Doe",
   "email": "john@example.com",
-  "message": "Hello!"
+  "message": "Hello!",
+  "turnstileToken": "XXXX.YYYY.ZZZZ"
 }
 ```
 
-**Response:**
+**Success Response:**
 ```json
 {
   "success": true,
@@ -72,10 +91,31 @@ Content-Type: application/json
 }
 ```
 
-**Error Response:**
-```json
-{
-  "success": false,
-  "message": "Error description"
-}
+**Error Responses:**
+
+| Status | Message |
+|--------|---------|
+| 400 | Invalid form data / Missing verification token |
+| 403 | Human verification failed |
+| 413 | Request too large |
+| 500 | Server configuration error |
+| 504 | Service timeout |
+
+### Testing Locally
+
+```bash
+# Install wrangler if not already
+npm install -g wrangler
+
+# Run local dev server with functions
+wrangler pages dev dist \
+  --binding TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA \
+  --binding RESEND_API_KEY=re_xxx \
+  --binding CONTACT_TO_EMAIL=test@example.com
 ```
+
+Note: Use Turnstile's [testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) for local development.
+
+### Deployment
+
+Functions are automatically deployed with your Pages project. Just push to your repository and ensure environment variables are configured in the Cloudflare Pages dashboard.
