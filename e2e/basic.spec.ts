@@ -4,7 +4,7 @@ const contactSelectors = {
   name: 'Name:',
   email: 'Email:',
   message: 'Message:',
-  submit: 'Send Message',
+  submit: 'Verify & Send',
 };
 
 test.describe('H4KU.com smoke E2E', () => {

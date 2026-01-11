@@ -22,7 +22,13 @@ const TURNSTILE_BYPASS_TOKEN =
   import.meta.env.VITE_TURNSTILE_BYPASS_TOKEN ?? null;
 const SHOULD_RENDER_TURNSTILE = !TURNSTILE_BYPASS_TOKEN;
 
-type VerifyStatus = 'idle' | 'verifying' | 'verified' | 'loading' | 'success' | 'error';
+type VerifyStatus =
+  | 'idle'
+  | 'verifying'
+  | 'verified'
+  | 'loading'
+  | 'success'
+  | 'error';
 
 export function ContactVerify() {
   const { navigateTo } = useNavigation();

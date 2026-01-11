@@ -63,7 +63,8 @@ export function loadPendingContact(): PendingContactPayload | null {
     const parsed = JSON.parse(raw) as PendingContactPayload & {
       createdAt?: number;
     };
-    const createdAt = typeof parsed.createdAt === 'number' ? parsed.createdAt : 0;
+    const createdAt =
+      typeof parsed.createdAt === 'number' ? parsed.createdAt : 0;
     const isExpired = createdAt
       ? Date.now() - createdAt > PENDING_CONTACT_TTL_MS
       : true;

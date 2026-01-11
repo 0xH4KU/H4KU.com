@@ -28,7 +28,12 @@ vi.mock('@/data/mockData', () => ({
   mockData: {
     pages: [
       { id: 'contact', name: 'Contact', type: 'txt', content: '' },
-      { id: 'contact-verify', name: 'Contact Verify', type: 'txt', content: '' },
+      {
+        id: 'contact-verify',
+        name: 'Contact Verify',
+        type: 'txt',
+        content: '',
+      },
     ],
   },
 }));
@@ -41,12 +46,15 @@ vi.mock('@marsidev/react-turnstile', () => ({
 }));
 
 vi.mock('@/services/contact', async () => {
-  const actual = await vi.importActual<typeof import('@/services/contact')>(
-    '@/services/contact'
-  );
+  const actual =
+    await vi.importActual<typeof import('@/services/contact')>(
+      '@/services/contact'
+    );
   return {
     ...actual,
-    savePendingContact: (...args: Parameters<typeof actual.savePendingContact>) => {
+    savePendingContact: (
+      ...args: Parameters<typeof actual.savePendingContact>
+    ) => {
       mockSavePending(...args);
       return actual.savePendingContact(...args);
     },
@@ -95,7 +103,9 @@ describe('Contact form -> verification flow', () => {
 
     await fillValidForm({ email: 'user@example' });
     now += 2000; // satisfy minimum fill time
-    await userEvent.click(screen.getByRole('button', { name: /verify & send/i }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /verify & send/i })
+    );
 
     expect(
       await screen.findByText(/Please enter a valid email address/i)
@@ -109,7 +119,9 @@ describe('Contact form -> verification flow', () => {
 
     await fillValidForm();
     now += 500; // below 1s threshold
-    await userEvent.click(screen.getByRole('button', { name: /verify & send/i }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /verify & send/i })
+    );
 
     expect(
       await screen.findByText(/Please take your time filling out the form/i)
@@ -122,7 +134,9 @@ describe('Contact form -> verification flow', () => {
 
     await fillValidForm({ email: ' user@example.com ' }); // leading/trailing spaces trimmed
     now += 2000;
-    await userEvent.click(screen.getByRole('button', { name: /verify & send/i }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /verify & send/i })
+    );
 
     expect(mockSavePending).toHaveBeenCalledWith({
       name: 'Tester',
@@ -149,7 +163,9 @@ describe('Contact form -> verification flow', () => {
       'https://spam.test'
     );
     now += 2000;
-    await userEvent.click(screen.getByRole('button', { name: /verify & send/i }));
+    await userEvent.click(
+      screen.getByRole('button', { name: /verify & send/i })
+    );
 
     expect(
       await screen.findByText(/Message sent successfully!/i)
@@ -199,9 +215,7 @@ describe('ContactVerify', () => {
   it('shows guidance when there is no pending payload', () => {
     render(<ContactVerify />);
 
-    expect(
-      screen.getByText(/No pending message found/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No pending message found/i)).toBeInTheDocument();
   });
 
   it('submits pending payload after Turnstile verification and user clicks Send', async () => {

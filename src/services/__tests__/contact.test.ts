@@ -251,11 +251,12 @@ describe('submitContactRequest timeout handling', () => {
     });
     vi.stubGlobal('fetch', localFetch);
 
-    const { submitContactRequest: submitNoTimeout } = await import(
-      '@/services/contact'
-    );
+    const { submitContactRequest: submitNoTimeout } =
+      await import('@/services/contact');
 
-    await expect(submitNoTimeout(basePayload)).resolves.toEqual({ success: true });
+    await expect(submitNoTimeout(basePayload)).resolves.toEqual({
+      success: true,
+    });
     expect(localFetch).toHaveBeenCalled();
   });
 });
