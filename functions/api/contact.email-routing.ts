@@ -51,31 +51,18 @@ interface Env extends MiddlewareEnv {
   CONTACT_FROM_EMAIL: string;
 }
 
-// Brand colors
+// Brand colors - transparent-friendly palette
 const colors = {
-  primary: '#c0a88d',
-  bg: '#1a1a1a',
-  surface: '#0f0f0f',
-  text: '#e5e2dd',
-  muted: '#999999',
-  dim: '#666666',
-  border: '#333333',
+  primary: '#c0a88d', // Accent - works on both light/dark
+  text: '#3d3d3d', // Dark gray - readable on light, inverts to light on dark
+  muted: '#6b6b6b', // Mid gray - stays readable when inverted
+  border: '#d0d0d0', // Light border - inverts to dark border
 } as const;
 
-// Shared email styles with aggressive Gmail dark mode prevention
+// Minimal email styles - no background colors, works with Gmail inversion
 const emailStyles = `
   <style>
-    :root { color-scheme: light only; }
-    body, .body { margin: 0; padding: 0; width: 100%; -webkit-text-size-adjust: none; -ms-text-size-adjust: none; }
-    [data-ogsc] { color: ${colors.text} !important; }
-    [data-ogsb] { background-color: ${colors.bg} !important; }
-    u + .body { background-color: ${colors.bg} !important; }
-    u + .body .bg-main { background-color: ${colors.bg} !important; }
-    u + .body .bg-surface { background-color: ${colors.surface} !important; }
-    u + .body .text-primary { color: ${colors.primary} !important; }
-    u + .body .text-main { color: ${colors.text} !important; }
-    u + .body .text-muted { color: ${colors.muted} !important; }
-    u + .body .text-dim { color: ${colors.dim} !important; }
+    body { margin: 0; padding: 0; width: 100%; -webkit-text-size-adjust: none; }
   </style>
   <!--[if mso]>
   <style type="text/css">
@@ -127,31 +114,25 @@ This message was sent via the H4KU.com contact form.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light only">
-  <meta name="supported-color-schemes" content="light only">
   <meta name="x-apple-disable-message-reformatting">
   <title>New Message - H4KU.com</title>
   ${emailStyles}
 </head>
-<body class="body bg-main" style="margin: 0; padding: 0; width: 100%; background-color: ${c.bg};">
-  <div style="display: none; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: ${c.bg}; opacity: 0;">
-    New message from ${escapeHtml(payload.name)} via h4ku.com &#8199;&#65279;&#847;
-  </div>
-
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body bg-main" style="background-color: ${c.bg};" bgcolor="${c.bg}">
+<body style="margin: 0; padding: 0; width: 100%;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
-      <td align="center" class="bg-main" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
-        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="bg-main" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
+      <td align="center" style="padding: 32px 16px;">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; width: 100%;">
 
           <!-- Header -->
           <tr>
-            <td class="bg-main" style="border-bottom: 1px solid ${c.border}; padding-bottom: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+            <td style="border-bottom: 1px solid ${c.border}; padding-bottom: 20px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td class="text-primary" style="font-family: ${font}; color: ${c.primary}; font-size: 13px; letter-spacing: 2px; font-weight: bold;">
+                  <td style="font-family: ${font}; color: ${c.primary}; font-size: 13px; letter-spacing: 2px; font-weight: bold;">
                     H4KU.COM
                   </td>
-                  <td align="right" class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 11px;">
+                  <td align="right" style="font-family: ${font}; color: ${c.muted}; font-size: 11px;">
                     ${dateStr} &bull; ${timeStr}
                   </td>
                 </tr>
@@ -161,29 +142,29 @@ This message was sent via the H4KU.com contact form.
 
           <!-- Title -->
           <tr>
-            <td class="bg-main" style="padding: 28px 0 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <div class="text-main" style="font-family: ${font}; color: ${c.text}; font-size: 20px; font-weight: bold; letter-spacing: 0.5px;">
+            <td style="padding: 28px 0 24px 0;">
+              <div style="font-family: ${font}; color: ${c.text}; font-size: 20px; font-weight: bold; letter-spacing: 0.5px;">
                 New Contact Message
               </div>
-              <div class="text-muted" style="font-family: ${font}; color: ${c.muted}; font-size: 11px; margin-top: 6px;">
-                Reference: <span class="text-primary" style="color: ${c.primary};">${escapeHtml(referenceId)}</span>
+              <div style="font-family: ${font}; color: ${c.muted}; font-size: 11px; margin-top: 6px;">
+                Reference: <span style="color: ${c.primary};">${escapeHtml(referenceId)}</span>
               </div>
             </td>
           </tr>
 
           <!-- Sender Card -->
           <tr>
-            <td class="bg-main" style="padding-bottom: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-surface" style="background-color: ${c.surface}; border-radius: 4px;" bgcolor="${c.surface}">
+            <td style="padding-bottom: 20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border: 1px solid ${c.border}; border-radius: 4px;">
                 <tr>
-                  <td class="bg-surface" style="padding: 16px 20px; background-color: ${c.surface};" bgcolor="${c.surface}">
-                    <div class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+                  <td style="padding: 16px 20px;">
+                    <div style="font-family: ${font}; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
                       From
                     </div>
-                    <div class="text-main" style="font-family: ${font}; color: ${c.text}; font-size: 15px; margin-bottom: 4px;">
+                    <div style="font-family: ${font}; color: ${c.text}; font-size: 15px; margin-bottom: 4px;">
                       ${escapeHtml(payload.name)}
                     </div>
-                    <a href="mailto:${escapeHtml(payload.email)}" class="text-primary" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 13px;">
+                    <a href="mailto:${escapeHtml(payload.email)}" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 13px;">
                       ${escapeHtml(payload.email)}
                     </a>
                   </td>
@@ -194,13 +175,13 @@ This message was sent via the H4KU.com contact form.
 
           <!-- Message -->
           <tr>
-            <td class="bg-main" style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <div class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
+            <td style="padding-bottom: 24px;">
+              <div style="font-family: ${font}; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
                 Message
               </div>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-surface" style="background-color: ${c.surface}; border-left: 3px solid ${c.primary};" bgcolor="${c.surface}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-left: 3px solid ${c.primary};">
                 <tr>
-                  <td class="bg-surface text-main" style="padding: 16px 20px; font-family: ${font}; color: ${c.text}; font-size: 14px; line-height: 1.7; white-space: pre-wrap; background-color: ${c.surface};" bgcolor="${c.surface}">${escapeHtml(payload.message)}</td>
+                  <td style="padding: 16px 20px; font-family: ${font}; color: ${c.text}; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(payload.message)}</td>
                 </tr>
               </table>
             </td>
@@ -208,14 +189,14 @@ This message was sent via the H4KU.com contact form.
 
           <!-- Footer -->
           <tr>
-            <td class="bg-main" style="border-top: 1px solid ${c.border}; padding-top: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+            <td style="border-top: 1px solid ${c.border}; padding-top: 20px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 10px; line-height: 1.6;">
+                  <td style="font-family: ${font}; color: ${c.muted}; font-size: 10px; line-height: 1.6;">
                     IP: ${escapeHtml(clientIp)}
                   </td>
                   <td align="right">
-                    <a href="https://h4ku.com" class="text-primary" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
+                    <a href="https://h4ku.com" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
                       h4ku.com &rarr;
                     </a>
                   </td>
