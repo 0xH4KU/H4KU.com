@@ -14,6 +14,13 @@ import styles from './ContactForm.module.css';
  */
 const TURNSTILE_SITE_KEY =
   import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAACLxl-ExAnPcpHy3';
+const TURNSTILE_BYPASS_ENABLED =
+  import.meta.env.VITE_BYPASS_TURNSTILE === '1' ||
+  import.meta.env.VITE_BYPASS_TURNSTILE === 'true';
+const TURNSTILE_BYPASS_TOKEN = 'turnstile-bypass-token';
+const INITIAL_TURNSTILE_TOKEN = TURNSTILE_BYPASS_ENABLED
+  ? TURNSTILE_BYPASS_TOKEN
+  : null;
 
 interface FormData {
   name: string;
@@ -40,7 +47,9 @@ export function ContactForm() {
   const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   // Turnstile token state
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(
+    INITIAL_TURNSTILE_TOKEN
+  );
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
 
   // Anti-spam protection (honeypot)
@@ -139,8 +148,10 @@ export function ContactForm() {
       setFormStartTime(Date.now());
       setFormData({ name: '', email: '', message: '' });
       // Reset Turnstile for next submission
-      setTurnstileToken(null);
-      turnstileRef.current?.reset();
+      setTurnstileToken(INITIAL_TURNSTILE_TOKEN);
+      if (!TURNSTILE_BYPASS_ENABLED) {
+        turnstileRef.current?.reset();
+      }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         setStatus({
@@ -162,8 +173,10 @@ export function ContactForm() {
       });
       setFormStartTime(Date.now());
       // Reset Turnstile on error for retry
-      setTurnstileToken(null);
-      turnstileRef.current?.reset();
+      setTurnstileToken(INITIAL_TURNSTILE_TOKEN);
+      if (!TURNSTILE_BYPASS_ENABLED) {
+        turnstileRef.current?.reset();
+      }
     }
   };
 
@@ -263,29 +276,30 @@ export function ContactForm() {
           />
         </div>
 
-        {/* Cloudflare Turnstile - Human verification */}
-        <div className={styles.field}>
-          <Turnstile
-            ref={turnstileRef}
-            siteKey={TURNSTILE_SITE_KEY}
-            onSuccess={token => {
-              setTurnstileToken(token);
-              setTurnstileError(null);
-            }}
-            onError={() => {
-              setTurnstileToken(null);
-              setTurnstileError('Verification failed. Please try again.');
-            }}
-            onExpire={() => {
-              setTurnstileToken(null);
-              setTurnstileError('Verification expired. Please verify again.');
-            }}
-            options={{
-              theme: 'dark',
-              size: 'flexible',
-            }}
-          />
-        </div>
+        {!TURNSTILE_BYPASS_ENABLED && (
+          <div className={styles.field}>
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={TURNSTILE_SITE_KEY}
+              onSuccess={token => {
+                setTurnstileToken(token);
+                setTurnstileError(null);
+              }}
+              onError={() => {
+                setTurnstileToken(null);
+                setTurnstileError('Verification failed. Please try again.');
+              }}
+              onExpire={() => {
+                setTurnstileToken(null);
+                setTurnstileError('Verification expired. Please verify again.');
+              }}
+              options={{
+                theme: 'dark',
+                size: 'flexible',
+              }}
+            />
+          </div>
+        )}
 
         <button
           type="submit"

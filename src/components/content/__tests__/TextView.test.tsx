@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TextView } from '../TextView';
@@ -6,12 +7,36 @@ import type { Page } from '@/types';
 
 // Mock framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', async () => {
-  const actual = await vi.importActual('framer-motion');
+  const actual =
+    await vi.importActual<typeof import('framer-motion')>('framer-motion');
+  const MockMotionDiv = React.forwardRef<
+    HTMLDivElement,
+    React.HTMLAttributes<HTMLDivElement> & {
+      whileHover?: unknown;
+      whileTap?: unknown;
+    }
+  >(({ whileHover: _whileHover, whileTap: _whileTap, ...props }, ref) => (
+    <div ref={ref} {...props} />
+  ));
+
+  const MockMotionButton = React.forwardRef<
+    HTMLButtonElement,
+    React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      whileHover?: unknown;
+      whileTap?: unknown;
+    }
+  >(({ whileHover: _whileHover, whileTap: _whileTap, ...props }, ref) => (
+    <button ref={ref} {...props} />
+  ));
+
+  MockMotionDiv.displayName = 'MockMotionDiv';
+  MockMotionButton.displayName = 'MockMotionButton';
+
   return {
     ...actual,
     m: {
-      div: 'div',
-      button: 'button',
+      div: MockMotionDiv,
+      button: MockMotionButton,
     },
   };
 });

@@ -1,22 +1,66 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import {
-  verifyIntegrityDual,
-  computeIntegrityHash,
-  computeSHA256Hash,
-} from '../src/utils/integrity';
 
-type CliArgs = {
-  file: string;
-  write: boolean;
-};
+const FNV_OFFSET = 0x811c9dc5;
+const FNV_PRIME = 0x01000193;
 
 const DEFAULT_TARGET = path.join('src', 'content', '_aggregated.json');
 
-const parseArgs = (): CliArgs => {
+const serializePayload = payload => JSON.stringify(payload ?? null);
+
+const normalizeExpected = value =>
+  typeof value === 'string' && value.length > 0 ? value : null;
+
+const computeIntegrityHash = payload => {
+  const input = serializePayload(payload);
+  let hash = FNV_OFFSET;
+
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, FNV_PRIME) >>> 0;
+  }
+
+  return hash.toString(16).padStart(8, '0');
+};
+
+const computeSHA256Hash = payload =>
+  crypto
+    .createHash('sha256')
+    .update(serializePayload(payload))
+    .digest('hex');
+
+const verifyIntegrityDual = (payload, expectedFNV, expectedSHA256) => {
+  const fnvActual = computeIntegrityHash(payload);
+  const shaActual = computeSHA256Hash(payload);
+
+  const fnvExpected = normalizeExpected(expectedFNV);
+  const shaExpected = normalizeExpected(expectedSHA256);
+
+  const fnv1a = {
+    expected: fnvExpected,
+    actual: fnvActual,
+    isValid: fnvExpected !== null && fnvExpected === fnvActual,
+    algorithm: 'fnv1a',
+  };
+  const sha256 = {
+    expected: shaExpected,
+    actual: shaActual,
+    isValid: shaExpected !== null && shaExpected === shaActual,
+    algorithm: 'sha256',
+  };
+
+  return {
+    fnv1a,
+    sha256,
+    isFullyValid: fnv1a.isValid && sha256.isValid,
+  };
+};
+
+const parseArgs = () => {
   const args = process.argv.slice(2);
   let file = DEFAULT_TARGET;
   let write = false;
@@ -43,11 +87,11 @@ const parseArgs = (): CliArgs => {
   };
 };
 
-const log = (message: string) => {
+const log = message => {
   console.log(`[integrity] ${message}`);
 };
 
-async function main() {
+const main = () => {
   const { file, write } = parseArgs();
 
   if (!fs.existsSync(file)) {
@@ -56,7 +100,7 @@ async function main() {
   }
 
   const raw = fs.readFileSync(file, 'utf-8');
-  const aggregated = JSON.parse(raw) as Record<string, unknown>;
+  const aggregated = JSON.parse(raw);
   const payload = {
     folders: aggregated.folders ?? [],
     images: aggregated.images ?? [],
@@ -66,14 +110,14 @@ async function main() {
 
   const expectedFnv =
     typeof aggregated._integrity === 'string'
-      ? (aggregated._integrity as string)
+      ? aggregated._integrity
       : null;
   const expectedSha =
     typeof aggregated._integritySHA256 === 'string'
-      ? (aggregated._integritySHA256 as string)
+      ? aggregated._integritySHA256
       : null;
 
-  const result = await verifyIntegrityDual(payload, expectedFnv, expectedSha);
+  const result = verifyIntegrityDual(payload, expectedFnv, expectedSha);
 
   log(`Checking ${path.relative(process.cwd(), file)}`);
   log(
@@ -99,14 +143,14 @@ async function main() {
   const updated = {
     ...aggregated,
     _integrity: computeIntegrityHash(payload),
-    _integritySHA256: await computeSHA256Hash(payload),
+    _integritySHA256: computeSHA256Hash(payload),
   };
   fs.writeFileSync(file, `${JSON.stringify(updated, null, 2)}\n`, 'utf-8');
   log('✅ Checksum updated.');
-}
+};
 
 try {
-  await main();
+  main();
 } catch (error) {
   console.error('[integrity] Unexpected error:', error);
   process.exit(1);

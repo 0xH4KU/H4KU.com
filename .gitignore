@@ -45,6 +45,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/scripts/.playwright-browsers/
+/scripts/.npm-cache/
+/scripts/.tmp/
 
 # Lighthouse CI
 /.lighthouseci/

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { ContactForm } from '../ContactForm';
 
 // Mock Turnstile component
@@ -61,9 +61,11 @@ describe('ContactForm', () => {
     await userEvent.type(screen.getByLabelText(/Message/i), message);
   };
 
-  const simulateTurnstileSuccess = () => {
+  const simulateTurnstileSuccess = async () => {
     if (mockTurnstileCallback) {
-      mockTurnstileCallback('mock-turnstile-token');
+      await act(async () => {
+        mockTurnstileCallback?.('mock-turnstile-token');
+      });
     }
   };
 
@@ -80,7 +82,7 @@ describe('ContactForm', () => {
     await userEvent.type(screen.getByLabelText(/Email/i), 'user@example'); // no TLD
     await userEvent.type(screen.getByLabelText(/Message/i), 'Hello');
     now += 2000; // satisfy minimum fill time
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
 
     await userEvent.click(
       screen.getByRole('button', { name: /send message/i })
@@ -107,7 +109,7 @@ describe('ContactForm', () => {
     );
     await userEvent.type(screen.getByLabelText(/Message/i), 'Hello there');
     now += 2000; // satisfy minimum fill time
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
 
     await userEvent.click(
       screen.getByRole('button', { name: /send message/i })
@@ -144,7 +146,7 @@ describe('ContactForm', () => {
     form.setAttribute('novalidate', 'true');
 
     now += 2000; // satisfy minimum fill time
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
     await submit();
 
     expect(
@@ -164,7 +166,7 @@ describe('ContactForm', () => {
       'https://spam.test'
     );
     now += 2000;
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
 
     await submit();
 
@@ -180,7 +182,7 @@ describe('ContactForm', () => {
 
     await fillValidForm();
     now += 500; // below 1s threshold
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
 
     await submit();
 
@@ -211,7 +213,7 @@ describe('ContactForm', () => {
     render(<ContactForm />);
     await fillValidForm();
     now += 2000;
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
     await submit();
 
     expect(
@@ -227,7 +229,7 @@ describe('ContactForm', () => {
     render(<ContactForm />);
     await fillValidForm();
     now += 2000;
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
     await submit();
 
     expect(
@@ -241,7 +243,7 @@ describe('ContactForm', () => {
     render(<ContactForm />);
     await fillValidForm();
     now += 2000;
-    simulateTurnstileSuccess();
+    await simulateTurnstileSuccess();
     await submit();
 
     expect(mockedSubmit).toHaveBeenCalledTimes(1);

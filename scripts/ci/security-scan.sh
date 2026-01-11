@@ -2,6 +2,11 @@
 # Security scanning script for CI
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NPM_CONFIG_CACHE="${NPM_CONFIG_CACHE:-$SCRIPT_DIR/../.npm-cache}"
+mkdir -p "$NPM_CONFIG_CACHE"
+export NPM_CONFIG_CACHE
+
 echo "🔒 Running security scans..."
 echo ""
 
