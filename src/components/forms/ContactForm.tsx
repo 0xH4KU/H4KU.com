@@ -14,13 +14,10 @@ import styles from './ContactForm.module.css';
  */
 const TURNSTILE_SITE_KEY =
   import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAACLxl-ExAnPcpHy3';
-const TURNSTILE_BYPASS_ENABLED =
-  import.meta.env.VITE_BYPASS_TURNSTILE === '1' ||
-  import.meta.env.VITE_BYPASS_TURNSTILE === 'true';
-const TURNSTILE_BYPASS_TOKEN = 'turnstile-bypass-token';
-const INITIAL_TURNSTILE_TOKEN = TURNSTILE_BYPASS_ENABLED
-  ? TURNSTILE_BYPASS_TOKEN
-  : null;
+const TURNSTILE_BYPASS_TOKEN =
+  import.meta.env.VITE_TURNSTILE_BYPASS_TOKEN ?? null;
+const INITIAL_TURNSTILE_TOKEN = TURNSTILE_BYPASS_TOKEN || null;
+const SHOULD_RENDER_TURNSTILE = !TURNSTILE_BYPASS_TOKEN;
 
 interface FormData {
   name: string;
@@ -149,7 +146,7 @@ export function ContactForm() {
       setFormData({ name: '', email: '', message: '' });
       // Reset Turnstile for next submission
       setTurnstileToken(INITIAL_TURNSTILE_TOKEN);
-      if (!TURNSTILE_BYPASS_ENABLED) {
+      if (!TURNSTILE_BYPASS_TOKEN) {
         turnstileRef.current?.reset();
       }
     } catch (error) {
@@ -174,7 +171,7 @@ export function ContactForm() {
       setFormStartTime(Date.now());
       // Reset Turnstile on error for retry
       setTurnstileToken(INITIAL_TURNSTILE_TOKEN);
-      if (!TURNSTILE_BYPASS_ENABLED) {
+      if (!TURNSTILE_BYPASS_TOKEN) {
         turnstileRef.current?.reset();
       }
     }
@@ -276,7 +273,7 @@ export function ContactForm() {
           />
         </div>
 
-        {!TURNSTILE_BYPASS_ENABLED && (
+        {SHOULD_RENDER_TURNSTILE && (
           <div className={styles.field}>
             <Turnstile
               ref={turnstileRef}

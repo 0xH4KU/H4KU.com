@@ -20,7 +20,6 @@ mkdir -p "$TMPDIR" "$NPM_CONFIG_CACHE" "$PLAYWRIGHT_BROWSERS_PATH"
 export TMPDIR
 export NPM_CONFIG_CACHE
 export PLAYWRIGHT_BROWSERS_PATH
-export E2E_SKIP_FIREFOX="${E2E_SKIP_FIREFOX:-1}"
 
 # Make scripts executable
 chmod +x "$SCRIPT_DIR"/*.sh

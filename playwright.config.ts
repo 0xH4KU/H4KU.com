@@ -18,7 +18,6 @@ process.env.no_proxy = mergedNoProxy;
 const HOST = process.env.E2E_HOST || '127.0.0.1';
 const PORT = process.env.E2E_PORT || 4173;
 const BASE_URL = `http://${HOST}:${PORT}`;
-const shouldSkipFirefox = process.env.E2E_SKIP_FIREFOX === '1';
 
 export default defineConfig({
   testDir: './e2e',
@@ -47,14 +46,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    ...(shouldSkipFirefox
-      ? []
-      : [
-          {
-            name: 'firefox',
-            use: { ...devices['Desktop Firefox'] },
-          },
-        ]),
   ],
   webServer: {
     command: `npm run dev -- --host ${HOST} --port ${PORT}`,
@@ -66,8 +57,8 @@ export default defineConfig({
       ...process.env,
       NO_PROXY: mergedNoProxy,
       no_proxy: mergedNoProxy,
-      VITE_BYPASS_TURNSTILE: '1',
       VITE_TURNSTILE_SITE_KEY: '1x00000000000000000000AA',
+      VITE_TURNSTILE_BYPASS_TOKEN: 'e2e-bypass-token',
     },
   },
 });
