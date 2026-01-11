@@ -40,7 +40,8 @@ const Sidebar: React.FC = () => {
   const { runSearch } = useSearchExecutor();
   const { activePath, navigateTo, resetToHome, allFolders } = useNavigation();
   const { width } = useWindowSize();
-  const { folders, pages, socials } = mockData;
+  const { folders, socials } = mockData;
+  const pages = useMemo(() => mockData.pages.filter(page => !page.hidden), []);
   const isMobile =
     width !== undefined && width < SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
   const sidebarRef = useRef<HTMLDivElement | null>(null);

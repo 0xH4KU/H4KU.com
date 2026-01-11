@@ -156,7 +156,7 @@ export async function submitContactRequest(
   return data ?? { success: true };
 }
 
-function mergeAbortSignals(
+export function mergeAbortSignals(
   ...signals: (AbortSignal | undefined)[]
 ): AbortSignal | undefined {
   const activeSignals = signals.filter((signal): signal is AbortSignal =>
