@@ -25,11 +25,25 @@ export const API_TIMEOUT_MS = 10000;
 /** Turnstile verification endpoint */
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
-/** Allowed CORS origins */
+/**
+ * Allowed CORS origins
+ *
+ * Includes production domains, Cloudflare Pages preview deployments, and local dev servers.
+ *
+ * Preview deployment regex breakdown:
+ * - `^https:\/\/` - Must be HTTPS
+ * - `[a-z0-9-]+` - Subdomain: alphanumeric + hyphens (Cloudflare's branch name slugs)
+ * - `\.h4ku-com\.pages\.dev$` - Must end with the Pages project domain
+ *
+ * @example Valid preview URLs:
+ * - https://main.h4ku-com.pages.dev
+ * - https://feature-branch.h4ku-com.pages.dev
+ * - https://pr-123.h4ku-com.pages.dev
+ */
 export const ALLOWED_ORIGINS = [
   'https://h4ku.com',
   'https://www.h4ku.com',
-  // Cloudflare Pages preview deployments
+  // Cloudflare Pages preview deployments (see JSDoc above for regex explanation)
   /^https:\/\/[a-z0-9-]+\.h4ku-com\.pages\.dev$/,
   // Local development
   'http://localhost:5173',
