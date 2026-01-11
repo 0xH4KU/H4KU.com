@@ -36,26 +36,41 @@ The frontend uses a two-step flow:
 
 #### 2. Choose Email Provider
 
-**Option A: Resend (Recommended)**
+Three implementations are available. **Resend is currently active.**
 
-Use `functions/api/contact.ts`:
+**Option A: Resend (Currently Active) ✓**
 
+Uses `functions/api/contact.ts`:
+
+- Sends notification email to admin
+- Sends auto-reply confirmation to user
+- Free tier: 100 emails/day, 3000/month
+
+Setup:
 1. Sign up at [resend.com](https://resend.com)
 2. Get your API key and verify your domain
 3. Set `RESEND_API_KEY` and `CONTACT_TO_EMAIL` in Pages settings
 
 **Option B: Cloudflare Email Routing**
 
-Use `functions/api/contact.email-routing.ts`:
+Uses `functions/api/contact.email-routing.ts`:
 
+- Uses Cloudflare's built-in email routing (no third-party API)
+- Notification email only (no auto-reply)
+
+Setup:
 1. Enable Email Routing in Cloudflare Dashboard
 2. Add `send_email` binding in Pages Functions settings
 3. Set `CONTACT_TO_EMAIL` and `CONTACT_FROM_EMAIL`
 
 **Option C: Discord Webhook**
 
-Use `functions/api/contact.discord.ts`:
+Uses `functions/api/contact.discord.ts`:
 
+- Sends notifications to a Discord channel
+- No email functionality
+
+Setup:
 1. Create a webhook in your Discord server
 2. Set `DISCORD_WEBHOOK_URL` in Pages settings
 

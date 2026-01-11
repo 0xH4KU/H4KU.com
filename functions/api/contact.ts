@@ -38,21 +38,47 @@ interface Env extends MiddlewareEnv {
   CONTACT_TO_EMAIL: string;
 }
 
-// Shared email styles to prevent Gmail dark mode inversion
+// Brand colors
+const colors = {
+  primary: '#c0a88d',
+  bg: '#1a1a1a',
+  surface: '#0f0f0f',
+  text: '#e5e2dd',
+  muted: '#999999',
+  dim: '#666666',
+  border: '#333333',
+} as const;
+
+// Shared email styles with aggressive Gmail dark mode prevention
 const emailStyles = `
   <style>
-    /* Force dark mode and prevent Gmail inversion */
-    :root { color-scheme: light dark; supported-color-schemes: light dark; }
-    body, .body { background-color: #1a1a1a !important; }
-    /* Gmail dark mode targeting */
-    u + .body .gmail-fix { background-color: #1a1a1a !important; }
-    @media (prefers-color-scheme: dark) {
-      .body, .container, .surface { background-color: #1a1a1a !important; }
-    }
+    /* Tell email clients NOT to apply dark mode transformations */
+    :root { color-scheme: light only; }
+
+    /* Base resets */
+    body, .body { margin: 0; padding: 0; width: 100%; -webkit-text-size-adjust: none; -ms-text-size-adjust: none; }
+
+    /* Gmail-specific dark mode overrides using attribute selectors */
+    /* Gmail wraps content and adds data-ogsc (text) and data-ogsb (background) */
+    [data-ogsc] { color: ${colors.text} !important; }
+    [data-ogsb] { background-color: ${colors.bg} !important; }
+
+    /* Target Gmail's u + .body structure */
+    u + .body { background-color: ${colors.bg} !important; }
+    u + .body .bg-main { background-color: ${colors.bg} !important; }
+    u + .body .bg-surface { background-color: ${colors.surface} !important; }
+    u + .body .text-primary { color: ${colors.primary} !important; }
+    u + .body .text-main { color: ${colors.text} !important; }
+    u + .body .text-muted { color: ${colors.muted} !important; }
+    u + .body .text-dim { color: ${colors.dim} !important; }
+
+    /* Prevent color inversion on specific elements */
+    .no-dark-invert { color: inherit !important; background-color: inherit !important; }
   </style>
   <!--[if mso]>
   <style type="text/css">
     body, table, td { font-family: Arial, sans-serif !important; }
+    .surface { background-color: ${colors.surface} !important; }
   </style>
   <![endif]-->
 `;
@@ -73,15 +99,8 @@ function createEmailHtml(
     hour12: false,
   });
 
-  const c = {
-    primary: '#c0a88d',
-    bg: '#1a1a1a',
-    surface: '#0f0f0f',
-    text: '#e5e2dd',
-    muted: '#999999',
-    dim: '#666666',
-    border: '#333333',
-  };
+  const c = colors;
+  const font = "'SF Mono', Monaco, Consolas, 'Courier New', monospace";
 
   return `
 <!DOCTYPE html>
@@ -89,125 +108,65 @@ function createEmailHtml(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
-  <meta name="supported-color-schemes" content="light dark">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light only">
   <meta name="x-apple-disable-message-reformatting">
   <title>New Message - H4KU.com</title>
   ${emailStyles}
 </head>
-<body class="body" style="margin: 0; padding: 0; width: 100%; background-color: ${c.bg}; -webkit-text-size-adjust: none; -ms-text-size-adjust: none;">
-  <!-- Gmail dark mode fix wrapper -->
-  <div class="gmail-fix" style="display: none; font-size: 1px; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; background-color: ${c.bg};">
-    New message from ${escapeHtml(payload.name)} via h4ku.com
+<body class="body bg-main" style="margin: 0; padding: 0; width: 100%; background-color: ${c.bg};">
+  <!-- Preheader (Gmail preview text) -->
+  <div style="display: none; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: ${c.bg}; opacity: 0;">
+    New message from ${escapeHtml(payload.name)} via h4ku.com &#8199;&#65279;&#847;
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body" style="background-color: ${c.bg};" bgcolor="${c.bg}">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body bg-main" style="background-color: ${c.bg};" bgcolor="${c.bg}">
     <tr>
-      <td align="center" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
-        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="container" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
-
-          <!-- Display Issue Notice -->
-          <tr>
-            <td align="center" style="padding-bottom: 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <span style="font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 10px; color: ${c.dim}; letter-spacing: 0.5px;">
-                Email not displaying correctly? Try disabling dark mode.
-              </span>
-            </td>
-          </tr>
+      <td align="center" class="bg-main" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="bg-main" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
 
           <!-- Header -->
           <tr>
-            <td style="border-top: 2px solid ${c.border}; padding: 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
+            <td class="bg-main" style="border-bottom: 1px solid ${c.border}; padding-bottom: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: bold; background-color: ${c.bg};" bgcolor="${c.bg}">
+                  <td class="text-primary" style="font-family: ${font}; color: ${c.primary}; font-size: 13px; letter-spacing: 2px; font-weight: bold;">
                     H4KU.COM
                   </td>
-                  <td align="right" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 11px; letter-spacing: 1px; background-color: ${c.bg};" bgcolor="${c.bg}">
-                    ${dateStr} | ${timeStr}
+                  <td align="right" class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 11px;">
+                    ${dateStr} &bull; ${timeStr}
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Title Block -->
+          <!-- Title -->
           <tr>
-            <td style="padding: 0 0 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="surface" style="background-color: ${c.surface}; border: 2px solid ${c.border};" bgcolor="${c.surface}">
-                <tr>
-                  <td style="padding: 20px 24px; background-color: ${c.surface};" bgcolor="${c.surface}">
-                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 18px; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 8px;">
-                      NEW MESSAGE
-                    </div>
-                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 11px; letter-spacing: 1px;">
-                      REF: ${escapeHtml(referenceId)}
-                    </div>
-                  </td>
-                </tr>
-              </table>
+            <td class="bg-main" style="padding: 28px 0 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <div class="text-main" style="font-family: ${font}; color: ${c.text}; font-size: 20px; font-weight: bold; letter-spacing: 0.5px;">
+                New Contact Message
+              </div>
+              <div class="text-muted" style="font-family: ${font}; color: ${c.muted}; font-size: 11px; margin-top: 6px;">
+                Reference: <span class="text-primary" style="color: ${c.primary};">${escapeHtml(referenceId)}</span>
+              </div>
             </td>
           </tr>
 
-          <!-- Sender Info -->
+          <!-- Sender Card -->
           <tr>
-            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <td class="bg-main" style="padding-bottom: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-surface" style="background-color: ${c.surface}; border-radius: 4px;" bgcolor="${c.surface}">
                 <tr>
-                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 10px; background-color: ${c.bg};" bgcolor="${c.bg}">
-                    From
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background-color: ${c.bg};" bgcolor="${c.bg}">
-                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 15px; padding-bottom: 4px;">
+                  <td class="bg-surface" style="padding: 16px 20px; background-color: ${c.surface};" bgcolor="${c.surface}">
+                    <div class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+                      From
+                    </div>
+                    <div class="text-main" style="font-family: ${font}; color: ${c.text}; font-size: 15px; margin-bottom: 4px;">
                       ${escapeHtml(payload.name)}
                     </div>
-                    <div>
-                      <a href="mailto:${escapeHtml(payload.email)}" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; text-decoration: none; font-size: 13px; border-bottom: 1px solid ${c.primary};">
-                        ${escapeHtml(payload.email)}
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Message Content -->
-          <tr>
-            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 12px; background-color: ${c.bg};" bgcolor="${c.bg}">
-                    Message
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background-color: ${c.bg};" bgcolor="${c.bg}">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="surface" style="background-color: ${c.surface}; border-left: 2px solid ${c.primary};" bgcolor="${c.surface}">
-                      <tr>
-                        <td style="padding: 20px; font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 14px; line-height: 1.8; white-space: pre-wrap; background-color: ${c.surface};" bgcolor="${c.surface}">${escapeHtml(payload.message)}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="border-top: 2px solid ${c.border}; padding-top: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 10px; letter-spacing: 1px; line-height: 1.8; background-color: ${c.bg};" bgcolor="${c.bg}">
-                    <span style="color: ${c.primary};">&#9632;</span> VIA H4KU.COM<br>
-                    <span style="color: ${c.dim};">CLIENT: ${escapeHtml(clientIp)}</span>
-                  </td>
-                  <td align="right" valign="bottom" style="background-color: ${c.bg};" bgcolor="${c.bg}">
-                    <a href="https://h4ku.com" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; text-decoration: none; font-size: 11px; letter-spacing: 1px;">
-                      h4ku.com &rarr;
+                    <a href="mailto:${escapeHtml(payload.email)}" class="text-primary" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 13px;">
+                      ${escapeHtml(payload.email)}
                     </a>
                   </td>
                 </tr>
@@ -215,9 +174,36 @@ function createEmailHtml(
             </td>
           </tr>
 
-          <!-- Bottom Border -->
+          <!-- Message -->
           <tr>
-            <td style="padding-top: 20px; border-bottom: 2px solid ${c.border}; background-color: ${c.bg};" bgcolor="${c.bg}"></td>
+            <td class="bg-main" style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <div class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
+                Message
+              </div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-surface" style="background-color: ${c.surface}; border-left: 3px solid ${c.primary};" bgcolor="${c.surface}">
+                <tr>
+                  <td class="bg-surface text-main" style="padding: 16px 20px; font-family: ${font}; color: ${c.text}; font-size: 14px; line-height: 1.7; white-space: pre-wrap; background-color: ${c.surface};" bgcolor="${c.surface}">${escapeHtml(payload.message)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td class="bg-main" style="border-top: 1px solid ${c.border}; padding-top: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="text-dim" style="font-family: ${font}; color: ${c.dim}; font-size: 10px; line-height: 1.6;">
+                    IP: ${escapeHtml(clientIp)}
+                  </td>
+                  <td align="right">
+                    <a href="https://h4ku.com" class="text-primary" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
+                      h4ku.com &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
           </tr>
 
         </table>
@@ -233,15 +219,8 @@ function createConfirmationEmailHtml(
   payload: ContactPayload,
   referenceId: string
 ): string {
-  const c = {
-    primary: '#c0a88d',
-    bg: '#1a1a1a',
-    surface: '#0f0f0f',
-    text: '#e5e2dd',
-    muted: '#999999',
-    dim: '#666666',
-    border: '#333333',
-  };
+  const c = colors;
+  const font = "'SF Mono', Monaco, Consolas, 'Courier New', monospace";
 
   return `
 <!DOCTYPE html>
@@ -249,69 +228,56 @@ function createConfirmationEmailHtml(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
-  <meta name="supported-color-schemes" content="light dark">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light only">
   <meta name="x-apple-disable-message-reformatting">
   <title>Message Received - H4KU.com</title>
   ${emailStyles}
 </head>
-<body class="body" style="margin: 0; padding: 0; width: 100%; background-color: ${c.bg}; -webkit-text-size-adjust: none; -ms-text-size-adjust: none;">
-  <!-- Gmail dark mode fix wrapper -->
-  <div class="gmail-fix" style="display: none; font-size: 1px; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; background-color: ${c.bg};">
-    Your message has been received - h4ku.com
+<body class="body bg-main" style="margin: 0; padding: 0; width: 100%; background-color: ${c.bg};">
+  <!-- Preheader -->
+  <div style="display: none; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: ${c.bg}; opacity: 0;">
+    Your message has been received - h4ku.com &#8199;&#65279;&#847;
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body" style="background-color: ${c.bg};" bgcolor="${c.bg}">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="body bg-main" style="background-color: ${c.bg};" bgcolor="${c.bg}">
     <tr>
-      <td align="center" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
-        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="container" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
-
-          <!-- Display Issue Notice -->
-          <tr>
-            <td align="center" style="padding-bottom: 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <span style="font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 10px; color: ${c.dim}; letter-spacing: 0.5px;">
-                Email not displaying correctly? Try disabling dark mode.
-              </span>
-            </td>
-          </tr>
+      <td align="center" class="bg-main" style="padding: 32px 16px; background-color: ${c.bg};" bgcolor="${c.bg}">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" class="bg-main" style="max-width: 560px; width: 100%; background-color: ${c.bg};" bgcolor="${c.bg}">
 
           <!-- Header -->
           <tr>
-            <td style="border-top: 2px solid ${c.border}; padding: 24px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: bold; background-color: ${c.bg};" bgcolor="${c.bg}">
-                    H4KU.COM
-                  </td>
-                </tr>
-              </table>
+            <td class="bg-main" style="border-bottom: 1px solid ${c.border}; padding-bottom: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <span class="text-primary" style="font-family: ${font}; color: ${c.primary}; font-size: 13px; letter-spacing: 2px; font-weight: bold;">
+                H4KU.COM
+              </span>
             </td>
           </tr>
 
           <!-- Greeting -->
           <tr>
-            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 15px; line-height: 1.6;">
+            <td class="bg-main" style="padding: 28px 0 20px 0; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <div class="text-main" style="font-family: ${font}; color: ${c.text}; font-size: 16px; line-height: 1.6;">
                 Hi ${escapeHtml(payload.name)},
               </div>
             </td>
           </tr>
 
-          <!-- Main Content -->
+          <!-- Success Card -->
           <tr>
-            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="surface" style="background-color: ${c.surface}; border: 2px solid ${c.border};" bgcolor="${c.surface}">
+            <td class="bg-main" style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-surface" style="background-color: ${c.surface}; border-radius: 4px;" bgcolor="${c.surface}">
                 <tr>
-                  <td style="padding: 24px; background-color: ${c.surface};" bgcolor="${c.surface}">
-                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 14px; line-height: 1.8;">
-                      <div style="margin-bottom: 16px;">
-                        <span style="color: ${c.primary};">&#10003;</span>&nbsp; Your message has been received.
+                  <td class="bg-surface" style="padding: 20px 24px; background-color: ${c.surface};" bgcolor="${c.surface}">
+                    <div class="text-main" style="font-family: ${font}; color: ${c.text}; font-size: 14px; line-height: 1.8;">
+                      <div style="margin-bottom: 14px;">
+                        <span class="text-primary" style="color: ${c.primary};">&#10003;</span>&nbsp; Your message has been received.
                       </div>
-                      <div style="margin-bottom: 16px;">
-                        I will get back to you within <strong style="color: ${c.primary};">3 business days</strong>.
+                      <div style="margin-bottom: 14px;">
+                        I'll get back to you within <strong class="text-primary" style="color: ${c.primary};">3 business days</strong>.
                       </div>
-                      <div style="color: ${c.muted}; font-size: 12px; border-left: 2px solid ${c.border}; padding-left: 12px;">
-                        REF: ${escapeHtml(referenceId)}
+                      <div class="text-muted" style="color: ${c.muted}; font-size: 12px; padding-top: 10px; border-top: 1px solid ${c.border};">
+                        Reference: ${escapeHtml(referenceId)}
                       </div>
                     </div>
                   </td>
@@ -320,23 +286,18 @@ function createConfirmationEmailHtml(
             </td>
           </tr>
 
-          <!-- Important Notice -->
+          <!-- Notice -->
           <tr>
-            <td style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <td class="bg-main" style="padding-bottom: 24px; background-color: ${c.bg};" bgcolor="${c.bg}">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg-surface" style="background-color: ${c.surface}; border-left: 3px solid ${c.primary};" bgcolor="${c.surface}">
                 <tr>
-                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 12px; background-color: ${c.bg};" bgcolor="${c.bg}">
-                    Important
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background-color: ${c.surface}; border-left: 2px solid ${c.primary}; padding: 16px 20px;" bgcolor="${c.surface}">
-                    <div style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.text}; font-size: 13px; line-height: 1.8;">
-                      <div style="margin-bottom: 12px;">
-                        <span style="color: ${c.primary};">&#9632;</span>&nbsp; Please add <strong>@h4ku.com</strong> to your email whitelist to ensure you receive my reply.
+                  <td class="bg-surface" style="padding: 16px 20px; background-color: ${c.surface};" bgcolor="${c.surface}">
+                    <div class="text-main" style="font-family: ${font}; color: ${c.text}; font-size: 13px; line-height: 1.7;">
+                      <div style="margin-bottom: 10px;">
+                        <span class="text-primary" style="color: ${c.primary};">&#8250;</span>&nbsp; Add <strong>@h4ku.com</strong> to your whitelist
                       </div>
-                      <div style="color: ${c.muted};">
-                        <span style="color: ${c.primary};">&#9632;</span>&nbsp; If you don't hear back within 3 business days, please check your spam folder.
+                      <div class="text-muted" style="color: ${c.muted};">
+                        <span class="text-primary" style="color: ${c.primary};">&#8250;</span>&nbsp; Check spam folder if no reply in 3 days
                       </div>
                     </div>
                   </td>
@@ -347,26 +308,21 @@ function createConfirmationEmailHtml(
 
           <!-- Footer -->
           <tr>
-            <td style="border-top: 2px solid ${c.border}; padding-top: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
+            <td class="bg-main" style="border-top: 1px solid ${c.border}; padding-top: 20px; background-color: ${c.bg};" bgcolor="${c.bg}">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.dim}; font-size: 12px; line-height: 1.6; background-color: ${c.bg};" bgcolor="${c.bg}">
+                  <td class="text-muted" style="font-family: ${font}; color: ${c.muted}; font-size: 12px; line-height: 1.6;">
                     Best regards,<br>
-                    <span style="color: ${c.primary};">HAKU</span>
+                    <span class="text-primary" style="color: ${c.primary};">HAKU</span>
                   </td>
-                  <td align="right" valign="bottom" style="background-color: ${c.bg};" bgcolor="${c.bg}">
-                    <a href="https://h4ku.com" style="font-family: 'SF Mono', Monaco, Consolas, monospace; color: ${c.primary}; text-decoration: none; font-size: 11px; letter-spacing: 1px;">
+                  <td align="right" valign="bottom">
+                    <a href="https://h4ku.com" class="text-primary" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
                       h4ku.com &rarr;
                     </a>
                   </td>
                 </tr>
               </table>
             </td>
-          </tr>
-
-          <!-- Bottom Border -->
-          <tr>
-            <td style="padding-top: 20px; border-bottom: 2px solid ${c.border}; background-color: ${c.bg};" bgcolor="${c.bg}"></td>
           </tr>
 
         </table>
@@ -378,7 +334,7 @@ function createConfirmationEmailHtml(
 `.trim();
 }
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
+export const onRequestPost: PagesFunction<Env> = async context => {
   const { request, env } = context;
   const corsHeaders = getCorsHeaders(request);
 
@@ -391,12 +347,20 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   // Check required env vars
   if (!env.RESEND_API_KEY) {
     console.error('Missing RESEND_API_KEY');
-    return errorResponse(request, 'Server configuration error: Missing API key', 500);
+    return errorResponse(
+      request,
+      'Server configuration error: Missing API key',
+      500
+    );
   }
 
   if (!env.CONTACT_TO_EMAIL) {
     console.error('Missing CONTACT_TO_EMAIL');
-    return errorResponse(request, 'Server configuration error: Missing recipient', 500);
+    return errorResponse(
+      request,
+      'Server configuration error: Missing recipient',
+      500
+    );
   }
 
   let payload: unknown;
@@ -418,7 +382,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     env.TURNSTILE_SECRET_KEY
   );
   if (!turnstileResult.success) {
-    return errorResponse(request, turnstileResult.error || 'Verification failed', 403);
+    return errorResponse(
+      request,
+      turnstileResult.error || 'Verification failed',
+      403
+    );
   }
 
   const referenceId = generateSecureReferenceId();
@@ -433,7 +401,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
         },
         body: JSON.stringify({
           from: 'HAKU <contact@h4ku.com>',
@@ -446,7 +414,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       API_TIMEOUT_MS
     );
 
-    const notificationResult = (await notificationResponse.json()) as Record<string, unknown>;
+    const notificationResult = (await notificationResponse.json()) as Record<
+      string,
+      unknown
+    >;
 
     if (!notificationResponse.ok) {
       console.error(
@@ -472,7 +443,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+            Authorization: `Bearer ${env.RESEND_API_KEY}`,
           },
           body: JSON.stringify({
             from: 'HAKU <contact@h4ku.com>',
@@ -482,14 +453,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           }),
         },
         API_TIMEOUT_MS
-      ).catch((error) => {
+      ).catch(error => {
         // Log but don't fail - confirmation email is nice-to-have
         console.error('Failed to send confirmation email:', error);
       })
     );
 
     // Log with masked email
-    console.log(`Contact form submitted: ${referenceId} from ${maskEmail(payload.email)}`);
+    console.log(
+      `Contact form submitted: ${referenceId} from ${maskEmail(payload.email)}`
+    );
 
     return successResponse(request, {
       message: 'Message sent successfully',
@@ -498,13 +471,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       console.error('Email API timeout');
-      return errorResponse(request, 'Email service timeout. Please try again.', 504);
+      return errorResponse(
+        request,
+        'Email service timeout. Please try again.',
+        504
+      );
     }
     console.error('Failed to send email:', error);
-    return errorResponse(request, 'Failed to send message. Please try again later.', 500);
+    return errorResponse(
+      request,
+      'Failed to send message. Please try again later.',
+      500
+    );
   }
 };
 
-export const onRequestOptions: PagesFunction = async (context) => {
+export const onRequestOptions: PagesFunction = async context => {
   return corsPreflightResponse(context.request);
 };
