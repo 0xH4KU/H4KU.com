@@ -50,5 +50,7 @@
   Cache-Control: no-cache, no-store, must-revalidate
 
 # Favicon with medium cache
-/logo.svg
+/logo/H4KU-Logo.svg
+  Cache-Control: public, max-age=86400
+/logo/favicon.svg
   Cache-Control: public, max-age=86400
