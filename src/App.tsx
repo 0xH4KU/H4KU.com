@@ -13,6 +13,7 @@ import { AppProviders } from '@/contexts/AppProviders';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { use100vh } from '@/hooks/use100vh';
+import { SIDEBAR_CONFIG } from '@/config/constants';
 import type { DomainCheckResult } from '@/utils/domainCheck';
 import styles from './App.module.css';
 
@@ -33,8 +34,12 @@ const AppContent: React.FC = () => {
   const [allowedDomains, setAllowedDomains] = useState<string[]>([]);
 
   use100vh();
-  const isMobile = width !== undefined && width < 768;
-  const showOverlay = isMobile && isSidebarOpen;
+  const isCompactViewport =
+    width !== undefined && width <= SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
+  const showOverlay = isCompactViewport && isSidebarOpen;
+  const contentGutter = isCompactViewport
+    ? 'clamp(16px, 4vw, 36px)'
+    : 'clamp(24px, 5vw, 72px)';
 
   // Security initialization: domain check, fingerprinting, and copyright notice
   useEffect(() => {
@@ -141,11 +146,12 @@ const AppContent: React.FC = () => {
             role="main"
             style={
               {
-                '--sidebar-margin': isMobile
+                '--sidebar-margin': isCompactViewport
                   ? '0px'
                   : isSidebarOpen
                     ? `${sidebarWidth}px`
                     : '0px',
+                '--content-gutter': contentGutter,
               } as React.CSSProperties
             }
           >

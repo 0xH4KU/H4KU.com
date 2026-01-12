@@ -50,7 +50,7 @@ const getInitialSidebarState = () => {
   if (typeof window === 'undefined') {
     return true;
   }
-  return window.innerWidth >= SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
+  return window.innerWidth > SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
 };
 
 export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
@@ -155,7 +155,7 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     const mediaQuery = window.matchMedia(
-      `(min-width: ${SIDEBAR_CONFIG.MOBILE_BREAKPOINT}px)`
+      `(min-width: ${SIDEBAR_CONFIG.MOBILE_BREAKPOINT + 1}px)`
     );
     setSidebarOpen(mediaQuery.matches);
 

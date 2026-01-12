@@ -68,7 +68,8 @@
   min-height: 0;
   max-height: 100%;
   overflow-y: auto;
-  padding: var(--content-padding-top) 64px var(--content-padding-bottom);
+  padding: var(--content-padding-top) var(--content-gutter, 64px)
+    var(--content-padding-bottom);
   position: relative;
   z-index: 10;
   margin-left: var(--sidebar-margin, 0px);
@@ -102,15 +103,8 @@
 
 @media (max-width: 1024px) {
   .content-area {
-    padding: calc(var(--topbar-height) + 24px) 40px
+    padding: calc(var(--topbar-height) + 24px) var(--content-gutter, 64px)
       calc(var(--statusbar-height) + 24px);
-  }
-}
-
-@media (max-width: 768px) {
-  .content-area {
-    padding: calc(var(--topbar-height) + 16px) 24px
-      calc(var(--statusbar-height) + 16px);
   }
 
   .main-layout.sidebar-open .content-area {
@@ -128,5 +122,12 @@
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     z-index: 15;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-area {
+    padding: calc(var(--topbar-height) + 16px) var(--content-gutter, 64px)
+      calc(var(--statusbar-height) + 16px);
   }
 }

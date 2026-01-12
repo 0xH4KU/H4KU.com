@@ -42,8 +42,8 @@ const Sidebar: React.FC = () => {
   const { width } = useWindowSize();
   const { folders, socials } = mockData;
   const pages = useMemo(() => mockData.pages.filter(page => !page.hidden), []);
-  const isMobile =
-    width !== undefined && width < SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
+  const isCompactViewport =
+    width !== undefined && width <= SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -158,11 +158,11 @@ const Sidebar: React.FC = () => {
   const handleNavigate = useCallback(
     (item: SidebarEntry) => {
       navigateTo(item);
-      if (isMobile) {
+      if (isCompactViewport) {
         closeSidebar();
       }
     },
-    [navigateTo, isMobile, closeSidebar]
+    [navigateTo, isCompactViewport, closeSidebar]
   );
 
   const handleSearchResultSelect = useCallback(
@@ -171,11 +171,11 @@ const Sidebar: React.FC = () => {
         navigateTo,
         openLightbox,
       });
-      if (handled && isMobile) {
+      if (handled && isCompactViewport) {
         closeSidebar();
       }
     },
-    [navigateTo, openLightbox, isMobile, closeSidebar]
+    [navigateTo, openLightbox, isCompactViewport, closeSidebar]
   );
 
   const handleContextMenu = useCallback(
@@ -253,7 +253,7 @@ const Sidebar: React.FC = () => {
   return (
     <SidebarView
       isSidebarOpen={isSidebarOpen}
-      isMobile={isMobile}
+      isCompact={isCompactViewport}
       normalizedSidebarWidth={normalizedSidebarWidth}
       inertProps={inertProps}
       sidebarRef={sidebarRef}

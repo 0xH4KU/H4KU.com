@@ -686,10 +686,10 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .sidebar {
-    width: 320px !important;
-    /* Fixed width for mobile */
+    width: min(320px, 82vw) !important;
+    /* Fixed width for compact viewports */
     z-index: 1000;
   }
 

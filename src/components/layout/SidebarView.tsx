@@ -18,7 +18,7 @@ interface ContextMenuState {
 
 interface SidebarViewProps {
   isSidebarOpen: boolean;
-  isMobile: boolean;
+  isCompact: boolean;
   normalizedSidebarWidth: number;
   inertProps: Record<string, unknown>;
   sidebarRef: React.RefObject<HTMLDivElement | null>;
@@ -54,7 +54,7 @@ interface SidebarViewProps {
 
 export const SidebarView: React.FC<SidebarViewProps> = ({
   isSidebarOpen,
-  isMobile,
+  isCompact,
   normalizedSidebarWidth,
   inertProps,
   sidebarRef,
@@ -91,7 +91,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({
     id="app-sidebar"
     ref={sidebarRef}
     className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
-    style={{ width: isMobile ? undefined : normalizedSidebarWidth }}
+    style={{ width: isCompact ? undefined : normalizedSidebarWidth }}
     aria-hidden={!isSidebarOpen}
     {...inertProps}
   >
@@ -100,7 +100,7 @@ export const SidebarView: React.FC<SidebarViewProps> = ({
       onToggleAll={onToggleAll}
       onLogoClick={() => {
         resetToHome();
-        if (isMobile) {
+        if (isCompact) {
           closeSidebar();
         }
       }}
