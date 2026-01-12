@@ -186,10 +186,10 @@ function updateManifest(meta) {
   ensureCacheDir();
   let manifests = [];
 
-  if (fs.existsSync(MANIFEST_PATH)) {
-    try {
-      manifests = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf-8'));
-    } catch (e) {
+  try {
+    manifests = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf-8'));
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
       console.warn('Warning: Could not parse existing manifest');
     }
   }

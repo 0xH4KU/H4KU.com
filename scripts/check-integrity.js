@@ -94,12 +94,16 @@ const log = message => {
 const main = () => {
   const { file, write } = parseArgs();
 
-  if (!fs.existsSync(file)) {
-    console.error(`[integrity] File not found: ${file}`);
-    process.exit(1);
+  let raw;
+  try {
+    raw = fs.readFileSync(file, 'utf-8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.error(`[integrity] File not found: ${file}`);
+      process.exit(1);
+    }
+    throw err;
   }
-
-  const raw = fs.readFileSync(file, 'utf-8');
   const aggregated = JSON.parse(raw);
   const payload = {
     folders: aggregated.folders ?? [],

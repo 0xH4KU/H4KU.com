@@ -23,24 +23,23 @@ const ensureObserver = () => {
     return null;
   }
 
-  sharedObserver = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const callback = observerCallbacks.get(entry.target);
-          if (callback) {
-            callback();
-            observerCallbacks.delete(entry.target);
-          }
-          sharedObserver?.unobserve(entry.target);
+  const options: IntersectionObserverInit = {
+    rootMargin: IMAGE_CONFIG.LAZY_LOAD_ROOT_MARGIN,
+    threshold: IMAGE_CONFIG.LAZY_LOAD_THRESHOLD,
+  };
+
+  sharedObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const callback = observerCallbacks.get(entry.target);
+        if (callback) {
+          callback();
+          observerCallbacks.delete(entry.target);
         }
-      });
-    },
-    {
-      rootMargin: IMAGE_CONFIG.LAZY_LOAD_ROOT_MARGIN,
-      threshold: IMAGE_CONFIG.LAZY_LOAD_THRESHOLD,
-    }
-  );
+        sharedObserver?.unobserve(entry.target);
+      }
+    });
+  }, options);
 
   return sharedObserver;
 };

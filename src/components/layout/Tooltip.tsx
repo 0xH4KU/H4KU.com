@@ -26,15 +26,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
     const rect = target.getBoundingClientRect();
 
     // Determine placement based on available space
-    let finalPlacement: 'top' | 'bottom' = 'top';
-
-    if (positionProp === 'auto') {
-      const spaceAbove = rect.top;
-      // If less than 60px space above, show below
-      finalPlacement = spaceAbove < 60 ? 'bottom' : 'top';
-    } else {
-      finalPlacement = positionProp;
-    }
+    const finalPlacement: 'top' | 'bottom' =
+      positionProp === 'auto'
+        ? rect.top < 60 // If less than 60px space above, show below
+          ? 'bottom'
+          : 'top'
+        : positionProp;
 
     setPlacement(finalPlacement);
     setPosition({
