@@ -84,7 +84,7 @@ function createEmailHtml(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
-  <title>New Message - H4KU.com</title>
+  <title>New Message - H4KU.COM</title>
   ${emailStyles}
 </head>
 <body style="margin: 0; padding: 0; width: 100%;">
@@ -165,8 +165,8 @@ function createEmailHtml(
                     IP: ${escapeHtml(clientIp)}
                   </td>
                   <td align="right">
-                    <a href="https://h4ku.com" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
-                      h4ku.com &rarr;
+                    <a href="https://H4KU.COM" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
+                      H4KU.COM &rarr;
                     </a>
                   </td>
                 </tr>
@@ -197,7 +197,7 @@ function createConfirmationEmailHtml(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
-  <title>Message Received - H4KU.com</title>
+  <title>Message Received - H4KU.COM</title>
   ${emailStyles}
 </head>
 <body style="margin: 0; padding: 0; width: 100%;">
@@ -255,7 +255,7 @@ function createConfirmationEmailHtml(
                   <td style="padding: 16px 20px;">
                     <div style="font-family: ${font}; color: ${c.text}; font-size: 13px; line-height: 1.7;">
                       <div style="margin-bottom: 10px;">
-                        <span style="color: ${c.primary};">&#8250;</span>&nbsp; Add <strong>@h4ku.com</strong> to your whitelist
+                        <span style="color: ${c.primary};">&#8250;</span>&nbsp; Add <strong>@H4KU.COM</strong> to your whitelist
                       </div>
                       <div style="color: ${c.muted};">
                         <span style="color: ${c.primary};">&#8250;</span>&nbsp; Check spam folder if no reply in 3 days
@@ -277,8 +277,8 @@ function createConfirmationEmailHtml(
                     <span style="color: ${c.primary};">HAKU</span>
                   </td>
                   <td align="right" valign="bottom">
-                    <a href="https://h4ku.com" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
-                      h4ku.com &rarr;
+                    <a href="https://H4KU.COM" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
+                      H4KU.COM &rarr;
                     </a>
                   </td>
                 </tr>
@@ -365,10 +365,10 @@ export const onRequestPost: PagesFunction<Env> = async context => {
           Authorization: `Bearer ${env.RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: 'HAKU <contact@h4ku.com>',
+          from: 'HAKU <CONTACT@H4KU.COM>',
           to: [env.CONTACT_TO_EMAIL],
           reply_to: payload.email,
-          subject: `[H4KU.com] Contact from ${payload.name}`,
+          subject: `[H4KU.COM] Contact from ${payload.name}`,
           html: notificationHtml,
         }),
       },
@@ -407,9 +407,9 @@ export const onRequestPost: PagesFunction<Env> = async context => {
             Authorization: `Bearer ${env.RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: 'HAKU <contact@h4ku.com>',
+            from: 'HAKU <CONTACT@H4KU.COM>',
             to: [payload.email],
-            subject: `[H4KU.com] Message Received - ${referenceId}`,
+            subject: `[H4KU.COM] Message Received - ${referenceId}`,
             html: confirmationHtml,
           }),
         },

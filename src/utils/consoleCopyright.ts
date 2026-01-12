@@ -24,7 +24,7 @@ export const displayConsoleCopyright = (): void => {
   ██╔══██║██╔══██║██╔═██╗ ██║   ██║
   ██║  ██║██║  ██║██║  ██╗╚██████╔╝
   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝
-                        H4KU.com
+                        H4KU.COM
 `;
 
   const styles = {
@@ -110,8 +110,8 @@ export const displayConsoleCopyright = (): void => {
 
   // Contact info
   secureLog('%c📧 CONTACT:', styles.warning);
-  secureLog('%c   Email: contact@H4KU.com', styles.info);
-  secureLog('%c   License: https://H4KU.com/page/license', styles.license);
+  secureLog('%c   Email: CONTACT@H4KU.COM', styles.info);
+  secureLog('%c   License: https://H4KU.COM/page/license', styles.license);
 
   secureLog('');
 

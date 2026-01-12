@@ -100,7 +100,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
     const { error, referenceId, timestamp } = this.state;
     const payload = [
-      'H4KU.com crash report',
+      'H4KU.COM crash report',
       `Reference: ${referenceId ?? 'pending'}`,
       `Timestamp: ${timestamp ?? new Date().toISOString()}`,
       `Message: ${error?.message ?? 'Unknown error'}`,
@@ -169,7 +169,7 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             {this.state.copyStatus === 'error' && (
               <p className={styles['error-copy-status']} role="alert">
-                Unable to copy crash report. Please email contact@H4KU.com
+                Unable to copy crash report. Please email CONTACT@H4KU.COM
                 manually.
               </p>
             )}
@@ -186,10 +186,10 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className={styles.helpText}>
                 Still stuck? Email{' '}
                 <a
-                  href="mailto:contact@H4KU.com"
-                  aria-label="Email support at contact@H4KU.com"
+                  href="mailto:CONTACT@H4KU.COM"
+                  aria-label="Email support at CONTACT@H4KU.COM"
                 >
-                  contact@H4KU.com
+                  CONTACT@H4KU.COM
                 </a>{' '}
                 for help.
               </p>

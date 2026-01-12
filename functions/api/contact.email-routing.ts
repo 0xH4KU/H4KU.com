@@ -6,14 +6,14 @@
  * Setup Steps:
  * 1. Enable Email Routing on your domain in Cloudflare Dashboard
  * 2. Add a verified destination email address
- * 3. Create a "Send email" address (e.g., noreply@h4ku.com)
+ * 3. Create a "Send email" address (e.g., noreply@H4KU.COM)
  * 4. Add the send_email binding in Pages Functions settings
  *
  * Required bindings (configure in Cloudflare Dashboard → Pages → Settings → Functions):
- * - send_email: Email Workers binding (type: "send_email", destination_address: "contact@H4KU.com")
+ * - send_email: Email Workers binding (type: "send_email", destination_address: "CONTACT@H4KU.COM")
  *
  * Required environment variables:
- * - CONTACT_TO_EMAIL: Recipient email address (e.g., contact@H4KU.com)
+ * - CONTACT_TO_EMAIL: Recipient email address (e.g., CONTACT@H4KU.COM)
  * - CONTACT_FROM_EMAIL: Sender email address (must be configured in Email Routing)
  * - TURNSTILE_SECRET_KEY: Cloudflare Turnstile secret key
  */
@@ -91,7 +91,7 @@ Message:
 ${payload.message}
 
 ---
-This message was sent via the H4KU.com contact form.
+This message was sent via the H4KU.COM contact form.
 `.trim();
 
   const dateStr = new Date().toLocaleDateString('en-US', {
@@ -115,7 +115,7 @@ This message was sent via the H4KU.com contact form.
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
-  <title>New Message - H4KU.com</title>
+  <title>New Message - H4KU.COM</title>
   ${emailStyles}
 </head>
 <body style="margin: 0; padding: 0; width: 100%;">
@@ -196,8 +196,8 @@ This message was sent via the H4KU.com contact form.
                     IP: ${escapeHtml(clientIp)}
                   </td>
                   <td align="right">
-                    <a href="https://h4ku.com" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
-                      h4ku.com &rarr;
+                    <a href="https://H4KU.COM" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
+                      H4KU.COM &rarr;
                     </a>
                   </td>
                 </tr>
@@ -279,7 +279,7 @@ export const onRequestPost: PagesFunction<Env> = async context => {
     await env.send_email.send({
       from: env.CONTACT_FROM_EMAIL,
       to: env.CONTACT_TO_EMAIL,
-      subject: `[H4KU.com] Contact from ${payload.name}`,
+      subject: `[H4KU.COM] Contact from ${payload.name}`,
       text,
       html,
       replyTo: payload.email,

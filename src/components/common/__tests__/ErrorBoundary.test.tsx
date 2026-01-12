@@ -208,7 +208,7 @@ describe('ErrorBoundary', () => {
 
       await waitFor(() => {
         expect(mockWriteText).toHaveBeenCalledWith(
-          expect.stringContaining('H4KU.com crash report')
+          expect.stringContaining('H4KU.COM crash report')
         );
       });
 
@@ -267,7 +267,7 @@ describe('ErrorBoundary', () => {
       );
 
       const emailLink = screen.getByRole('link', { name: /Email support/i });
-      expect(emailLink).toHaveAttribute('href', 'mailto:contact@H4KU.com');
+      expect(emailLink).toHaveAttribute('href', 'mailto:CONTACT@H4KU.COM');
     });
   });
 

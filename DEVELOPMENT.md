@@ -1,6 +1,6 @@
 # Development Guide
 
-_Architecture reference for contributors extending H4KU.com without regressing the core experience._
+_Architecture reference for contributors extending H4KU.COM without regressing the core experience._
 
 ## 1. System Overview
 
@@ -104,7 +104,7 @@ public/content/**/* (source assets)
 
 - `src/services/monitoring.ts` wraps Sentry initialisation; set `VITE_SENTRY_DSN` to enable crash reporting (the app gracefully no-ops when it’s missing).
 - `src/components/common/ErrorBoundary.tsx` reports every error via the monitoring service, shows a friendlier fallback with recovery steps, and exposes a copy-to-clipboard crash report that includes the reference code.
-- Each reference code is sent as a Sentry tag so the support address (`contact@H4KU.com`) can correlate user reports with telemetry.
+- Each reference code is sent as a Sentry tag so the support address (`CONTACT@H4KU.COM`) can correlate user reports with telemetry.
 
 ## 3. Performance Notes
 

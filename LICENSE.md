@@ -12,7 +12,7 @@ This license allows **personal, non-commercial use** of artwork with proper attr
 
 ## 1. Definitions
 
-- **"Work"** refers to all source code, artwork, images, designs, and content on H4KU.com.
+- **"Work"** refers to all source code, artwork, images, designs, and content on H4KU.COM.
 - **"Author"** refers to HAKU (0xH4KU), the copyright holder.
 - **"You"** refers to any individual or entity accessing this Work.
 
@@ -33,9 +33,9 @@ All artwork, illustrations, character designs, and visual content are the intell
 
 When using or sharing any artwork, you **MUST** include:
 - Credit to "HAKU" or "@0xH4KU"
-- Link to https://H4KU.com when possible
+- Link to https://H4KU.COM when possible
 
-Example: `Artwork by HAKU (@0xH4KU) - h4ku.com`
+Example: `Artwork by HAKU (@0xH4KU) - H4KU.COM`
 
 ### 2.3 Prohibited Uses
 
@@ -53,7 +53,7 @@ Some works may be marked with "All Rights Reserved" or similar restrictions. The
 
 ### 2.5 Commercial & Printing Inquiries
 
-Contact **contact@H4KU.com** before any printing or commercial use.
+Contact **CONTACT@H4KU.COM** before any printing or commercial use.
 
 ---
 
@@ -91,7 +91,7 @@ The Author believes in the free exchange of artistic ideas and welcomes others t
 
 ## 5. Deployment
 
-- ✗ Deploying this website on any domain except H4KU.com
+- ✗ Deploying this website on any domain except H4KU.COM
 - ✗ Creating mirrors or copies of the website
 - ✗ Using the website design as a template
 
@@ -125,8 +125,8 @@ THE WORK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. T
 
 For permissions, licensing inquiries, or to report violations:
 
-- **Email:** contact@H4KU.com
-- **Website:** https://H4KU.com
+- **Email:** CONTACT@H4KU.COM
+- **Website:** https://H4KU.COM
 - **Social:** @0xH4KU
 
 ---

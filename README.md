@@ -1,11 +1,11 @@
-# H4KU.com
+# H4KU.COM
 
 _A file-system inspired portfolio built with React 19, TypeScript, and static content aggregation._
 
 ## Project Structure
 
 ```
-H4KU.com/
+H4KU.COM/
 ├── src/
 │   ├── components/
 │   │   ├── common/          # Reusable UI primitives
@@ -173,7 +173,7 @@ Build-time aggregation eliminates runtime glob imports and reduces bundle size.
 
 ```bash
 # Private repository - access restricted
-cd H4KU.com
+cd H4KU.COM
 npm install
 cp .env.example .env  # Configure VITE_CONTACT_ENDPOINT if needed
 npm run dev
@@ -310,8 +310,8 @@ See [LICENSE.md](./LICENSE.md) for full terms.
 
 For questions, collaboration, or licensing inquiries:
 
-- **Email:** contact@H4KU.com
-- **Website:** https://H4KU.com
+- **Email:** CONTACT@H4KU.COM
+- **Website:** https://H4KU.COM
 
 ### Contact Form Setup
 

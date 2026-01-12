@@ -68,8 +68,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   // Discord embed message
   const discordPayload = {
-    username: 'H4KU.com Contact',
-    avatar_url: 'https://h4ku.com/favicon.ico',
+    username: 'H4KU.COM Contact',
+    avatar_url: 'https://H4KU.COM/favicon.ico',
     embeds: [
       {
         title: 'New Contact Form Submission',

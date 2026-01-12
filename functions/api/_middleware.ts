@@ -41,8 +41,8 @@ const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/sit
  * - https://pr-123.h4ku-com.pages.dev
  */
 export const ALLOWED_ORIGINS = [
-  'https://h4ku.com',
-  'https://www.h4ku.com',
+  'https://H4KU.COM',
+  'https://www.H4KU.COM',
   // Cloudflare Pages preview deployments (see JSDoc above for regex explanation)
   /^https:\/\/[a-z0-9-]+\.h4ku-com\.pages\.dev$/,
   // Local development

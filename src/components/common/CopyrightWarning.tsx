@@ -82,8 +82,8 @@ export const CopyrightWarning: React.FC<CopyrightWarningProps> = ({
               For licensing inquiries or to report this unauthorized deployment,
               please contact the author.
             </p>
-            <a href="mailto:contact@H4KU.com" className={styles.link}>
-              contact@H4KU.com
+            <a href="mailto:CONTACT@H4KU.COM" className={styles.link}>
+              CONTACT@H4KU.COM
             </a>
           </div>
         </div>

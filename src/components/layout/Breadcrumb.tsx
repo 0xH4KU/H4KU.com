@@ -114,7 +114,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ segments, onSelect }) => {
             disabled={isActive}
             aria-current={isActive ? 'page' : undefined}
           >
-            H4KU.com
+            H4KU.COM
           </button>
         ) : (
           <React.Fragment key={`${segment.id}-${originalIndex}`}>

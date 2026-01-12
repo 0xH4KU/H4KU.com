@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://H4KU.com/sitemap.xml
+Sitemap: https://H4KU.COM/sitemap.xml

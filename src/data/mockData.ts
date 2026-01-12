@@ -104,7 +104,7 @@ export const dataIntegrity: RuntimeIntegritySummary = {
 
 if (!integrityResults.isFullyValid) {
   secureWarn(
-    '[H4KU.com] Content integrity verification failed.\n  • FNV-1a expected %s / actual %s\n  • SHA-256 expected %s / actual %s',
+    '[H4KU.COM] Content integrity verification failed.\n  • FNV-1a expected %s / actual %s\n  • SHA-256 expected %s / actual %s',
     integrityResults.fnv1a.expected ?? 'missing',
     integrityResults.fnv1a.actual,
     integrityResults.sha256.expected ?? 'missing',

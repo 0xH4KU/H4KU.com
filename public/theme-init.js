@@ -2,7 +2,7 @@
   let theme = 'light';
 
   try {
-    const storedTheme = localStorage.getItem('H4KU.com.theme');
+    const storedTheme = localStorage.getItem('H4KU.COM.theme');
     if (storedTheme === 'light' || storedTheme === 'dark') {
       theme = storedTheme;
     } else if (matchMedia('(prefers-color-scheme: dark)').matches) {

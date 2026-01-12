@@ -99,7 +99,7 @@ export function ContactForm() {
       setStatus({
         type: 'error',
         message:
-          'Could not prepare your submission. Please try again or email contact@H4KU.com',
+          'Could not prepare your submission. Please try again or email CONTACT@H4KU.COM',
       });
       return;
     }

@@ -17,7 +17,7 @@ SECTION 1: ARTWORK & CREATIVE CONTENT
 ────────────────────────────────────────────────────────────────
 
 All artwork, illustrations, character designs, and visual
-content displayed on H4KU.com are the intellectual property
+content displayed on H4KU.COM are the intellectual property
 of the Author.
 
 PERMITTED (with attribution):
@@ -31,9 +31,9 @@ ATTRIBUTION REQUIREMENT:
 
 When using or sharing any artwork, you MUST include:
 • Credit to "HAKU" or "@0xH4KU"
-• Link to https://H4KU.com when possible
+• Link to https://H4KU.COM when possible
 
-Example: "Artwork by HAKU (@0xH4KU) - h4ku.com"
+Example: "Artwork by HAKU (@0xH4KU) - H4KU.COM"
 
 PROHIBITED:
 
@@ -54,7 +54,7 @@ permission from the Author.
 
 FOR PRINTING OR COMMERCIAL INQUIRIES:
 
-Please contact contact@H4KU.com before any printing or commercial
+Please contact CONTACT@H4KU.COM before any printing or commercial
 use. Unauthorized commercial use will result in legal action.
 
 ════════════════════════════════════════════════════════════════
@@ -102,7 +102,7 @@ SECTION 4: DEPLOYMENT
 
 PROHIBITED:
 
-✗ Deploying this website on any domain except H4KU.com
+✗ Deploying this website on any domain except H4KU.COM
 ✗ Creating mirrors or copies of the website
 ✗ Using the website design as a template
 
@@ -139,8 +139,8 @@ CONTACT
 
 For permissions, licensing inquiries, or to report violations:
 
-Email: contact@H4KU.com
-Website: https://H4KU.com
+Email: CONTACT@H4KU.COM
+Website: https://H4KU.COM
 Social: @0xH4KU
 
 ────────────────────────────────────────────────────────────────

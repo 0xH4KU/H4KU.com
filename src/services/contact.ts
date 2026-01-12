@@ -15,7 +15,7 @@ export interface ContactApiResponse {
 
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
-  'X-Requested-With': 'H4KU.com-contact-form',
+  'X-Requested-With': 'H4KU.COM-contact-form',
 };
 
 const PENDING_CONTACT_KEY = 'contact:pending-submission';

@@ -94,7 +94,7 @@ export function ContactVerify() {
         setMessage('The request was canceled. Please try again.');
       } else {
         setMessage(
-          'Failed to send message. Please try again or email contact@H4KU.com'
+          'Failed to send message. Please try again or email CONTACT@H4KU.COM'
         );
       }
 

@@ -13,7 +13,7 @@ The frontend uses a two-step flow:
 ### Security Features
 
 - **Cloudflare Turnstile** - Free CAPTCHA alternative for bot protection
-- **CORS whitelist** - Supports `h4ku.com` and `*.h4ku-com.pages.dev` preview deployments
+- **CORS whitelist** - Supports `H4KU.COM` and `*.h4ku-com.pages.dev` preview deployments
 - **Body size limit** - 32KB maximum request size
 - **Email masking** - Logs use masked emails (e.g., `us***@ex***.com`)
 - **Secure reference IDs** - Generated using `crypto.getRandomValues`

@@ -7,7 +7,7 @@ const contactSelectors = {
   submit: 'Verify & Send',
 };
 
-test.describe('H4KU.com smoke E2E', () => {
+test.describe('H4KU.COM smoke E2E', () => {
   test('about page renders', async ({ page }) => {
     await page.goto('/');
 

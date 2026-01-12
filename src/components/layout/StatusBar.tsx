@@ -272,10 +272,10 @@ const StatusBar: React.FC = () => {
       >
         <span
           className={styles['status-right']}
-          aria-label={`© ${currentYear} H4KU.com`}
+          aria-label={`© ${currentYear} H4KU.COM`}
         >
           <span className={styles['copyright-symbol']}>©</span>
-          <span>{currentYear} H4KU.com</span>
+          <span>{currentYear} H4KU.COM</span>
         </span>
       </div>
     </div>
