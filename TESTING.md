@@ -6,9 +6,9 @@ _Testing philosophy, tooling, and expectations for H4KU.COM._
 
 - **Runner**: Vitest 4 (jsdom)
 - **Library**: React Testing Library (`@testing-library/react` + `@testing-library/user-event`)
-- **Suite size**: 43 spec files / 540+ tests (expand as you add features)
+- **Suite size**: ~49 specs (45 unit/integration, 4 Playwright E2E) as of January 2026
 - **Coverage**: 90% global thresholds (lines/functions/statements), 85% branches
-- **E2E**: Playwright smoke suite (`npm run test:e2e`) targets `/page/about` & `/page/contact` with mocked contact API; expand flows as you add features.
+- **E2E**: Playwright smoke suite (`npm run test:e2e`) covers contact two-step flow (Turnstile bypass token injected), global search, and mobile/desktop sidebar navigation.
 - **Philosophy**: test behaviours, not implementation details; keep suites fast and deterministic.
 
 ## 2. Directory Layout
@@ -16,8 +16,13 @@ _Testing philosophy, tooling, and expectations for H4KU.COM._
 ```
 src/
 ├── components/
-│   ├── common/__tests__/     # ErrorBoundary, LazyImage tests
-│   └── layout/__tests__/     # StatusBar, Sidebar tests
+│   ├── common/__tests__/     # ErrorBoundary, LazyImage
+│   ├── layout/__tests__/     # StatusBar, Sidebar, SearchPanel
+│   ├── content/__tests__/    # ContentView, FolderView, TextView
+│   ├── overlay/__tests__/    # Lightbox, Crosshair
+│   └── forms/__tests__/      # ContactForm, ContactVerify
+├── config/__tests__/         # constants/accessibility/etc.
+├── services/__tests__/       # contact service, monitoring
 ├── hooks/
 │   ├── useLocalStorage.ts
 │   ├── useDeferredLoading.ts
@@ -38,21 +43,31 @@ src/
 │       └── typeGuards.test.ts
 ├── contexts/
 │   └── __tests__/*.test.tsx
+├── shared/__tests__/         # emailValidation
 └── tests/
     ├── setup.ts       # global Vitest config (jsdom, mocks)
     └── utils.tsx      # helpers like renderWithProviders()
+
+e2e/
+├── basic.spec.ts            # smoke (about page, contact form)
+├── navigation.spec.ts       # deep links + routing
+├── sidebar-mobile.spec.ts   # responsive sidebar and breakpoints
+└── example.spec.ts          # title/skip-link sanity checks
 ```
 
 Keep tests next to the code they validate inside a `__tests__` folder. Name files `*.test.ts` or `*.test.tsx` depending on whether JSX is required.
 
 ## 3. Commands
 
-| Command                 | Description                         |
-| ----------------------- | ----------------------------------- |
-| `npm test`              | Watch mode (ideal for TDD)          |
-| `npm run test:run`      | Single CI-friendly pass             |
-| `npm run test:coverage` | Generates reports under `coverage/` |
-| `npm run test:ui`       | Launches the Vitest UI dashboard    |
+| Command                 | Description                                 |
+| ----------------------- | ------------------------------------------- |
+| `npm test`              | Watch mode (ideal for TDD)                  |
+| `npm run test:run`      | Single CI-friendly pass                     |
+| `npm run test:coverage` | Generates reports under `coverage/`         |
+| `npm run test:ui`       | Launches the Vitest UI dashboard            |
+| `npm run test:e2e`      | Playwright suite (dev server auto-starts)   |
+
+E2E runs inject `VITE_TURNSTILE_SITE_KEY` (test key) and `VITE_TURNSTILE_BYPASS_TOKEN` so the contact verification step can complete without a real Turnstile challenge.
 
 Additional CLI tips (watch mode):
 

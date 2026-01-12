@@ -6,29 +6,25 @@ _How to add or update assets under `public/content` without breaking licensing o
 
 ## Quick Start
 
-1. **Add files to `public/content/`**
-   - Images go anywhere under this root (e.g. `public/content/gallery/...`).
+1. **Add files to `public/content/homepage/`**
+   - Images go under this root (e.g. `public/content/homepage/gallery/...`).
    - Text pages (`.txt`/`.md`) live alongside the images or in their own folders.
 2. **Sync files into structured JSON**
    ```bash
-   npm run cms
-   npm run build:data  # bundles everything into src/content/_aggregated.json
+   npm run cms   # regenerates JSON and _aggregated.json
    ```
 3. **Done.** Vite reloads when `_aggregated.json` changes; no dev server restart needed.
 
 ## Directory Layout
 
 ```
-public/content/
+public/content/homepage/
 ├── About.txt              # Standalone page
 ├── Contact.txt            # Standalone page
-├── gallery/
-│   ├── character-designs/
-│   │   ├── metadata.json
-│   │   └── lumina-aeon-full.svg
-│   └── fan-arts/
-│       └── stellar-echo-full.svg
-└── metadata.json          # Optional top-level overrides
+├── License.txt            # Standalone license page
+├── character-designs/     # Example folder (currently empty)
+├── fan-arts/              # Example folder (currently empty)
+└── illustrations/         # Example folder (currently empty)
 ```
 
 ## Configuring `metadata.json`
@@ -73,11 +69,11 @@ Place a `metadata.json` file inside any folder to customise its label and items:
 ## Supported File Types
 
 - Images: `.png`, `.jpg`, `.jpeg`, `.webp`, `.avif`, `.gif`, `.svg`
-- Text: `.txt` (rendered as text files), `.md` (converted to plain text)
+- Text: `.txt` (rendered as text files), `.md` (stored as plain text; Markdown is not rendered)
 
 ## Optimised Image Formats (WebP / AVIF)
 
-All gallery items now support multiple source formats so modern browsers can load AVIF/WebP while older ones fall back to PNG/JPEG. The CMS will attempt to generate both formats automatically (using [Sharp](https://sharp.pixelplumbing.com/)) any time it finds a PNG/JPEG/JPG source without matching `.avif`/`.webp` siblings. The generated files are dropped under `.cache/cms-optimized` and referenced transparently—nothing new needs to be committed.
+All gallery items now support multiple source formats so modern browsers can load AVIF/WebP while older ones fall back to PNG/JPEG. The CMS will attempt to generate both formats automatically (using [Sharp](https://sharp.pixelplumbing.com/)) any time it finds a PNG/JPEG/JPG source without matching `.avif`/`.webp` siblings. The generated files are written to `public/content/_optimized/` (cleaned on every sync) and referenced transparently—nothing new needs to be committed.
 
 You can still provide your own optimised assets for art-directed crops or specialised pipelines:
 
@@ -107,18 +103,18 @@ You can still provide your own optimised assets for art-directed crops or specia
 
 ## Frequently Used Commands
 
-| Command              | Purpose                                                                          |
-| -------------------- | -------------------------------------------------------------------------------- |
-| `npm run cms`        | Scan `public/content/` → regenerate `src/content/{folders,images,pages,socials}` |
-| `npm run sync`       | Alias of `npm run cms`                                                           |
-| `npm run build:data` | Bundle `src/content/**` into `_aggregated.json` with hashes                      |
-| `npm run dev`        | Start the Vite dev server                                                        |
-| `npm run build`      | Production build (CMS + fingerprint + Vite; does **not** run build:data)         |
+| Command              | Purpose                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `npm run cms`        | Scan `public/content/homepage/` → regenerate `src/content/{folders,images,pages,socials}` + `_aggregated.json` |
+| `npm run sync`       | Alias of `npm run cms`                                                                                  |
+| `npm run build:data` | Re-bundle `src/content/**` into `_aggregated.json` with hashes (auto-run by `npm run cms` and `npm run build`) |
+| `npm run dev`        | Start the Vite dev server                                                                               |
+| `npm run build`      | Production build (CMS + build-data + fingerprint + Vite + inline-critical)                             |
 
 ## Integrity Tag
 
-- The bundled snapshot stores `_integrity` (FNV-1a), `_integritySHA256`, and `_buildTime`. Regenerate them with `npm run build:data` after content changes.
-- `mockData` recomputes both hashes at runtime; the UI surfaces the status. Avoid hand-editing `_aggregated.json`.
+- The bundled snapshot stores `_integrity` (FNV-1a), `_integritySHA256`, and `_buildTime`. Regenerate them with `npm run cms` or `npm run build:data` after content changes.
+- `mockData` recomputes both hashes at runtime and throws before render on mismatch. Avoid hand-editing `_aggregated.json`.
 - `npm run integrity:check` (or `-- --write` for intentional edits) verifies these hashes without rebuilding content.
 
 ## Tips and Best Practices

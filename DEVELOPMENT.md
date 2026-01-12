@@ -8,7 +8,7 @@ _Architecture reference for contributors extending H4KU.COM without regressing t
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Rendering    | React 19 + Vite 7 with CSS Modules for scoped styling                                                                            |
 | Global State | Context providers for navigation, theme, search UI/results, sorting, and sidebar preferences                                     |
-| Data Source  | Static JSON under `src/content/` aggregated at build time (`npm run build:data`) into `src/content/_aggregated.json`             |
+| Data Source  | Static JSON under `src/content/` aggregated at build time (CMS → `build-data`) into `src/content/_aggregated.json`              |
 | Routing      | Custom NavigationContext built on the History API (`/`, `/folder/<path>`, `/page/<id>`) with manual URL ↔ state synchronisation |
 | Animations   | Framer Motion variants with reduced-motion fallbacks                                                                             |
 | Assets       | Everything under `public/` (images, gifs, fonts) served verbatim by Vite                                                         |
@@ -17,20 +17,20 @@ _Architecture reference for contributors extending H4KU.COM without regressing t
 ### Data Flow
 
 ```
-public/content/**/* (source assets)
+public/content/homepage/**/* (source assets)
         │
-        ├─► npm run cms          # optional: regenerate src/content/*.json
+        ├─► npm run cms          # regenerates src/content/*.json and runs build-data
         │
         └─► src/content/**/*     # committed JSON + assets
                 │
-                ├─► npm run build:data   # bundle into _aggregated.json with hashes
+                ├─► npm run build:data   # bundle into _aggregated.json with hashes (auto-run by cms/build)
                 │
                 └─► src/data/mockData.ts # runtime parser + integrity check
                           │
                           └─► Contexts/hooks/components render tree
 ```
 
-`npm run build` orchestrates CMS → fingerprint → Vite. It does **not** regenerate `_aggregated.json`; run `npm run build:data` after content edits and commit the snapshot so hashes stay in sync.
+`npm run build` orchestrates CMS → build-data → fingerprint → Vite → inline-critical. Skipping CMS (`--skip=cms` or `--skip=cms,fingerprint`) is only safe when content is unchanged.
 
 ## 2. Key Modules
 
@@ -97,7 +97,7 @@ public/content/**/* (source assets)
 
 - `scripts/build-data.js` writes `_integrity` (FNV-1a) and `_integritySHA256` plus `_buildTime` when aggregating content.
 - `scripts/check-integrity.js` drives `npm run integrity:check`; `-- --write` updates hashes for intentional content changes.
-- `src/data/mockData.ts` recomputes both hashes at runtime; the layout surfaces the status so tamper warnings are visible.
+- `src/data/mockData.ts` recomputes both hashes at runtime, throws before render on mismatch, and feeds the StatusBar indicator.
 - Tests cover hash verification and tamper UI in `src/components/layout/__tests__/StatusBar.test.tsx`.
 
 ### Monitoring & Error Handling
@@ -105,6 +105,11 @@ public/content/**/* (source assets)
 - `src/services/monitoring.ts` wraps Sentry initialisation; set `VITE_SENTRY_DSN` to enable crash reporting (the app gracefully no-ops when it’s missing).
 - `src/components/common/ErrorBoundary.tsx` reports every error via the monitoring service, shows a friendlier fallback with recovery steps, and exposes a copy-to-clipboard crash report that includes the reference code.
 - Each reference code is sent as a Sentry tag so the support address (`CONTACT@H4KU.COM`) can correlate user reports with telemetry.
+
+### Security & Anti-tamper
+
+- Domain lock (`src/utils/domainCheck.ts` + `src/components/common/CopyrightWarning.tsx`) blocks rendering on unauthorized hostnames; configure via `VITE_ALLOWED_DOMAINS` and `VITE_ENFORCE_DOMAIN_LOCK`.
+- Fingerprints/watermarks (`scripts/inject-fingerprint.js`, `src/utils/fingerprint.ts`, `src/utils/consoleCopyright.ts`) embed build IDs and console banners for forensic tracing.
 
 ## 3. Performance Notes
 
@@ -120,14 +125,14 @@ When profiling, pay close attention to `NavigationContext` (URL synchronisation)
 
 ## 4. Build & Deployment
 
-- **Local build** – `npm run build` runs CMS sync (unless skipped), injects fingerprints, then runs `vite build`. Use `npm run build:fast` to skip CMS/fingerprint when iterating on UI.
-- **Content aggregation** – Run `npm run build:data` after changing `src/content/**` (or after `npm run cms`), then commit the refreshed `_aggregated.json`.
+- **Local build** – `npm run build` runs CMS sync (unless skipped), runs `build-data`, injects fingerprints, runs `vite build`, then inlines critical assets/CSP hashes. Use `npm run build:fast` to skip CMS/fingerprint when iterating on UI.
+- **Content aggregation** – Run `npm run cms` after changing `public/content/homepage/**` (regenerates JSON + `_aggregated.json`), then commit the refreshed `_aggregated.json`.
 - **CI** – `npm run ci` runs the full pipeline: quality → coverage (90% lines/functions/statements, 85% branches) → security scan → deps freshness (`ci:deps`) → license audit (`ci:license`) → build + bundle/perf budget check.
 - **Cloudflare Pages** – SPA redirect handled by `public/_redirects`; configure `VITE_CONTACT_ENDPOINT` via Pages settings.
 
 ## 5. Extending the Project
 
-1. **Add content** – Modify JSON in `src/content`, run `npm run build:data`, and commit both the source files and `_aggregated.json`.
+1. **Add content** – Drop assets/text under `public/content/homepage/`, run `npm run cms` (regen JSON + `_aggregated.json`), and commit both the source files and `_aggregated.json`.
 2. **Add UI state** – Prefer a dedicated context + hook pair so consumers can subscribe to only what they need.
 3. **Add animations** – Provide reduced-motion variants and keep transitions short (<300 ms) to match the existing interaction style.
 4. **Add routing** – Update `NavigationContext` so new sections remain in sync with URLs and breadcrumbs; remember to update `_redirects` if you add top-level routes.
