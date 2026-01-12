@@ -28,6 +28,8 @@ const ensureObserver = () => {
     threshold: IMAGE_CONFIG.LAZY_LOAD_THRESHOLD,
   };
 
+  // IntersectionObserver constructor correctly accepts (callback, options)
+  // lgtm[js/superfluous-trailing-arguments]
   sharedObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
