@@ -46,7 +46,7 @@ const colors = {
   border: '#d0d0d0', // Light border - inverts to dark border
 } as const;
 
-const logoUrl = 'https://h4ku.com/logo/H4KU-Logo.svg';
+const logoUrl = 'https://h4ku.com/logo/android-chrome-192.png';
 const logoWidth = 60;
 
 // Minimal email styles - no background colors, works with Gmail inversion
