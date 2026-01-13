@@ -43,6 +43,25 @@ const SearchExecutorContext = createContext<
   SearchExecutorContextValue | undefined
 >(undefined);
 
+const normalizeSearchQuery = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
+  return value.trim().slice(0, 160);
+};
+
+const readSearchQueryFromLocation = () => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return normalizeSearchQuery(params.get('q'));
+  } catch (_error) {
+    return '';
+  }
+};
+
 const doesWorkItemMatch = (workItem: WorkItem, query: string) => {
   const normalizedFilename = workItem.filename.toLowerCase();
   if (normalizedFilename.includes(query)) {
@@ -232,10 +251,21 @@ const SearchResultsProvider = ({
 };
 
 export function SearchProvider({ children }: { children: ReactNode }) {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const initialQuery = readSearchQueryFromLocation();
+  const [searchOpen, setSearchOpen] = useState(Boolean(initialQuery));
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
 
-  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const setSearchQueryValue = useCallback((query: string) => {
+    setSearchQuery(normalizeSearchQuery(query));
+  }, []);
+
+  const openSearch = useCallback(() => {
+    setSearchOpen(true);
+    if (!searchQuery) {
+      setSearchQuery(normalizeSearchQuery(readSearchQueryFromLocation()));
+    }
+  }, [searchQuery]);
+
   const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   useEffect(() => {
@@ -244,15 +274,32 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     }
   }, [searchOpen]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const syncQueryFromUrl = () => {
+      const nextQuery = readSearchQueryFromLocation();
+      setSearchQuery(nextQuery);
+      setSearchOpen(Boolean(nextQuery));
+    };
+
+    window.addEventListener('popstate', syncQueryFromUrl);
+    return () => {
+      window.removeEventListener('popstate', syncQueryFromUrl);
+    };
+  }, []);
+
   const uiValue = useMemo(
     () => ({
       searchOpen,
       searchQuery,
       openSearch,
       closeSearch,
-      setSearchQuery,
+      setSearchQuery: setSearchQueryValue,
     }),
-    [searchOpen, searchQuery, openSearch, closeSearch]
+    [searchOpen, searchQuery, openSearch, closeSearch, setSearchQueryValue]
   );
 
   return (

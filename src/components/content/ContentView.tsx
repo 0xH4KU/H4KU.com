@@ -1,22 +1,13 @@
-import React, { useMemo } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import React, { lazy, Suspense } from 'react';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSortOrder } from '@/contexts/SortContext';
 import { useLightbox } from '@/contexts/LightboxContext';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { mockData } from '@/data/mockData';
 import { Folder, Page, WorkItem } from '@/types';
 import { LazyImage } from '@/components/common/LazyImage';
 import { IMAGE_CONFIG } from '@/config/constants';
-import {
-  createContainerVariants,
-  createItemVariants,
-  createPageVariants,
-  createHoverAnimation,
-  createTapAnimation,
-} from '@/config/animations';
 import {
   getFolderLabel,
   getPageLabel,
@@ -24,8 +15,12 @@ import {
   sortByLabel,
 } from '@/utils/sortHelpers';
 import { isPageItem, filterWorkImages } from '@/utils/workItems';
-import { TextView } from './TextView';
-import { FolderView } from './FolderView';
+const TextView = lazy(() =>
+  import('./TextView').then(module => ({ default: module.TextView }))
+);
+const FolderView = lazy(() =>
+  import('./FolderView').then(module => ({ default: module.FolderView }))
+);
 import styles from './ContentView.module.css';
 
 type NavigableItem = Folder | Page;
@@ -35,23 +30,6 @@ const ContentView: React.FC = () => {
     useNavigation();
   const { openLightbox } = useLightbox();
   const { sortOrder, typeOrder } = useSortOrder();
-  const prefersReducedMotion = useReducedMotion();
-
-  // Use centralized animation configurations
-  const containerVariants = useMemo(
-    () => createContainerVariants(prefersReducedMotion),
-    [prefersReducedMotion]
-  );
-
-  const itemVariants = useMemo(
-    () => createItemVariants(prefersReducedMotion),
-    [prefersReducedMotion]
-  );
-
-  const pageVariants = useMemo(
-    () => createPageVariants(prefersReducedMotion),
-    [prefersReducedMotion]
-  );
 
   const handleNavigate = (item: NavigableItem) => {
     navigateTo(item);
@@ -68,23 +46,33 @@ const ContentView: React.FC = () => {
   // Render content depending on the active view
   const renderContent = () => {
     if (currentView?.type === 'txt') {
-      return <TextView page={currentView.data} onClose={handleCloseTextView} />;
+      return (
+        <Suspense
+          fallback={
+            <div className={styles['folder-empty']}>Loading document…</div>
+          }
+        >
+          <TextView page={currentView.data} onClose={handleCloseTextView} />
+        </Suspense>
+      );
     }
 
     if (currentView?.type === 'folder') {
       return (
-        <FolderView
-          folder={currentView.data}
-          sortOrder={sortOrder}
-          typeOrder={typeOrder}
-          containerVariants={containerVariants}
-          itemVariants={itemVariants}
-          pageVariants={pageVariants}
-          prefersReducedMotion={prefersReducedMotion}
-          onNavigate={handleNavigate}
-          onNavigatePageInCurrentFolder={page => navigateTo(page, currentPath)}
-          onOpenLightbox={handleOpenLightbox}
-        />
+        <Suspense
+          fallback={
+            <div className={styles['folder-empty']}>Loading folder…</div>
+          }
+        >
+          <FolderView
+            folder={currentView.data}
+            sortOrder={sortOrder}
+            typeOrder={typeOrder}
+            onNavigate={handleNavigate}
+            onNavigatePageInCurrentFolder={page => navigateTo(page, currentPath)}
+            onOpenLightbox={handleOpenLightbox}
+          />
+        </Suspense>
       );
     }
 
@@ -114,13 +102,7 @@ const ContentView: React.FC = () => {
 
     const renderHomeWorksGrid = () => {
       return (
-        <m.div
-          className={styles['works-grid']}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
+        <div className={styles['works-grid']}>
           {sortedHomeItems.map(item => {
             const isTextPage = isPageItem(item);
             const shouldPrioritize =
@@ -138,14 +120,11 @@ const ContentView: React.FC = () => {
               : () => handleOpenLightbox(item, sortedHomeWorkItems);
 
             return (
-              <m.button
+              <button
                 key={item.id}
                 className={styles['work-item']}
                 type="button"
-                variants={itemVariants}
                 onClick={handleClick}
-                whileHover={createHoverAnimation(prefersReducedMotion)}
-                whileTap={createTapAnimation(prefersReducedMotion)}
               >
                 {isTextPage ? (
                   <img
@@ -167,43 +146,27 @@ const ContentView: React.FC = () => {
                   />
                 )}
                 <div className={styles['work-info']}>{item.filename}</div>
-              </m.button>
+              </button>
             );
           })}
-        </m.div>
+        </div>
       );
     };
 
     return (
-      <m.div
-        className={styles['folder-content']}
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        key="home"
-      >
+      <div className={styles['folder-content']} key="home">
         {typeOrder === 'images-first' &&
           sortedHomeItems.length > 0 &&
           renderHomeWorksGrid()}
-        <m.div
-          className={styles['file-grid']}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
+        <div className={styles['file-grid']}>
           {homeFileBucketSequence.flatMap(bucket =>
             bucket === 'folders'
               ? sortedFolders.map(folder => (
-                  <m.button
+                  <button
                     key={folder.id}
                     className={styles['file-item']}
                     type="button"
-                    variants={itemVariants}
                     onClick={() => handleNavigate(folder)}
-                    whileHover={createHoverAnimation(prefersReducedMotion)}
-                    whileTap={createTapAnimation(prefersReducedMotion)}
                   >
                     <img
                       className={styles['file-icon']}
@@ -211,17 +174,14 @@ const ContentView: React.FC = () => {
                       alt="Folder icon"
                     />
                     <div className={styles['file-name']}>{folder.name}</div>
-                  </m.button>
+                  </button>
                 ))
               : sortedPages.map(page => (
-                  <m.button
+                  <button
                     key={page.id}
                     className={styles['file-item']}
                     type="button"
-                    variants={itemVariants}
                     onClick={() => handleNavigate(page)}
-                    whileHover={createHoverAnimation(prefersReducedMotion)}
-                    whileTap={createTapAnimation(prefersReducedMotion)}
                   >
                     <img
                       className={styles['file-icon']}
@@ -229,19 +189,18 @@ const ContentView: React.FC = () => {
                       alt="Text file icon"
                     />
                     <div className={styles['file-name']}>{page.name}</div>
-                  </m.button>
+                  </button>
                 ))
           )}
-        </m.div>
+        </div>
         {typeOrder === 'folders-first' &&
           sortedHomeItems.length > 0 &&
           renderHomeWorksGrid()}
-      </m.div>
+      </div>
     );
   };
 
-  // Always wrap the rendered view with AnimatePresence for transitions
-  return <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>;
+  return renderContent();
 };
 
 export default ContentView;

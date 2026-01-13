@@ -162,7 +162,6 @@ const getDynamicRoutes = (): string[] => {
 
 const chunkAliasMap: Record<string, string> = {
   'react-vendor': 'rv',
-  'animation-vendor': 'anim',
   'icons-vendor': 'icons',
   'monitoring-vendor': 'mon',
 };
@@ -272,8 +271,6 @@ export default defineConfig({
         manualChunks: {
           // Group React libraries together
           'react-vendor': ['react', 'react-dom'],
-          // Split animation library
-          'animation-vendor': ['framer-motion'],
           // Split icon library
           'icons-vendor': ['lucide-react'],
           // Split Sentry monitoring
@@ -340,7 +337,7 @@ export default defineConfig({
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion', '@marsidev/react-turnstile'],
+    include: ['react', 'react-dom', '@marsidev/react-turnstile'],
   },
   // Development server configuration
   server: {

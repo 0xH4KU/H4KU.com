@@ -23,7 +23,7 @@
     />
     <meta name="author" content="HAKU" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://H4KU.COM" />
+    <link rel="canonical" href="https://h4ku.com" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/logo/H4KU-Logo.svg" />
@@ -35,7 +35,7 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://H4KU.COM" />
+    <meta property="og:url" content="https://h4ku.com" />
     <meta
       property="og:title"
       content="HAKU - Anime Illustration & Character Design"
@@ -44,12 +44,12 @@
       property="og:description"
       content="Portfolio of HAKU (0xH4KU) - Freelance illustrator and character designer."
     />
-    <meta property="og:image" content="https://H4KU.COM/og-image.jpg" />
+    <meta property="og:image" content="https://h4ku.com/og-image.jpg" />
     <meta property="og:site_name" content="HAKU Portfolio" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://H4KU.COM" />
+    <meta name="twitter:url" content="https://h4ku.com" />
     <meta
       name="twitter:title"
       content="HAKU - Anime Illustration & Character Design"
@@ -58,7 +58,7 @@
       name="twitter:description"
       content="Portfolio of HAKU (0xH4KU) - Freelance illustrator and character designer."
     />
-    <meta name="twitter:image" content="https://H4KU.COM/og-image.jpg" />
+    <meta name="twitter:image" content="https://h4ku.com/og-image.jpg" />
     <meta name="twitter:site" content="@0xH4KU" />
     <meta name="twitter:creator" content="@0xH4KU" />
 
@@ -95,6 +95,40 @@
       type="font/woff2"
       crossorigin
     />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "HAKU",
+      "alternateName": "0xH4KU",
+      "url": "https://h4ku.com",
+      "image": "https://h4ku.com/og-image.jpg",
+      "jobTitle": "Illustrator & Character Designer",
+      "sameAs": [
+        "https://twitter.com/0xH4KU",
+        "https://x.com/0xH4KU",
+        "https://bsky.app/profile/H4KU.COM",
+        "https://instagram.com/0xH4KU",
+        "https://0xh4ku.newgrounds.com",
+        "mailto:CONTACT@H4KU.COM"
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "HAKU Portfolio",
+      "url": "https://h4ku.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://h4ku.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 
     <!-- Pre-hydration theme setup (external to satisfy CSP / Lighthouse) -->
     <script src="/theme-init.js"></script>

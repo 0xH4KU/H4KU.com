@@ -75,6 +75,10 @@ interface LazyImageProps {
   sizes?: string;
   /** Optional sources for picture element (e.g. AVIF/WebP) */
   sources?: ImageSource[];
+  /** Optional intrinsic width to reduce layout shifts */
+  width?: number;
+  /** Optional intrinsic height to reduce layout shifts */
+  height?: number;
   /** Elevate loading priority for hero / LCP imagery */
   priority?: boolean;
   /** Fine-grained control over the fetchpriority hint */
@@ -89,6 +93,8 @@ export function LazyImage({
   srcSet,
   sizes,
   sources,
+  width,
+  height,
   priority = false,
   fetchPriority = 'auto',
 }: LazyImageProps) {
@@ -173,9 +179,11 @@ export function LazyImage({
       sizes={sizes}
       alt={alt}
       className={`${styles.lazyImage} ${className || ''}`}
-      loading={priority ? 'eager' : undefined}
+      loading={priority ? 'eager' : 'lazy'}
       decoding={priority ? 'sync' : 'async'}
-      fetchPriority={priority ? 'high' : fetchPriority}
+      fetchPriority={priority ? 'high' : fetchPriority ?? 'low'}
+      width={width}
+      height={height}
       onLoad={handleLoad}
       onError={handleError}
       aria-busy={isLoading ? 'true' : 'false'}

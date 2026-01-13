@@ -104,14 +104,17 @@ const addMainPreload = html => {
   const hasCrossorigin = /crossorigin/i.test(tailAttrs);
   const preload = `<link rel="preload" href="${src}" as="script"${
     hasCrossorigin ? ' crossorigin' : ''
-  }>`;
+  } fetchpriority="high">`;
 
   const alreadyHasPreload = html.includes(preload);
 
   const needsDefer = !/defer/i.test(fullTag);
-  const newScriptTag = needsDefer
+  const withDefer = needsDefer
     ? fullTag.replace('<script ', '<script defer ')
     : fullTag;
+  const newScriptTag = /fetchpriority=/i.test(withDefer)
+    ? withDefer
+    : withDefer.replace('<script ', '<script fetchpriority="high" ');
 
   let replacement = newScriptTag;
   if (!alreadyHasPreload) {
@@ -137,9 +140,7 @@ const addSelectiveModulePreloads = html => {
   const pick = prefix =>
     files.find(name => name.startsWith(`${prefix}-`) && name.endsWith('.js'));
 
-  const critical = ['anim', 'rv', 'icons']
-    .map(prefix => pick(prefix))
-    .filter(Boolean);
+  const critical = ['rv', 'icons'].map(prefix => pick(prefix)).filter(Boolean);
 
   if (!critical.length) return html;
 

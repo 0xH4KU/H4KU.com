@@ -23,7 +23,13 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#191919",
-  "background_color": "#191919",
-  "display": "standalone"
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
+  "display_override": ["standalone"],
+  "orientation": "portrait-primary",
+  "theme_color": "#0f0f0f",
+  "background_color": "#0f0f0f",
+  "categories": ["art", "portfolio", "productivity"]
 }

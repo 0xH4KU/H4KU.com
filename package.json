@@ -40,7 +40,6 @@
   "dependencies": {
     "@marsidev/react-turnstile": "^1.4.1",
     "@sentry/browser": "^10.32.1",
-    "framer-motion": "^12.26.0",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

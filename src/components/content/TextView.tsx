@@ -1,16 +1,8 @@
-import React, { lazy, Suspense, useMemo, useState } from 'react';
-import { m } from 'framer-motion';
+import React, { lazy, Suspense, useState } from 'react';
 import paperIcon from '@/assets/paper.gif';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Page } from '@/types';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import {
-  createHeaderAnimation,
-  createCloseButtonAnimation,
-  createPageVariants,
-  DEFAULT_EASE,
-} from '@/config/animations';
 import styles from './ContentView.module.css';
 
 const ContactForm = lazy(() =>
@@ -54,23 +46,7 @@ function renderContent(content: string): React.ReactNode {
 
 export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
   const { theme } = useTheme();
-  const prefersReducedMotion = useReducedMotion();
   const [contactRetryKey, setContactRetryKey] = useState(0);
-
-  const pageVariants = useMemo(
-    () => createPageVariants(prefersReducedMotion),
-    [prefersReducedMotion]
-  );
-
-  const headerAnimation = useMemo(
-    () => createHeaderAnimation(prefersReducedMotion, DEFAULT_EASE),
-    [prefersReducedMotion]
-  );
-
-  const closeButtonAnimation = useMemo(
-    () => createCloseButtonAnimation(prefersReducedMotion),
-    [prefersReducedMotion]
-  );
 
   const contactFormFallback = (
     <div className={styles['contact-error']} role="alert">
@@ -100,21 +76,9 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
   );
 
   return (
-    <m.div
-      className={styles['txt-viewer-wrapper']}
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      key={`txt-${page.id}`}
-    >
+    <div className={styles['txt-viewer-wrapper']} key={`txt-${page.id}`}>
       <div className={`${styles['txt-viewer']} ${theme}`}>
-        <m.div
-          className={styles['txt-header']}
-          initial={headerAnimation.initial}
-          animate={headerAnimation.animate}
-          transition={headerAnimation.transition}
-        >
+        <div className={styles['txt-header']}>
           <img
             className={styles['txt-icon']}
             src={paperIcon}
@@ -123,24 +87,11 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
             height="36"
           />
           <h1 className={styles['txt-title']}>{page.name}</h1>
-          <m.button
-            onClick={onClose}
-            className={styles['close-btn']}
-            {...closeButtonAnimation}
-          >
+          <button onClick={onClose} className={styles['close-btn']}>
             ×
-          </m.button>
-        </m.div>
-        <m.div
-          className={styles['txt-content']}
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            delay: 0.15,
-            duration: 0.3,
-            ease: DEFAULT_EASE,
-          }}
-        >
+          </button>
+        </div>
+        <div className={styles['txt-content']}>
           <pre>{renderContent(page.content)}</pre>
           {page.id === 'contact' && (
             <ErrorBoundary key={contactRetryKey} fallback={contactFormFallback}>
@@ -162,8 +113,8 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
               </Suspense>
             </ErrorBoundary>
           )}
-        </m.div>
+        </div>
       </div>
-    </m.div>
+    </div>
   );
 };

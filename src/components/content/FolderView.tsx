@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { m } from 'framer-motion';
 import folderIcon from '@/assets/folder.gif';
 import paperIcon from '@/assets/paper.gif';
 import { Folder, Page, WorkItem } from '@/types';
@@ -11,9 +10,7 @@ import {
 } from '@/utils/sortHelpers';
 import { filterWorkImages, filterPages } from '@/utils/workItems';
 import { LazyImage } from '@/components/common/LazyImage';
-import { createHoverAnimation, createTapAnimation } from '@/config/animations';
 import type { SortOrder, TypeOrder } from '@/contexts/SortContext';
-import type { Variants } from 'framer-motion';
 import styles from './ContentView.module.css';
 
 type NavigableItem = Folder | Page;
@@ -22,10 +19,6 @@ interface FolderViewProps {
   folder: Folder;
   sortOrder: SortOrder;
   typeOrder: TypeOrder;
-  containerVariants: Variants;
-  itemVariants: Variants;
-  pageVariants: Variants;
-  prefersReducedMotion: boolean;
   onNavigate: (item: NavigableItem) => void;
   onNavigatePageInCurrentFolder: (page: Page) => void;
   onOpenLightbox: (item: WorkItem, gallery: WorkItem[]) => void;
@@ -35,10 +28,6 @@ export const FolderView: React.FC<FolderViewProps> = ({
   folder,
   sortOrder,
   typeOrder,
-  containerVariants,
-  itemVariants,
-  pageVariants,
-  prefersReducedMotion,
   onNavigate,
   onNavigatePageInCurrentFolder,
   onOpenLightbox,
@@ -72,46 +61,24 @@ export const FolderView: React.FC<FolderViewProps> = ({
 
   if (!items.length && !children.length) {
     return (
-      <m.div
-        className={styles['folder-empty']}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        key={`folder-${folder.id}`}
-      >
+      <div className={styles['folder-empty']} key={`folder-${folder.id}`}>
         No items in this folder yet.
-      </m.div>
+      </div>
     );
   }
 
   return (
-    <m.div
-      className={styles['folder-content']}
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      key={`folder-${folder.id}`}
-    >
+    <div className={styles['folder-content']} key={`folder-${folder.id}`}>
       {hasFileGrid && (
-        <m.div
-          className={styles['file-grid']}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
+        <div className={styles['file-grid']}>
           {bucketSequence.flatMap(bucket => {
             if (bucket === 'folders') {
               return sortedChildren.map(child => (
-                <m.button
+                <button
                   key={child.id}
                   className={styles['file-item']}
                   type="button"
-                  variants={itemVariants}
                   onClick={() => onNavigate(child)}
-                  whileHover={createHoverAnimation(prefersReducedMotion)}
-                  whileTap={createTapAnimation(prefersReducedMotion)}
                 >
                   <img
                     className={styles['file-icon']}
@@ -121,7 +88,7 @@ export const FolderView: React.FC<FolderViewProps> = ({
                     height="96"
                   />
                   <div className={styles['file-name']}>{child.name}</div>
-                </m.button>
+                </button>
               ));
             }
 
@@ -135,14 +102,11 @@ export const FolderView: React.FC<FolderViewProps> = ({
                 };
 
                 return (
-                  <m.button
+                  <button
                     key={item.id}
                     className={styles['file-item']}
                     type="button"
-                    variants={itemVariants}
                     onClick={() => onNavigatePageInCurrentFolder(page)}
-                    whileHover={createHoverAnimation(prefersReducedMotion)}
-                    whileTap={createTapAnimation(prefersReducedMotion)}
                   >
                     <img
                       className={styles['file-icon']}
@@ -152,7 +116,7 @@ export const FolderView: React.FC<FolderViewProps> = ({
                       height="96"
                     />
                     <div className={styles['file-name']}>{item.filename}</div>
-                  </m.button>
+                  </button>
                 );
               });
             }
@@ -160,14 +124,11 @@ export const FolderView: React.FC<FolderViewProps> = ({
             return workItems.map((item, workIndex) => {
               const shouldPrioritize = workIndex < IMAGE_CONFIG.PRIORITY_COUNT;
               return (
-                <m.button
+                <button
                   key={item.id}
                   className={styles['file-item']}
                   type="button"
-                  variants={itemVariants}
                   onClick={() => onOpenLightbox(item, workItems)}
-                  whileHover={createHoverAnimation(prefersReducedMotion)}
-                  whileTap={createTapAnimation(prefersReducedMotion)}
                 >
                   <LazyImage
                     className={styles['file-thumb']}
@@ -181,12 +142,12 @@ export const FolderView: React.FC<FolderViewProps> = ({
                     fetchPriority={shouldPrioritize ? 'high' : 'auto'}
                   />
                   <div className={styles['file-name']}>{item.filename}</div>
-                </m.button>
+                </button>
               );
             });
           })}
-        </m.div>
+        </div>
       )}
-    </m.div>
+    </div>
   );
 };

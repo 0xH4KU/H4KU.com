@@ -1,5 +1,4 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { LazyMotion } from 'framer-motion';
 import {
   ContentView,
   Crosshair,
@@ -98,66 +97,56 @@ const AppContent: React.FC = () => {
   }, [showOverlay]);
 
   return (
-    <LazyMotion
-      features={() =>
-        import('@/utils/motionFeatures').then(module => module.domAnimation)
-      }
-      strict
+    <div
+      className={`${styles.app} ${domainCheckResult.shouldBlock ? styles.appLocked : ''}`}
     >
+      {/* Show copyright warning overlay on unauthorized domains */}
+      {!domainCheckResult.isAllowed && (
+        <CopyrightWarning
+          currentDomain={domainCheckResult.currentDomain}
+          allowedDomains={allowedDomains}
+        />
+      )}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      <Crosshair />
+      <ErrorBoundary>
+        <TopBar />
+      </ErrorBoundary>
       <div
-        className={`${styles.app} ${
-          domainCheckResult.shouldBlock ? styles.appLocked : ''
-        }`}
+        className={`${styles['main-layout']} ${showOverlay ? styles['sidebar-open'] : ''}`}
+        aria-hidden={domainCheckResult.shouldBlock}
       >
-        {/* Show copyright warning overlay on unauthorized domains */}
-        {!domainCheckResult.isAllowed && (
-          <CopyrightWarning
-            currentDomain={domainCheckResult.currentDomain}
-            allowedDomains={allowedDomains}
+        <ErrorBoundary>
+          <Sidebar />
+        </ErrorBoundary>
+        {showOverlay && (
+          <button
+            type="button"
+            className={styles['sidebar-scrim']}
+            aria-label="Close sidebar"
+            onClick={closeSidebar}
           />
         )}
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        <Crosshair />
-        <ErrorBoundary>
-          <TopBar />
-        </ErrorBoundary>
         <div
-          className={`${styles['main-layout']} ${
-            showOverlay ? styles['sidebar-open'] : ''
-          }`}
-          aria-hidden={domainCheckResult.shouldBlock}
+          id="main-content"
+          className={styles['content-area']}
+          role="main"
+          style={
+            {
+              '--sidebar-margin': isCompactViewport
+                ? '0px'
+                : isSidebarOpen
+                  ? `${sidebarWidth}px`
+                  : '0px',
+              '--content-gutter': contentGutter,
+            } as React.CSSProperties
+          }
         >
           <ErrorBoundary>
-            <Sidebar />
+            <ContentView />
           </ErrorBoundary>
-          {showOverlay && (
-            <button
-              type="button"
-              className={styles['sidebar-scrim']}
-              aria-label="Close sidebar"
-              onClick={closeSidebar}
-            />
-          )}
-          <div
-            id="main-content"
-            className={styles['content-area']}
-            role="main"
-            style={
-              {
-                '--sidebar-margin': isCompactViewport
-                  ? '0px'
-                  : isSidebarOpen
-                    ? `${sidebarWidth}px`
-                    : '0px',
-                '--content-gutter': contentGutter,
-              } as React.CSSProperties
-            }
-          >
-            <ErrorBoundary>
-              <ContentView />
-            </ErrorBoundary>
           </div>
         </div>
         <ErrorBoundary>
@@ -166,13 +155,12 @@ const AppContent: React.FC = () => {
         <Suspense fallback={null}>
           <ErrorBoundary>
             <Lightbox />
-          </ErrorBoundary>
-          <ErrorBoundary>
-            <SearchPanelLazy />
-          </ErrorBoundary>
-        </Suspense>
-      </div>
-    </LazyMotion>
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <SearchPanelLazy />
+        </ErrorBoundary>
+      </Suspense>
+    </div>
   );
 };
 

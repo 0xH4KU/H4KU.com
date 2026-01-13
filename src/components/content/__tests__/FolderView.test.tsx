@@ -5,43 +5,6 @@ import userEvent from '@testing-library/user-event';
 import { FolderView } from '../FolderView';
 import type { Folder } from '@/types';
 import type { SortOrder, TypeOrder } from '@/contexts/SortContext';
-import type { Variants } from 'framer-motion';
-
-// Mock framer-motion
-vi.mock('framer-motion', async () => {
-  const actual =
-    await vi.importActual<typeof import('framer-motion')>('framer-motion');
-  const MockMotionDiv = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement> & {
-      whileHover?: unknown;
-      whileTap?: unknown;
-    }
-  >(({ whileHover: _whileHover, whileTap: _whileTap, ...props }, ref) => (
-    <div ref={ref} {...props} />
-  ));
-
-  const MockMotionButton = React.forwardRef<
-    HTMLButtonElement,
-    React.ButtonHTMLAttributes<HTMLButtonElement> & {
-      whileHover?: unknown;
-      whileTap?: unknown;
-    }
-  >(({ whileHover: _whileHover, whileTap: _whileTap, ...props }, ref) => (
-    <button ref={ref} {...props} />
-  ));
-
-  MockMotionDiv.displayName = 'MockMotionDiv';
-  MockMotionButton.displayName = 'MockMotionButton';
-
-  return {
-    ...actual,
-    m: {
-      div: MockMotionDiv,
-      button: MockMotionButton,
-    },
-  };
-});
 
 // Mock LazyImage
 vi.mock('@/components/common/LazyImage', () => ({
@@ -51,9 +14,6 @@ vi.mock('@/components/common/LazyImage', () => ({
 }));
 
 describe('FolderView', () => {
-  const mockContainerVariants: Variants = {};
-  const mockItemVariants: Variants = {};
-  const mockPageVariants: Variants = {};
   const mockOnNavigate = vi.fn();
   const mockOnNavigatePageInCurrentFolder = vi.fn();
   const mockOnOpenLightbox = vi.fn();
@@ -61,10 +21,6 @@ describe('FolderView', () => {
   const defaultProps = {
     sortOrder: 'asc' as SortOrder,
     typeOrder: 'folders-first' as TypeOrder,
-    containerVariants: mockContainerVariants,
-    itemVariants: mockItemVariants,
-    pageVariants: mockPageVariants,
-    prefersReducedMotion: false,
     onNavigate: mockOnNavigate,
     onNavigatePageInCurrentFolder: mockOnNavigatePageInCurrentFolder,
     onOpenLightbox: mockOnOpenLightbox,
