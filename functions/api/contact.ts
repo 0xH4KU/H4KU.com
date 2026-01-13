@@ -441,7 +441,7 @@ export const onRequestPost: PagesFunction<Env> = async context => {
           Authorization: `Bearer ${env.RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: 'HAKU <CONTACT@H4KU.COM>',
+          from: 'HAKU <contact@h4ku.com>',
           to: [env.CONTACT_TO_EMAIL],
           reply_to: payload.email,
           subject: `[H4KU.COM] Contact from ${payload.name}`,
@@ -483,7 +483,7 @@ export const onRequestPost: PagesFunction<Env> = async context => {
             Authorization: `Bearer ${env.RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: 'HAKU <CONTACT@H4KU.COM>',
+            from: 'HAKU <contact@h4ku.com>',
             to: [payload.email],
             subject: `[H4KU.COM] Message Received - ${referenceId}`,
             html: confirmationHtml,
