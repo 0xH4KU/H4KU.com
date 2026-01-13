@@ -71,7 +71,6 @@ const emailStyles = `
         url('https://h4ku.com/fonts/ProFont-Bold.woff') format('woff');
     }
     :root { color-scheme: light dark; supported-color-schemes: light dark; }
-    body, table, td { background-color: transparent !important; }
     body { margin: 0; padding: 0; width: 100%; -webkit-text-size-adjust: none; }
     .muted { color: ${colors.muted}; }
     .primary { color: ${colors.primary}; }
@@ -82,7 +81,6 @@ const emailStyles = `
     .btn { border-color: ${colors.primary}; }
 
     @media (prefers-color-scheme: dark) {
-      body, table, td { background-color: #0c0c0c !important; }
       body, table, td, p, div, span, a, strong { color: #f5f5f5 !important; }
       a { color: #e6d3b8 !important; border-color: #5a5a5a !important; }
       .muted { color: #c8c8c8 !important; }
@@ -138,7 +136,7 @@ function createEmailHtml(
   <title>New Message - H4KU.COM</title>
   ${emailStyles}
 </head>
-<body style="margin: 0; padding: 0; width: 100%; background: transparent;">
+<body style="margin: 0; padding: 0; width: 100%;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td align="center" style="padding: 28px 16px 32px 16px;">
@@ -271,6 +269,8 @@ function createConfirmationEmailHtml(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Message Received - H4KU.COM</title>
   ${emailStyles}
 </head>
