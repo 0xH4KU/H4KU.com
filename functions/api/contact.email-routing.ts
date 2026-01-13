@@ -59,9 +59,30 @@ const colors = {
   border: '#d0d0d0', // Light border - inverts to dark border
 } as const;
 
+const logoUrl = 'https://h4ku.com/logo/H4KU-Logo.svg';
+const logoWidth = 60;
+
 // Minimal email styles - no background colors, works with Gmail inversion
 const emailStyles = `
   <style>
+    @font-face {
+      font-family: 'ProFont';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src:
+        url('https://h4ku.com/fonts/ProFont.woff2') format('woff2'),
+        url('https://h4ku.com/fonts/ProFont.woff') format('woff');
+    }
+    @font-face {
+      font-family: 'ProFont';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src:
+        url('https://h4ku.com/fonts/ProFont-Bold.woff2') format('woff2'),
+        url('https://h4ku.com/fonts/ProFont-Bold.woff') format('woff');
+    }
     body { margin: 0; padding: 0; width: 100%; -webkit-text-size-adjust: none; }
   </style>
   <!--[if mso]>
@@ -106,7 +127,13 @@ This message was sent via the H4KU.COM contact form.
   });
 
   const c = colors;
-  const font = "'SF Mono', Monaco, Consolas, 'Courier New', monospace";
+  const font =
+    "'ProFont', 'SF Mono', Monaco, Consolas, 'Courier New', monospace";
+  const safeName = escapeHtml(payload.name);
+  const safeEmail = escapeHtml(payload.email);
+  const safeMessage = escapeHtml(payload.message);
+  const safeReferenceId = escapeHtml(referenceId);
+  const safeIp = escapeHtml(clientIp);
 
   const html = `
 <!DOCTYPE html>
@@ -121,19 +148,23 @@ This message was sent via the H4KU.COM contact form.
 <body style="margin: 0; padding: 0; width: 100%;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
-      <td align="center" style="padding: 32px 16px;">
+      <td align="center" style="padding: 28px 16px 32px 16px;">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; width: 100%;">
 
           <!-- Header -->
           <tr>
-            <td style="border-bottom: 1px solid ${c.border}; padding-bottom: 20px;">
+            <td style="border-bottom: 2px solid ${c.border}; padding: 12px 0 14px 0;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="font-family: ${font}; color: ${c.primary}; font-size: 13px; letter-spacing: 2px; font-weight: bold;">
-                    H4KU.COM
+                  <td style="vertical-align: middle;">
+                    <a href="https://H4KU.COM" style="text-decoration: none; display: inline-block;">
+                      <img src="${logoUrl}" alt="H4KU logo" width="${logoWidth}" style="display: block; height: auto; border: 0;">
+                    </a>
                   </td>
-                  <td align="right" style="font-family: ${font}; color: ${c.muted}; font-size: 11px;">
-                    ${dateStr} &bull; ${timeStr}
+                  <td align="right" style="font-family: ${font}; color: ${c.muted}; font-size: 11px; line-height: 1.6;">
+                    <div style="color: ${c.primary}; font-size: 12px; letter-spacing: 1.6px; font-weight: 700;">H4KU.COM</div>
+                    <div>${dateStr} &bull; ${timeStr}</div>
+                    <div style="font-size: 10px; color: ${c.muted}; margin-top: 2px;">Ref ${safeReferenceId}</div>
                   </td>
                 </tr>
               </table>
@@ -142,31 +173,36 @@ This message was sent via the H4KU.COM contact form.
 
           <!-- Title -->
           <tr>
-            <td style="padding: 28px 0 24px 0;">
+            <td style="padding: 22px 0 10px 0;">
               <div style="font-family: ${font}; color: ${c.text}; font-size: 20px; font-weight: bold; letter-spacing: 0.5px;">
                 New Contact Message
               </div>
-              <div style="font-family: ${font}; color: ${c.muted}; font-size: 11px; margin-top: 6px;">
-                Reference: <span style="color: ${c.primary};">${escapeHtml(referenceId)}</span>
+              <div style="font-family: ${font}; color: ${c.muted}; font-size: 12px; margin-top: 6px;">
+                You can reply directly to this email to reach ${safeName}.
               </div>
             </td>
           </tr>
 
-          <!-- Sender Card -->
+          <!-- Sender Summary -->
           <tr>
-            <td style="padding-bottom: 20px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border: 1px solid ${c.border}; border-radius: 4px;">
+            <td style="padding-bottom: 18px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border: 2px solid ${c.border}; border-radius: 6px;">
                 <tr>
-                  <td style="padding: 16px 20px;">
-                    <div style="font-family: ${font}; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
-                      From
+                  <td style="padding: 16px 18px;">
+                    <div style="font-family: ${font}; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.6px; margin-bottom: 10px;">
+                      Summary
                     </div>
-                    <div style="font-family: ${font}; color: ${c.text}; font-size: 15px; margin-bottom: 4px;">
-                      ${escapeHtml(payload.name)}
+                    <div style="font-family: ${font}; color: ${c.text}; font-size: 14px; line-height: 1.7;">
+                      <div style="margin-bottom: 6px;"><strong style="color: ${c.primary};">From:</strong> ${safeName}</div>
+                      <div style="margin-bottom: 6px;">
+                        <strong style="color: ${c.primary};">Email:</strong>
+                        <a href="mailto:${safeEmail}" style="color: ${c.text}; text-decoration: none; border-bottom: 1px dotted ${c.border};">${safeEmail}</a>
+                      </div>
+                      <div style="font-size: 12px; color: ${c.muted};">
+                        <strong style="color: ${c.primary};">IP:</strong> ${safeIp}
+                        <span style="color: ${c.muted};"> &bull; ${dateStr} ${timeStr}</span>
+                      </div>
                     </div>
-                    <a href="mailto:${escapeHtml(payload.email)}" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 13px;">
-                      ${escapeHtml(payload.email)}
-                    </a>
                   </td>
                 </tr>
               </table>
@@ -175,29 +211,38 @@ This message was sent via the H4KU.COM contact form.
 
           <!-- Message -->
           <tr>
-            <td style="padding-bottom: 24px;">
-              <div style="font-family: ${font}; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
+            <td style="padding-bottom: 22px;">
+              <div style="font-family: ${font}; color: ${c.muted}; font-size: 10px; text-transform: uppercase; letter-spacing: 1.6px; margin-bottom: 12px;">
                 Message
               </div>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-left: 3px solid ${c.primary};">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-left: 4px solid ${c.primary};">
                 <tr>
-                  <td style="padding: 16px 20px; font-family: ${font}; color: ${c.text}; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(payload.message)}</td>
+                  <td style="padding: 16px 20px; font-family: ${font}; color: ${c.text}; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${safeMessage}</td>
                 </tr>
               </table>
             </td>
           </tr>
 
+          <!-- CTA -->
+          <tr>
+            <td style="padding-bottom: 24px;">
+              <a href="mailto:${safeEmail}" style="display: inline-block; font-family: ${font}; color: ${c.text}; font-size: 12px; padding: 10px 14px; border: 1px solid ${c.primary}; border-radius: 4px; text-decoration: none;">
+                Reply to ${safeName}
+              </a>
+            </td>
+          </tr>
+
           <!-- Footer -->
           <tr>
-            <td style="border-top: 1px solid ${c.border}; padding-top: 20px;">
+            <td style="border-top: 2px solid ${c.border}; padding-top: 18px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td style="font-family: ${font}; color: ${c.muted}; font-size: 10px; line-height: 1.6;">
-                    IP: ${escapeHtml(clientIp)}
+                    Message via <a href="https://H4KU.COM" style="color: ${c.muted}; text-decoration: none; border-bottom: 1px dotted ${c.border};">H4KU.COM/contact</a>
                   </td>
                   <td align="right">
                     <a href="https://H4KU.COM" style="font-family: ${font}; color: ${c.primary}; text-decoration: none; font-size: 11px;">
-                      H4KU.COM &rarr;
+                      Visit site &rarr;
                     </a>
                   </td>
                 </tr>
