@@ -69,7 +69,9 @@ const ContentView: React.FC = () => {
             sortOrder={sortOrder}
             typeOrder={typeOrder}
             onNavigate={handleNavigate}
-            onNavigatePageInCurrentFolder={page => navigateTo(page, currentPath)}
+            onNavigatePageInCurrentFolder={page =>
+              navigateTo(page, currentPath)
+            }
             onOpenLightbox={handleOpenLightbox}
           />
         </Suspense>

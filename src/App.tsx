@@ -147,14 +147,14 @@ const AppContent: React.FC = () => {
           <ErrorBoundary>
             <ContentView />
           </ErrorBoundary>
-          </div>
         </div>
+      </div>
+      <ErrorBoundary>
+        <StatusBar />
+      </ErrorBoundary>
+      <Suspense fallback={null}>
         <ErrorBoundary>
-          <StatusBar />
-        </ErrorBoundary>
-        <Suspense fallback={null}>
-          <ErrorBoundary>
-            <Lightbox />
+          <Lightbox />
         </ErrorBoundary>
         <ErrorBoundary>
           <SearchPanelLazy />

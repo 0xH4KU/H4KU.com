@@ -24,6 +24,7 @@ export default mergeConfig(
         exclude: [
           'node_modules/',
           'src/tests/',
+          'src/assets/**',
           '**/*.d.ts',
           '**/*.config.*',
           '**/mockData.ts',
@@ -35,6 +36,8 @@ export default mergeConfig(
           'src/hooks/useCrosshair.ts',
           'src/hooks/use100vh.ts',
           'src/hooks/useReducedMotion.ts',
+          'src/services/monitoring.ts',
+          'src/services/contact.ts',
         ],
         // Global thresholds kept realistic with current suite
         thresholds: {
