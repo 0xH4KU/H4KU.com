@@ -29,7 +29,7 @@
   "display": "standalone",
   "display_override": ["standalone"],
   "orientation": "portrait-primary",
-  "theme_color": "#1a1a1a",
-  "background_color": "#1a1a1a",
+  "theme_color": "#0f0f0f",
+  "background_color": "#0f0f0f",
   "categories": ["art", "portfolio", "productivity"]
 }

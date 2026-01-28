@@ -36,11 +36,11 @@ export const ANIMATION_DURATIONS = {
  */
 export const THEME_COLORS = {
   LIGHT: {
-    SURFACE: '#f5f5f5',
+    SURFACE: '#e8e8e8',
     BACKGROUND: '#f5f5f5',
   },
   DARK: {
-    SURFACE: '#1a1a1a',
+    SURFACE: '#0f0f0f',
     BACKGROUND: '#1a1a1a',
   },
 } as const;
