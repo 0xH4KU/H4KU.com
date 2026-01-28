@@ -125,7 +125,7 @@
   --color-crosshair-text: #1a1a1a;
   --grid-line: rgba(0, 0, 0, 0.04);
   --grid-bold: rgba(0, 0, 0, 0.08);
-  --color-chrome: var(--color-surface);
+  --color-chrome: #e8e8e8;
 }
 
 /* Dark Theme Variables */
@@ -143,7 +143,7 @@
   --color-crosshair-text: #c0a88d; /* Chino */
   --grid-line: rgba(255, 255, 255, 0.04);
   --grid-bold: rgba(255, 255, 255, 0.08);
-  --color-chrome: var(--color-surface);
+  --color-chrome: #0f0f0f;
 }
 
 html {
