@@ -21,6 +21,18 @@
   box-sizing: border-box;
 }
 
+/* Extend background into safe-area for Safari toolbar color */
+.status-bar::after {
+  content: '';
+  position: absolute;
+  bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: inherit;
+  z-index: -1;
+}
+
 @supports (padding: max(0px)) {
   .status-bar {
     padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));

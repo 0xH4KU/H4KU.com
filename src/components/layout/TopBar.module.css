@@ -17,6 +17,18 @@
   box-sizing: border-box;
 }
 
+/* Extend background into safe-area for Safari toolbar color */
+.top-bar::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: inherit;
+  z-index: -1;
+}
+
 @supports (padding: max(0px)) {
   .top-bar {
     padding-top: max(8px, env(safe-area-inset-top, 0px));

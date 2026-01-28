@@ -1,6 +1,5 @@
 /**
  * Application-wide constants and configuration values
- * @updated 2026-01-28
  */
 
 /**
