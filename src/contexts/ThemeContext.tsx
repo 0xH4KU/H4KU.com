@@ -88,7 +88,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const themeMetaRefs = useRef<{
     light: HTMLMetaElement | null;
     dark: HTMLMetaElement | null;
-  }>({ light: null, dark: null });
+    plain: HTMLMetaElement | null;
+  }>({ light: null, dark: null, plain: null });
 
   const ensureThemeMeta = (mode: Theme) => {
     const selector =
@@ -118,6 +119,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return meta;
   };
 
+  const ensurePlainThemeMeta = () => {
+    if (themeMetaRefs.current.plain) {
+      return themeMetaRefs.current.plain;
+    }
+
+    let meta = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]:not([media])'
+    );
+
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+
+    themeMetaRefs.current.plain = meta;
+    return meta;
+  };
+
   // Apply theme to document and update meta tags
   useLayoutEffect(() => {
     /* c8 ignore next */
@@ -142,6 +162,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const fallbackMeta = ensureThemeMeta(theme === 'light' ? 'dark' : 'light');
     fallbackMeta.setAttribute('content', inactiveColor);
+
+    const plainMeta = ensurePlainThemeMeta();
+    plainMeta.setAttribute('content', activeColor);
   }, [theme]);
 
   const toggleTheme = () => {
