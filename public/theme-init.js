@@ -32,7 +32,7 @@
     return meta;
   };
 
-  const themeColor = theme === 'dark' ? '#0f0f0f' : '#e8e8e8';
+  const themeColor = theme === 'dark' ? '#1a1a1a' : '#f5f5f5';
   ensureThemeColorMeta().setAttribute('content', themeColor);
 
   const setInitialVh = () => {
