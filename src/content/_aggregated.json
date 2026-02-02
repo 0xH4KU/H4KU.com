@@ -52,11 +52,6 @@
       "url": "mailto:CONTACT@H4KU.COM"
     },
     {
-      "name": "Instagram",
-      "code": "IG",
-      "url": "https://instagram.com/0xH4KU"
-    },
-    {
       "name": "Newgrounds",
       "code": "NG",
       "url": "https://0xh4ku.newgrounds.com"
@@ -67,7 +62,7 @@
       "url": "https://twitter.com/0xH4KU"
     }
   ],
-  "_buildTime": "2026-01-13T08:45:51.561Z",
-  "_integrity": "30a66074",
-  "_integritySHA256": "25a1a14d65ac1f9ff1edd263a1a00a92e14be2a1d0b9425e9aac67c931a41358"
+  "_buildTime": "2026-02-02T06:38:33.511Z",
+  "_integrity": "ab2af380",
+  "_integritySHA256": "90e0cc8706fb24481cf4f7f067f7d2106b3ec31b0eb1e65be5ec56503e67f17d"
 }
