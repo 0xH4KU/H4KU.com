@@ -59,7 +59,11 @@ const getInitialSystemTheme = (): Theme => {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [storedTheme, setStoredTheme] = useLocalStorage<Theme | null>(
     STORAGE_KEYS.THEME,
-    null
+    null,
+    {
+      sanitize: (value, fallback) =>
+        value === 'light' || value === 'dark' ? value : fallback,
+    }
   );
   const [systemTheme, setSystemTheme] = useState<Theme>(getInitialSystemTheme);
 
@@ -147,7 +151,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     // Update data-theme attribute (sync with pre-hydration script)
     document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.style.colorScheme = theme;
     document.body?.setAttribute('data-theme', theme);
 
     const activeColor = resolveThemeColor(theme);

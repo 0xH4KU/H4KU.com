@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useState } from 'react';
 import paperIcon from '@/assets/paper.gif';
+import { PAGE_IDS } from '@/config/routes';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Page } from '@/types';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -93,7 +94,7 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
         </div>
         <div className={styles['txt-content']}>
           <pre>{renderContent(page.content)}</pre>
-          {page.id === 'contact' && (
+          {page.id === PAGE_IDS.CONTACT && (
             <ErrorBoundary key={contactRetryKey} fallback={contactFormFallback}>
               <Suspense
                 fallback={
@@ -106,7 +107,7 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
               </Suspense>
             </ErrorBoundary>
           )}
-          {page.id === 'contact-verify' && (
+          {page.id === PAGE_IDS.CONTACT_VERIFY && (
             <ErrorBoundary fallback={contactVerifyFallback}>
               <Suspense fallback={contactVerifyFallback}>
                 <ContactVerify />

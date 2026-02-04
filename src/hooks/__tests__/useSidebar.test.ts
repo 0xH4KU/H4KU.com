@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useSidebar } from '../useSidebar';
-import { SIDEBAR_CONFIG } from '@/config/constants';
+import { SIDEBAR_CONFIG, STORAGE_KEYS } from '@/config/constants';
 
 describe('useSidebar', () => {
   beforeEach(() => {
@@ -29,7 +29,10 @@ describe('useSidebar', () => {
 
   it('should restore width from localStorage', () => {
     const storedWidth = 280;
-    localStorage.setItem('H4KU.COM.sidebar.width', JSON.stringify(storedWidth));
+    localStorage.setItem(
+      STORAGE_KEYS.SIDEBAR_WIDTH,
+      JSON.stringify(storedWidth)
+    );
 
     const { result } = renderHook(() => useSidebar());
 
@@ -158,7 +161,7 @@ describe('useSidebar', () => {
     });
 
     // Check localStorage
-    const stored = localStorage.getItem('H4KU.COM.sidebar.width');
+    const stored = localStorage.getItem(STORAGE_KEYS.SIDEBAR_WIDTH);
     expect(stored).not.toBeNull();
     const parsed = JSON.parse(stored as string);
     expect(parsed).toMatchObject({ value: 280 });
@@ -263,7 +266,10 @@ describe('useSidebar', () => {
     const initialValue = 250;
     const storedValue = 300;
 
-    localStorage.setItem('H4KU.COM.sidebar.width', JSON.stringify(storedValue));
+    localStorage.setItem(
+      STORAGE_KEYS.SIDEBAR_WIDTH,
+      JSON.stringify(storedValue)
+    );
 
     const { result } = renderHook(() => useSidebar(initialValue));
 

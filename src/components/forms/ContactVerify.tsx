@@ -9,6 +9,7 @@ import {
   clearPendingContact,
   type PendingContactPayload,
 } from '@/services/contact';
+import { PAGE_IDS, ROUTE_SEGMENTS } from '@/config/routes';
 import styles from './ContactVerify.module.css';
 
 /**
@@ -49,7 +50,7 @@ export function ContactVerify() {
   }, []);
 
   const contactPage = useMemo(
-    () => mockData.pages.find(page => page.id === 'contact'),
+    () => mockData.pages.find(page => page.id === PAGE_IDS.CONTACT),
     []
   );
 
@@ -59,7 +60,7 @@ export function ContactVerify() {
       navigateTo(contactPage);
       return;
     }
-    window.location.href = '/page/contact';
+    window.location.href = `/${ROUTE_SEGMENTS.PAGE}/${PAGE_IDS.CONTACT}`;
   };
 
   const sendSubmission = async (token: string) => {

@@ -22,6 +22,7 @@ import {
   API_TIMEOUT_MS,
   type MiddlewareEnv,
 } from './_middleware';
+import { APP_ORIGIN } from '../../src/config/domains';
 
 interface Env extends MiddlewareEnv {
   DISCORD_WEBHOOK_URL: string;
@@ -69,7 +70,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   // Discord embed message
   const discordPayload = {
     username: 'H4KU.COM Contact',
-    avatar_url: 'https://H4KU.COM/favicon.ico',
+    avatar_url: `${APP_ORIGIN}/favicon.ico`,
     embeds: [
       {
         title: 'New Contact Form Submission',

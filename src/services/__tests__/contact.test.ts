@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { SESSION_STORAGE_KEYS } from '@/config/constants';
 
 const isConfiguredMock = vi.fn(() => true);
 
@@ -22,7 +23,7 @@ const {
 const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
 
-const PENDING_KEY = 'contact:pending-submission';
+const PENDING_KEY = SESSION_STORAGE_KEYS.CONTACT_PENDING_SUBMISSION;
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 const basePayload = {
   name: 'Tester',
@@ -100,6 +101,19 @@ describe('pending contact storage', () => {
     );
     expect(loadPendingContact()).toBeNull();
   });
+
+  it('swallows errors from sessionStorage.setItem', () => {
+    const originalSetItem = window.sessionStorage.setItem;
+    window.sessionStorage.setItem = () => {
+      throw new Error('storage blocked');
+    };
+
+    expect(() =>
+      savePendingContact({ name: 'Tester', email: 'x@y.com', message: 'hi' })
+    ).not.toThrow();
+
+    window.sessionStorage.setItem = originalSetItem;
+  });
 });
 
 describe('submitContactRequest', () => {
@@ -153,6 +167,21 @@ describe('submitContactRequest', () => {
 
     await expect(submitContactRequest(basePayload)).rejects.toThrow(
       /Boom|500/ // prefer explicit server message when present
+    );
+  });
+
+  it('falls back to status text when error response body is not JSON', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      statusText: 'Bad Gateway',
+      json: async () => {
+        throw new Error('no body');
+      },
+    });
+
+    await expect(submitContactRequest(basePayload)).rejects.toThrow(
+      /502|Bad Gateway/
     );
   });
 
@@ -258,5 +287,54 @@ describe('submitContactRequest timeout handling', () => {
       success: true,
     });
     expect(localFetch).toHaveBeenCalled();
+  });
+
+  it('aborts the request when TIMEOUT_MS elapses', async () => {
+    vi.resetModules();
+    vi.doMock('@/config/contact', () => ({
+      CONTACT_CONFIG: {
+        ENDPOINT: 'https://api.test/contact',
+        TIMEOUT_MS: 25,
+      },
+      isContactEndpointConfigured: () => true,
+    }));
+
+    const abortableFetch = vi.fn(
+      (_url: string, options?: RequestInit) =>
+        new Promise((_, reject) => {
+          const signal = options?.signal;
+          const abortError =
+            typeof DOMException === 'function'
+              ? new DOMException('Aborted', 'AbortError')
+              : Object.assign(new Error('Aborted'), { name: 'AbortError' });
+
+          if (!signal) {
+            reject(new Error('missing signal'));
+            return;
+          }
+
+          const handleAbort = () => reject(abortError);
+
+          if (signal.aborted) {
+            handleAbort();
+            return;
+          }
+
+          signal.addEventListener('abort', handleAbort, { once: true });
+        })
+    );
+    vi.stubGlobal('fetch', abortableFetch);
+
+    const { submitContactRequest: submitWithTimeout } =
+      await import('@/services/contact');
+
+    vi.useFakeTimers();
+    const pending = expect(
+      submitWithTimeout(basePayload)
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    await vi.advanceTimersByTimeAsync(50);
+    await pending;
+
+    vi.useRealTimers();
   });
 });

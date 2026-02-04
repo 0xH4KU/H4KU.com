@@ -1,4 +1,9 @@
 import { secureLog, secureWarn } from '@/utils/secureConsole';
+import {
+  APP_DOMAIN,
+  CF_PAGES_PROJECT_DOMAIN,
+  WWW_APP_DOMAIN,
+} from '@/config/domains';
 
 /**
  * Domain Verification Utility
@@ -18,11 +23,9 @@ const DEFAULT_ALLOWED_DOMAINS: DomainMatcher[] = [
   '127.0.0.1',
   '0.0.0.0',
   '::1',
-  'H4KU.COM',
-  'www.H4KU.COM',
-  'H4KU.COM',
-  'www.H4KU.COM',
-  'h4ku-com.pages.dev',
+  APP_DOMAIN,
+  WWW_APP_DOMAIN,
+  CF_PAGES_PROJECT_DOMAIN,
   /.*\.h4ku-com\.pages\.dev$/i,
   /^192\.168\.\d{1,3}\.\d{1,3}$/,
   /^.+\.localhost$/,

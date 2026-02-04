@@ -55,6 +55,10 @@ export const STORAGE_KEYS = {
   PINNED_ITEMS: 'H4KU.COM.sidebar.pinned',
 } as const;
 
+export const SESSION_STORAGE_KEYS = {
+  CONTACT_PENDING_SUBMISSION: 'contact:pending-submission',
+} as const;
+
 /**
  * Sidebar configuration
  */

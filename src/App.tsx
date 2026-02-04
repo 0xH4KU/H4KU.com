@@ -21,7 +21,7 @@ const Lightbox = lazy(() => import('@/components/overlay/Lightbox'));
 const SearchPanelLazy = lazy(() => import('@/components/layout/SearchPanel'));
 
 const AppContent: React.FC = () => {
-  const { isSidebarOpen, closeSidebar, sidebarWidth } = useSidebarContext();
+  const { isSidebarOpen, closeSidebar } = useSidebarContext();
   const { width } = useWindowSize();
   const [domainCheckResult, setDomainCheckResult] = useState<DomainCheckResult>(
     {
@@ -36,9 +36,6 @@ const AppContent: React.FC = () => {
   const isCompactViewport =
     width !== undefined && width <= SIDEBAR_CONFIG.MOBILE_BREAKPOINT;
   const showOverlay = isCompactViewport && isSidebarOpen;
-  const contentGutter = isCompactViewport
-    ? 'clamp(16px, 4vw, 36px)'
-    : 'clamp(24px, 5vw, 72px)';
 
   // Security initialization: domain check, fingerprinting, and copyright notice
   useEffect(() => {
@@ -84,15 +81,19 @@ const AppContent: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof document === 'undefined' || !showOverlay) {
+    if (typeof document === 'undefined') {
       return;
     }
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const className = 'sidebar-overlay-open';
+    if (showOverlay) {
+      document.body.classList.add(className);
+    } else {
+      document.body.classList.remove(className);
+    }
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.classList.remove(className);
     };
   }, [showOverlay]);
 
@@ -115,7 +116,7 @@ const AppContent: React.FC = () => {
         <TopBar />
       </ErrorBoundary>
       <div
-        className={`${styles['main-layout']} ${showOverlay ? styles['sidebar-open'] : ''}`}
+        className={`${styles['main-layout']} ${isSidebarOpen ? styles['sidebar-open'] : ''}`}
         aria-hidden={domainCheckResult.shouldBlock}
       >
         <ErrorBoundary>
@@ -129,21 +130,7 @@ const AppContent: React.FC = () => {
             onClick={closeSidebar}
           />
         )}
-        <div
-          id="main-content"
-          className={styles['content-area']}
-          role="main"
-          style={
-            {
-              '--sidebar-margin': isCompactViewport
-                ? '0px'
-                : isSidebarOpen
-                  ? `${sidebarWidth}px`
-                  : '0px',
-              '--content-gutter': contentGutter,
-            } as React.CSSProperties
-          }
-        >
+        <div id="main-content" className={styles['content-area']} role="main">
           <ErrorBoundary>
             <ContentView />
           </ErrorBoundary>

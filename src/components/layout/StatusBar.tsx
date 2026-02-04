@@ -2,6 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useSortOrder } from '@/contexts/SortContext';
 import { mockData, dataIntegrity } from '@/data/mockData';
+import { ROUTE_SEGMENTS } from '@/config/routes';
 import { getSafeUrl } from '@/utils/urlHelpers';
 import styles from './StatusBar.module.css';
 
@@ -256,7 +257,7 @@ const StatusBar: React.FC = () => {
         className={`${styles['status-section']} ${styles['status-section--license']}`}
       >
         <a
-          href="/page/license"
+          href={`/${ROUTE_SEGMENTS.PAGE}/license`}
           onClick={handleLicenseClick}
           className={styles['license-link']}
           aria-label="View license information (HPSL-1.0)"

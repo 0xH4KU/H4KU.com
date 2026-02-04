@@ -7,7 +7,11 @@ export function useSidebar(
 ) {
   const [storedWidth, setStoredWidth] = useLocalStorage<number>(
     STORAGE_KEYS.SIDEBAR_WIDTH,
-    initialWidth
+    initialWidth,
+    {
+      sanitize: (value, fallback) =>
+        typeof value === 'number' && Number.isFinite(value) ? value : fallback,
+    }
   );
   const [sidebarWidth, setSidebarWidth] = useState<number>(storedWidth);
   const [isDragging, setIsDragging] = useState(false);

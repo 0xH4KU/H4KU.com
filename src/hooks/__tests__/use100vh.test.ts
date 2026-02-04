@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as runtimeCssVars from '@/utils/runtimeCssVars';
 import { use100vh } from '../use100vh';
 
 type MutableVisualViewport = {
@@ -15,8 +16,7 @@ describe('use100vh', () => {
       value: 1000,
     });
 
-    // Mock document.documentElement.style.setProperty
-    document.documentElement.style.setProperty = vi.fn();
+    vi.spyOn(runtimeCssVars, 'setRuntimeCssVar').mockImplementation(() => {});
 
     Reflect.deleteProperty(window, 'visualViewport');
   });
@@ -30,7 +30,7 @@ describe('use100vh', () => {
     renderHook(() => use100vh());
 
     // Should set --vh to 1% of window height (1000 * 0.01 = 10px)
-    expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
+    expect(runtimeCssVars.setRuntimeCssVar).toHaveBeenCalledWith(
       '--vh',
       '10px'
     );
@@ -39,12 +39,10 @@ describe('use100vh', () => {
   it('should update --vh on window resize', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = vi.mocked(
-      document.documentElement.style.setProperty
-    );
+    const setVarSpy = vi.mocked(runtimeCssVars.setRuntimeCssVar);
 
     // Clear previous calls
-    setPropertySpy.mockClear();
+    setVarSpy.mockClear();
 
     // Simulate resize
     Object.defineProperty(window, 'innerHeight', {
@@ -56,20 +54,18 @@ describe('use100vh', () => {
     window.dispatchEvent(new Event('resize'));
 
     // Should update --vh to new value (800 * 0.01 = 8px)
-    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '8px');
+    expect(setVarSpy).toHaveBeenCalledWith('--vh', '8px');
   });
 
   it('should handle multiple resizes', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = vi.mocked(
-      document.documentElement.style.setProperty
-    );
+    const setVarSpy = vi.mocked(runtimeCssVars.setRuntimeCssVar);
 
     const heights = [600, 900, 1200];
 
     heights.forEach(height => {
-      setPropertySpy.mockClear();
+      setVarSpy.mockClear();
 
       Object.defineProperty(window, 'innerHeight', {
         writable: true,
@@ -79,7 +75,7 @@ describe('use100vh', () => {
 
       window.dispatchEvent(new Event('resize'));
 
-      expect(setPropertySpy).toHaveBeenCalledWith('--vh', `${height * 0.01}px`);
+      expect(setVarSpy).toHaveBeenCalledWith('--vh', `${height * 0.01}px`);
     });
   });
 
@@ -119,10 +115,7 @@ describe('use100vh', () => {
 
     renderHook(() => use100vh());
 
-    expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
-      '--vh',
-      '9px'
-    );
+    expect(runtimeCssVars.setRuntimeCssVar).toHaveBeenCalledWith('--vh', '9px');
 
     expect(addEventListenerMock).toHaveBeenCalledWith(
       'resize',
@@ -161,21 +154,19 @@ describe('use100vh', () => {
 
     renderHook(() => use100vh());
 
-    const setPropertySpy = vi.mocked(
-      document.documentElement.style.setProperty
-    );
-    setPropertySpy.mockClear();
+    const setVarSpy = vi.mocked(runtimeCssVars.setRuntimeCssVar);
+    setVarSpy.mockClear();
 
     mockVisualViewport.height = 750;
     resizeCallback?.();
-    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '7.5px');
+    expect(setVarSpy).toHaveBeenCalledWith('--vh', '7.5px');
 
-    setPropertySpy.mockClear();
+    setVarSpy.mockClear();
     mockVisualViewport.height = 700;
     scrollCallback?.();
     // Scroll events are throttled with 100ms delay
     vi.advanceTimersByTime(100);
-    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '7px');
+    expect(setVarSpy).toHaveBeenCalledWith('--vh', '7px');
 
     vi.useRealTimers();
   });
@@ -209,10 +200,8 @@ describe('use100vh', () => {
   it('should recalculate on orientation changes', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = vi.mocked(
-      document.documentElement.style.setProperty
-    );
-    setPropertySpy.mockClear();
+    const setVarSpy = vi.mocked(runtimeCssVars.setRuntimeCssVar);
+    setVarSpy.mockClear();
 
     Object.defineProperty(window, 'innerHeight', {
       writable: true,
@@ -222,16 +211,14 @@ describe('use100vh', () => {
 
     window.dispatchEvent(new Event('orientationchange'));
 
-    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '7.2px');
+    expect(setVarSpy).toHaveBeenCalledWith('--vh', '7.2px');
   });
 
   it('should recalculate when returning from bfcache', () => {
     renderHook(() => use100vh());
 
-    const setPropertySpy = vi.mocked(
-      document.documentElement.style.setProperty
-    );
-    setPropertySpy.mockClear();
+    const setVarSpy = vi.mocked(runtimeCssVars.setRuntimeCssVar);
+    setVarSpy.mockClear();
 
     Object.defineProperty(window, 'innerHeight', {
       writable: true,
@@ -246,7 +233,7 @@ describe('use100vh', () => {
 
     window.dispatchEvent(pageShowEvent);
 
-    expect(setPropertySpy).toHaveBeenCalledWith('--vh', '6.4px');
+    expect(setVarSpy).toHaveBeenCalledWith('--vh', '6.4px');
   });
 
   it('should calculate vh correctly for different screen sizes', () => {
@@ -258,10 +245,8 @@ describe('use100vh', () => {
     ];
 
     testCases.forEach(({ height, expected }) => {
-      const setPropertySpy = vi.mocked(
-        document.documentElement.style.setProperty
-      );
-      setPropertySpy.mockClear();
+      const setVarSpy = vi.mocked(runtimeCssVars.setRuntimeCssVar);
+      setVarSpy.mockClear();
 
       Object.defineProperty(window, 'innerHeight', {
         writable: true,
@@ -271,7 +256,7 @@ describe('use100vh', () => {
 
       renderHook(() => use100vh());
 
-      expect(setPropertySpy).toHaveBeenCalledWith('--vh', expected);
+      expect(setVarSpy).toHaveBeenCalledWith('--vh', expected);
     });
   });
 });

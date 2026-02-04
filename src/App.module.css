@@ -1,4 +1,5 @@
 .app {
+  --content-gutter: clamp(24px, 5vw, 72px);
   width: 100vw;
   height: 100vh;
   /* Fallback for browsers that do not support Custom Properties */
@@ -72,7 +73,7 @@
     var(--content-padding-bottom);
   position: relative;
   z-index: 10;
-  margin-left: var(--sidebar-margin, 0px);
+  margin-left: 0px;
   transition:
     transform var(--transition-normal),
     filter var(--transition-normal),
@@ -102,6 +103,10 @@
 }
 
 @media (max-width: 1024px) {
+  .app {
+    --content-gutter: clamp(16px, 4vw, 36px);
+  }
+
   .content-area {
     padding: calc(var(--topbar-height) + 24px) var(--content-gutter, 64px)
       calc(var(--statusbar-height) + 24px);
@@ -122,6 +127,12 @@
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     z-index: 15;
+  }
+}
+
+@media (min-width: 1025px) {
+  .main-layout.sidebar-open .content-area {
+    margin-left: var(--sidebar-width, 0px);
   }
 }
 

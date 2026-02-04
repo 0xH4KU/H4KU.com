@@ -1,0 +1,23 @@
+/**
+ * Runtime CSS variables updated via CSSOM to satisfy strict CSP (no style attributes).
+ *
+ * NOTE: Update values via `src/utils/runtimeCssVars.ts` (CSSOM), not `element.style`.
+ */
+
+html[data-runtime-vars] {
+  --vh: 1vh;
+  --sidebar-width: 260px;
+
+  --tooltip-x: 0px;
+  --tooltip-y: 0px;
+
+  --menu-x: 0px;
+  --menu-y: 0px;
+
+  --crosshair-x: 0px;
+  --crosshair-y: 0px;
+  --crosshair-line-x: 0px;
+  --crosshair-line-y: 0px;
+  --crosshair-label-x: 0px;
+  --crosshair-label-y: 0px;
+}

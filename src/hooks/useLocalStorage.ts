@@ -21,15 +21,42 @@ export function useLocalStorage<T>(
 
   const applySanitizer = useCallback(
     (value: unknown, fallback: T): T => {
-      if (!sanitize) {
-        return value as T;
+      if (sanitize) {
+        try {
+          return sanitize(value, fallback);
+        } catch (error) {
+          console.error(`Error sanitizing localStorage key "${key}":`, error);
+          return fallback;
+        }
       }
-      try {
-        return sanitize(value, fallback);
-      } catch (error) {
-        console.error(`Error sanitizing localStorage key "${key}":`, error);
+
+      if (value === undefined || fallback === null) {
         return fallback;
       }
+
+      if (typeof fallback === 'string') {
+        return (typeof value === 'string' ? value : fallback) as T;
+      }
+
+      if (typeof fallback === 'number') {
+        return (
+          typeof value === 'number' && Number.isFinite(value) ? value : fallback
+        ) as T;
+      }
+
+      if (typeof fallback === 'boolean') {
+        return (typeof value === 'boolean' ? value : fallback) as T;
+      }
+
+      if (Array.isArray(fallback)) {
+        return (Array.isArray(value) ? value : fallback) as T;
+      }
+
+      if (typeof fallback === 'object') {
+        return (value && typeof value === 'object' ? value : fallback) as T;
+      }
+
+      return fallback;
     },
     [key, sanitize]
   );
@@ -56,7 +83,7 @@ export function useLocalStorage<T>(
       return;
     }
 
-    if (!forceRewrite && Object.is(original as T, sanitized)) {
+    if (!forceRewrite && Object.is(original, sanitized)) {
       return;
     }
 
@@ -123,7 +150,7 @@ export function useLocalStorage<T>(
           setStoredValue(initialValueRef.current);
           return;
         }
-        const { value, isCorrupted } = deserializePersistedState<T>(
+        const { value, isCorrupted } = deserializePersistedState(
           key,
           event.newValue,
           initialValueRef.current

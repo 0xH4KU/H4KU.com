@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { Pin, PinOff, ExternalLink, Copy, FolderOpen } from 'lucide-react';
+import { setRuntimeCssVars } from '@/utils/runtimeCssVars';
 import styles from './ContextMenu.module.css';
 
 interface ContextMenuProps {
@@ -55,7 +56,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   }, [onClose]);
 
   // Adjust position if menu would go off screen
-  useEffect(() => {
+  useLayoutEffect(() => {
+    setRuntimeCssVars({ '--menu-x': `${x}px`, '--menu-y': `${y}px` });
+
     if (menuRef.current) {
       const rect = menuRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
@@ -72,23 +75,15 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         adjustedY = viewportHeight - rect.height - 10;
       }
 
-      menuRef.current.style.setProperty('--menu-x', `${adjustedX}px`);
-      menuRef.current.style.setProperty('--menu-y', `${adjustedY}px`);
+      setRuntimeCssVars({
+        '--menu-x': `${adjustedX}px`,
+        '--menu-y': `${adjustedY}px`,
+      });
     }
   }, [x, y]);
 
   return (
-    <div
-      ref={menuRef}
-      className={styles['context-menu']}
-      style={
-        {
-          '--menu-x': `${x}px`,
-          '--menu-y': `${y}px`,
-        } as React.CSSProperties
-      }
-      role="menu"
-    >
+    <div ref={menuRef} className={styles['context-menu']} role="menu">
       <div className={styles['context-menu-header']}>{itemName}</div>
 
       <button

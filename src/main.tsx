@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from '@/App';
+import '@/styles/runtimeVars.css';
 import '@/styles/global.css';
 import { initializeMonitoring, reportWebVital } from '@/services/monitoring';
 import { startWebVitals } from '@/utils/webVitals';

@@ -60,14 +60,14 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
   // Determine icon size and indent based on screen size
   const isDesktop = typeof window !== 'undefined' && window.innerWidth > 768;
   const iconSize = isDesktop ? 16 : 18;
-  const indent = isDesktop ? 18 + depth * 20 : 20 + depth * 24;
+  const depthIndex = Math.min(Math.max(depth, 0), 20);
+  const indentClass = styles[`indent-${depthIndex}`] ?? styles['indent-0'];
   const childFolders = folder.children ?? [];
 
   return (
     <>
       <div
-        className={`${styles['sidebar-item']} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned ? styles['sidebar-item--pinned'] : ''}`}
-        style={{ '--indent': `${indent}px` } as React.CSSProperties}
+        className={`${styles['sidebar-item']} ${indentClass} ${isActive ? styles['sidebar-item--active'] : ''} ${isPinned ? styles['sidebar-item--pinned'] : ''}`}
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
         role="button"

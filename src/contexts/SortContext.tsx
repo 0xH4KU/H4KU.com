@@ -19,11 +19,21 @@ export const SortProvider: React.FC<{ children: React.ReactNode }> = ({
   // Default sorting: text A-Z, numbers high-low
   const [sortOrder, setSortOrder] = useLocalStorage<SortOrder>(
     'sort-order',
-    'desc'
+    'desc',
+    {
+      sanitize: (value, fallback) =>
+        value === 'desc' || value === 'asc' ? value : fallback,
+    }
   );
   const [typeOrder, setTypeOrder] = useLocalStorage<TypeOrder>(
     'type-order',
-    'folders-first'
+    'folders-first',
+    {
+      sanitize: (value, fallback) =>
+        value === 'folders-first' || value === 'images-first'
+          ? value
+          : fallback,
+    }
   );
 
   const toggleSortOrder = useCallback(() => {

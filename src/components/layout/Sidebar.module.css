@@ -3,6 +3,7 @@
   top: 0;
   bottom: 0;
   left: 0;
+  width: var(--sidebar-width, 260px);
   height: auto;
   border-right: 2px solid var(--color-border);
   display: flex;
@@ -364,7 +365,7 @@
 
 .sidebar-item {
   padding: 12px 20px;
-  padding-left: var(--indent, 20px);
+  padding-left: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -386,6 +387,70 @@
   text-align: left;
   font: inherit;
   color: inherit;
+}
+
+.indent-0 {
+  padding-left: 20px;
+}
+.indent-1 {
+  padding-left: 44px;
+}
+.indent-2 {
+  padding-left: 68px;
+}
+.indent-3 {
+  padding-left: 92px;
+}
+.indent-4 {
+  padding-left: 116px;
+}
+.indent-5 {
+  padding-left: 140px;
+}
+.indent-6 {
+  padding-left: 164px;
+}
+.indent-7 {
+  padding-left: 188px;
+}
+.indent-8 {
+  padding-left: 212px;
+}
+.indent-9 {
+  padding-left: 236px;
+}
+.indent-10 {
+  padding-left: 260px;
+}
+.indent-11 {
+  padding-left: 284px;
+}
+.indent-12 {
+  padding-left: 308px;
+}
+.indent-13 {
+  padding-left: 332px;
+}
+.indent-14 {
+  padding-left: 356px;
+}
+.indent-15 {
+  padding-left: 380px;
+}
+.indent-16 {
+  padding-left: 404px;
+}
+.indent-17 {
+  padding-left: 428px;
+}
+.indent-18 {
+  padding-left: 452px;
+}
+.indent-19 {
+  padding-left: 476px;
+}
+.indent-20 {
+  padding-left: 500px;
 }
 
 .sidebar-item:hover {
@@ -634,9 +699,73 @@
 @media (min-width: 769px) {
   .sidebar-item {
     padding: 10px 18px;
-    padding-left: var(--indent, 18px);
+    padding-left: 18px;
     gap: 12px;
     min-height: 44px;
+  }
+
+  .indent-0 {
+    padding-left: 18px;
+  }
+  .indent-1 {
+    padding-left: 38px;
+  }
+  .indent-2 {
+    padding-left: 58px;
+  }
+  .indent-3 {
+    padding-left: 78px;
+  }
+  .indent-4 {
+    padding-left: 98px;
+  }
+  .indent-5 {
+    padding-left: 118px;
+  }
+  .indent-6 {
+    padding-left: 138px;
+  }
+  .indent-7 {
+    padding-left: 158px;
+  }
+  .indent-8 {
+    padding-left: 178px;
+  }
+  .indent-9 {
+    padding-left: 198px;
+  }
+  .indent-10 {
+    padding-left: 218px;
+  }
+  .indent-11 {
+    padding-left: 238px;
+  }
+  .indent-12 {
+    padding-left: 258px;
+  }
+  .indent-13 {
+    padding-left: 278px;
+  }
+  .indent-14 {
+    padding-left: 298px;
+  }
+  .indent-15 {
+    padding-left: 318px;
+  }
+  .indent-16 {
+    padding-left: 338px;
+  }
+  .indent-17 {
+    padding-left: 358px;
+  }
+  .indent-18 {
+    padding-left: 378px;
+  }
+  .indent-19 {
+    padding-left: 398px;
+  }
+  .indent-20 {
+    padding-left: 418px;
   }
 
   .sidebar-icon {

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { FolderTreeItem } from '../FolderTreeItem';
 import type { Folder } from '@/types';
+import sidebarStyles from '../Sidebar.module.css';
 
 describe('FolderTreeItem', () => {
   const mockOnToggle = vi.fn();
@@ -410,7 +411,7 @@ describe('FolderTreeItem', () => {
 
       render(
         <FolderTreeItem
-          folder={baseFolder}
+          folder={folderWithChildren}
           depth={0}
           isExpanded={false}
           activePathSegments={new Set()}
@@ -420,9 +421,19 @@ describe('FolderTreeItem', () => {
         />
       );
 
-      const row = screen.getByRole('button', { name: /Test Folder/i });
-      const style = row.getAttribute('style');
-      expect(style).toContain('--indent');
+      const row = screen.getByText('Parent Folder').closest('[role="button"]');
+      if (!row) {
+        throw new Error('Folder row not found');
+      }
+      expect(row.getAttribute('style')).toBeNull();
+      expect(row.className).toContain(sidebarStyles['indent-0']);
+
+      const expandBtn = screen.getByRole('button', {
+        name: /Expand Parent Folder/i,
+      });
+      const icon = expandBtn.querySelector('svg');
+      expect(icon).toHaveAttribute('width', '16');
+      expect(icon).toHaveAttribute('height', '16');
     });
 
     it('uses mobile sizing when window is narrow', () => {
@@ -430,7 +441,7 @@ describe('FolderTreeItem', () => {
 
       render(
         <FolderTreeItem
-          folder={baseFolder}
+          folder={folderWithChildren}
           depth={0}
           isExpanded={false}
           activePathSegments={new Set()}
@@ -440,9 +451,19 @@ describe('FolderTreeItem', () => {
         />
       );
 
-      const row = screen.getByRole('button', { name: /Test Folder/i });
-      const style = row.getAttribute('style');
-      expect(style).toContain('--indent');
+      const row = screen.getByText('Parent Folder').closest('[role="button"]');
+      if (!row) {
+        throw new Error('Folder row not found');
+      }
+      expect(row.getAttribute('style')).toBeNull();
+      expect(row.className).toContain(sidebarStyles['indent-0']);
+
+      const expandBtn = screen.getByRole('button', {
+        name: /Expand Parent Folder/i,
+      });
+      const icon = expandBtn.querySelector('svg');
+      expect(icon).toHaveAttribute('width', '18');
+      expect(icon).toHaveAttribute('height', '18');
     });
   });
 

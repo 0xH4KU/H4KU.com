@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import sitemap from 'vite-plugin-sitemap';
 import ViteSRI from 'vite-plugin-sri';
+import { APP_ORIGIN } from './src/config/domains';
 
 type AggregatedFolderRecord = {
   id?: string;
@@ -235,10 +236,24 @@ const performanceBudgetPlugin = () => {
   };
 };
 
+const stripCspMetaInDev = () => ({
+  name: 'strip-csp-meta-in-dev',
+  apply: 'serve',
+  transformIndexHtml(html: string) {
+    // Match only a single <meta> tag containing http-equiv="Content-Security-Policy"
+    // Use [^>]* instead of [\s\S]*? to avoid crossing tag boundaries
+    return html.replace(
+      /<meta\s+[^>]*http-equiv="Content-Security-Policy"[^>]*\/?>\s*/gi,
+      ''
+    );
+  },
+});
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    stripCspMetaInDev(),
     ViteSRI({
       // Apply SRI to JS and CSS assets; external resources are not in use.
       algorithms: ['sha384'],
@@ -248,7 +263,7 @@ export default defineConfig({
       ? []
       : [
           sitemap({
-            hostname: 'https://H4KU.COM',
+            hostname: APP_ORIGIN,
             dynamicRoutes,
             readable: true,
             // CF Pages serves robots.txt from /public so avoid clobbering it here.

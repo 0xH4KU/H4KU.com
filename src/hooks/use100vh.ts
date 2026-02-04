@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { setRuntimeCssVar } from '@/utils/runtimeCssVars';
 
 type PageShowEvent = Event & { persisted?: boolean };
 
@@ -14,10 +15,7 @@ export function use100vh() {
     const setVh = () => {
       const viewportHeight =
         window.visualViewport?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty(
-        '--vh',
-        `${viewportHeight * 0.01}px`
-      );
+      setRuntimeCssVar('--vh', `${viewportHeight * 0.01}px`);
     };
 
     // Throttled version for scroll events to improve performance

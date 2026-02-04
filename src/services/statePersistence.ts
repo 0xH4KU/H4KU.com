@@ -36,17 +36,28 @@ const PERSISTENCE_SCHEMA: Record<PersistenceKey, PersistenceConfig> = {
   },
 };
 
-const managedKeys = new Set<PersistenceKey>(Object.values(STORAGE_KEYS));
+const MANAGED_KEYS: readonly PersistenceKey[] = [
+  STORAGE_KEYS.THEME,
+  STORAGE_KEYS.SIDEBAR_WIDTH,
+  STORAGE_KEYS.EXPANDED_FOLDERS,
+  STORAGE_KEYS.PINNED_ITEMS,
+];
+
+const managedKeySet = new Set<string>(MANAGED_KEYS);
 
 const isPersistedPayload = (
   value: unknown
-): value is PersistedPayload<unknown> =>
-  Boolean(
-    value && typeof value === 'object' && 'version' in value && 'value' in value
-  );
+): value is PersistedPayload<unknown> => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return typeof record.version === 'number' && 'value' in record;
+};
 
 export const isManagedPersistenceKey = (key: string): key is PersistenceKey =>
-  managedKeys.has(key as PersistenceKey);
+  managedKeySet.has(key);
 
 export const serializePersistedState = <T>(key: string, value: T): string => {
   if (!isManagedPersistenceKey(key)) {
@@ -68,23 +79,23 @@ type DeserializedState<T> = {
   isCorrupted: boolean;
 };
 
-export const deserializePersistedState = <T>(
+export const deserializePersistedState = (
   key: string,
   rawValue: string,
-  fallback: T
-): DeserializedState<T> => {
+  fallback: unknown
+): DeserializedState<unknown> => {
   try {
-    const parsed = JSON.parse(rawValue) as unknown;
+    const parsed: unknown = JSON.parse(rawValue);
     if (isManagedPersistenceKey(key) && isPersistedPayload(parsed)) {
       const config = PERSISTENCE_SCHEMA[key];
       return {
-        value: parsed.value as T,
+        value: parsed.value,
         needsHydration: parsed.version !== config.version,
         isCorrupted: false,
       };
     }
     return {
-      value: parsed as T,
+      value: parsed,
       needsHydration: isManagedPersistenceKey(key),
       isCorrupted: false,
     };
@@ -102,7 +113,7 @@ export const clearPersistedState = (keys?: PersistenceKey[]) => {
     return;
   }
 
-  const keysToClear = keys ?? Array.from(managedKeys);
+  const keysToClear = keys ?? Array.from(MANAGED_KEYS);
   keysToClear.forEach(key => {
     try {
       window.localStorage.removeItem(key);
@@ -114,4 +125,4 @@ export const clearPersistedState = (keys?: PersistenceKey[]) => {
 
 export const getPersistenceSchema = () => ({ ...PERSISTENCE_SCHEMA });
 
-export const getManagedPersistenceKeys = () => Array.from(managedKeys);
+export const getManagedPersistenceKeys = () => Array.from(MANAGED_KEYS);

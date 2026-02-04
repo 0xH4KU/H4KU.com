@@ -22,8 +22,7 @@ import {
   useHistoryNavigation,
   getCurrentPath,
 } from '@/hooks/useHistoryNavigation';
-
-const CONTACT_VERIFY_PAGE_ID = 'contact-verify';
+import { PAGE_IDS, ROUTES, ROUTE_SEGMENTS } from '@/config/routes';
 
 // Build navigation map once at module level for initial state parsing
 const initialNavMap = buildNavigationMap(mockData.folders);
@@ -36,7 +35,8 @@ const getRouteSegments = (targetPath: string) => {
   }
   // Drop any leading prefix (e.g., BASE_URL) before the app route segments
   const firstRouteIndex = segments.findIndex(
-    segment => segment === 'page' || segment === 'folder'
+    segment =>
+      segment === ROUTE_SEGMENTS.PAGE || segment === ROUTE_SEGMENTS.FOLDER
   );
   return firstRouteIndex > 0 ? segments.slice(firstRouteIndex) : segments;
 };
@@ -51,13 +51,16 @@ function parsePathnameSync(
 ): { path: string[]; view: ViewType | null } {
   const segments = getRouteSegments(targetPath);
 
-  if (segments[0] === 'contact' && segments[1] === 'verify') {
+  if (
+    segments[0] === ROUTE_SEGMENTS.CONTACT &&
+    segments[1] === ROUTE_SEGMENTS.VERIFY
+  ) {
     const verifyPage = mockData.pages.find(
-      page => page.id === CONTACT_VERIFY_PAGE_ID
+      page => page.id === PAGE_IDS.CONTACT_VERIFY
     );
     if (verifyPage) {
       return {
-        path: ['home', CONTACT_VERIFY_PAGE_ID],
+        path: ['home', PAGE_IDS.CONTACT_VERIFY],
         view: { type: 'txt', data: verifyPage } as ViewType,
       };
     }
@@ -67,7 +70,7 @@ function parsePathnameSync(
     return { path: ['home'], view: null };
   }
 
-  if (segments[0] === 'page' && segments[1]) {
+  if (segments[0] === ROUTE_SEGMENTS.PAGE && segments[1]) {
     const page = mockData.pages.find(p => p.id === segments[1]);
     if (page) {
       return {
@@ -78,7 +81,7 @@ function parsePathnameSync(
     return { path: ['home'], view: null };
   }
 
-  if (segments[0] === 'folder') {
+  if (segments[0] === ROUTE_SEGMENTS.FOLDER) {
     const folderIds = segments.slice(1);
     if (folderIds.length) {
       const folder = findFolderByPath(mockData.folders, folderIds, navMap);
@@ -181,13 +184,16 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     (targetPath: string): NavigationState => {
       const segments = getRouteSegments(targetPath);
 
-      if (segments[0] === 'contact' && segments[1] === 'verify') {
+      if (
+        segments[0] === ROUTE_SEGMENTS.CONTACT &&
+        segments[1] === ROUTE_SEGMENTS.VERIFY
+      ) {
         const verifyPage = mockData.pages.find(
-          page => page.id === CONTACT_VERIFY_PAGE_ID
+          page => page.id === PAGE_IDS.CONTACT_VERIFY
         );
         if (verifyPage) {
           return {
-            path: ['home', CONTACT_VERIFY_PAGE_ID],
+            path: ['home', PAGE_IDS.CONTACT_VERIFY],
             view: { type: 'txt', data: verifyPage } as ViewType,
           };
         }
@@ -197,7 +203,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         return { path: ['home'], view: null };
       }
 
-      if (segments[0] === 'page' && segments[1]) {
+      if (segments[0] === ROUTE_SEGMENTS.PAGE && segments[1]) {
         const page = mockData.pages.find(p => p.id === segments[1]);
         if (page) {
           return {
@@ -208,7 +214,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         return { path: ['home'], view: null };
       }
 
-      if (segments[0] === 'folder') {
+      if (segments[0] === ROUTE_SEGMENTS.FOLDER) {
         const folderIds = segments.slice(1);
         if (folderIds.length) {
           const folder = findFolderByPath(mockData.folders, folderIds, navMap);
@@ -234,18 +240,18 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     const lastSegment = state.path[state.path.length - 1];
 
-    if (lastSegment === CONTACT_VERIFY_PAGE_ID) {
-      return '/contact/verify';
+    if (lastSegment === PAGE_IDS.CONTACT_VERIFY) {
+      return ROUTES.CONTACT_VERIFY;
     }
 
     const page = mockData.pages.find(p => p.id === lastSegment);
 
     if (page) {
-      return `/page/${page.id}`;
+      return `/${ROUTE_SEGMENTS.PAGE}/${page.id}`;
     }
 
     const folderPath = state.path.slice(1).join('/');
-    return `/folder/${folderPath}`;
+    return `/${ROUTE_SEGMENTS.FOLDER}/${folderPath}`;
   }, []);
 
   // Effect: Handle browser navigation (back/forward)

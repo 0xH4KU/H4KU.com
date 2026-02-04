@@ -3,9 +3,8 @@ import { useNavigation } from '@/contexts/NavigationContext';
 import { mockData } from '@/data/mockData';
 import { savePendingContact } from '@/services/contact';
 import { isValidEmail, normalizeEmail } from '@/shared/emailValidation';
+import { PAGE_IDS, ROUTES } from '@/config/routes';
 import styles from './ContactForm.module.css';
-
-const CONTACT_VERIFY_PAGE_ID = 'contact-verify';
 
 interface FormData {
   name: string;
@@ -30,7 +29,7 @@ export function ContactForm() {
   const [status, setStatus] = useState<FormStatus>({ type: 'idle' });
   const statusMessageRef = useRef<HTMLDivElement | null>(null);
   const verifyPage = useMemo(
-    () => mockData.pages.find(page => page.id === CONTACT_VERIFY_PAGE_ID),
+    () => mockData.pages.find(page => page.id === PAGE_IDS.CONTACT_VERIFY),
     []
   );
 
@@ -114,7 +113,7 @@ export function ContactForm() {
     if (verifyPage) {
       navigateTo(verifyPage);
     } else {
-      window.location.href = '/contact/verify';
+      window.location.href = ROUTES.CONTACT_VERIFY;
     }
   };
 
@@ -190,16 +189,7 @@ export function ContactForm() {
         </div>
 
         {/* Honeypot Field - Invisible bot trap */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '-9999px',
-            width: '1px',
-            height: '1px',
-            overflow: 'hidden',
-          }}
-          aria-hidden="true"
-        >
+        <div className={styles.honeypot} aria-hidden="true">
           <label htmlFor="website">
             Website (please leave this field blank):
           </label>

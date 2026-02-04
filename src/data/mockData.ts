@@ -6,6 +6,7 @@ import {
   type DualIntegrityCheckResult,
 } from '@/utils/integrity';
 import { secureWarn } from '@/utils/secureConsole';
+import { PAGE_IDS } from '@/config/routes';
 
 /**
  * Load content from aggregated JSON file instead of glob imports.
@@ -378,7 +379,7 @@ const socials: Social[] = socialsData;
 
 const specialPages: Page[] = [
   {
-    id: 'contact-verify',
+    id: PAGE_IDS.CONTACT_VERIFY,
     name: 'Contact Verification',
     filename: 'contact-verify.txt',
     type: 'txt',

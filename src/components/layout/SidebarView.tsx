@@ -91,7 +91,6 @@ export const SidebarView: React.FC<SidebarViewProps> = ({
     id="app-sidebar"
     ref={sidebarRef}
     className={`${styles.sidebar} ${!isSidebarOpen ? styles.collapsed : ''}`}
-    style={{ width: isCompact ? undefined : normalizedSidebarWidth }}
     aria-hidden={!isSidebarOpen}
     {...inertProps}
   >

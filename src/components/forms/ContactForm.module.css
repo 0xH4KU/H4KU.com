@@ -109,6 +109,14 @@
   color: var(--color-text);
 }
 
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* Dark mode adjustments */
 [data-theme='dark'] .input,
 [data-theme='dark'] .textarea {

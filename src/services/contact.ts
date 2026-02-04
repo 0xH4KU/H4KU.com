@@ -1,4 +1,5 @@
 import { CONTACT_CONFIG, isContactEndpointConfigured } from '@/config/contact';
+import { SESSION_STORAGE_KEYS } from '@/config/constants';
 
 export interface ContactPayload {
   name: string;
@@ -18,7 +19,7 @@ const DEFAULT_HEADERS = {
   'X-Requested-With': 'H4KU.COM-contact-form',
 };
 
-const PENDING_CONTACT_KEY = 'contact:pending-submission';
+const PENDING_CONTACT_KEY = SESSION_STORAGE_KEYS.CONTACT_PENDING_SUBMISSION;
 const PENDING_CONTACT_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 export type PendingContactPayload = Omit<ContactPayload, 'turnstileToken'>;

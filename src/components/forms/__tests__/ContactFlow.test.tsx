@@ -4,6 +4,8 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { ContactForm } from '../ContactForm';
 import { ContactVerify } from '../ContactVerify';
 import { ContactSubmissionError } from '@/services/contact';
+import { SESSION_STORAGE_KEYS } from '@/config/constants';
+import { PAGE_IDS } from '@/config/routes';
 
 const mockNavigateTo = vi.fn();
 const mockSavePending = vi.fn();
@@ -144,7 +146,7 @@ describe('Contact form -> verification flow', () => {
       message: 'Hello',
     });
     expect(mockNavigateTo).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'contact-verify' })
+      expect.objectContaining({ id: PAGE_IDS.CONTACT_VERIFY })
     );
 
     expect(
@@ -194,7 +196,7 @@ describe('ContactVerify', () => {
 
   const seedPendingPayload = () => {
     sessionStorage.setItem(
-      'contact:pending-submission',
+      SESSION_STORAGE_KEYS.CONTACT_PENDING_SUBMISSION,
       JSON.stringify({
         name: 'Tester',
         email: 'user@example.com',
@@ -244,7 +246,9 @@ describe('ContactVerify', () => {
     expect(
       await screen.findByText(/Message sent successfully!.*ref-123/i)
     ).toBeInTheDocument();
-    expect(sessionStorage.getItem('contact:pending-submission')).toBeNull();
+    expect(
+      sessionStorage.getItem(SESSION_STORAGE_KEYS.CONTACT_PENDING_SUBMISSION)
+    ).toBeNull();
   });
 
   it('shows error when backend rejects submission', async () => {

@@ -37,7 +37,6 @@ export default mergeConfig(
           'src/hooks/use100vh.ts',
           'src/hooks/useReducedMotion.ts',
           'src/services/monitoring.ts',
-          'src/services/contact.ts',
         ],
         // Global thresholds kept realistic with current suite
         thresholds: {

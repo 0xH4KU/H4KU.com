@@ -14,6 +14,7 @@ import {
   STORAGE_KEYS,
 } from '@/config/constants';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { setRuntimeCssVar } from '@/utils/runtimeCssVars';
 
 interface SidebarContextType {
   isSidebarOpen: boolean;
@@ -77,11 +78,27 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
   const persistTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedFolderIds, setExpandedFolderIds] = useLocalStorage<string[]>(
     STORAGE_KEYS.EXPANDED_FOLDERS,
-    []
+    [],
+    {
+      sanitize: (value, fallback) => {
+        if (!Array.isArray(value)) {
+          return fallback;
+        }
+        return value.filter((item): item is string => typeof item === 'string');
+      },
+    }
   );
   const [pinnedItemIds, setPinnedItemIds] = useLocalStorage<string[]>(
     STORAGE_KEYS.PINNED_ITEMS,
-    []
+    [],
+    {
+      sanitize: (value, fallback) => {
+        if (!Array.isArray(value)) {
+          return fallback;
+        }
+        return value.filter((item): item is string => typeof item === 'string');
+      },
+    }
   );
 
   const expandedFolders = useMemo(
@@ -91,6 +108,10 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({
   const pinnedItems = useMemo(() => new Set(pinnedItemIds), [pinnedItemIds]);
 
   const normalizedSidebarWidth = clampSidebarWidthValue(sidebarWidth);
+
+  useEffect(() => {
+    setRuntimeCssVar('--sidebar-width', `${normalizedSidebarWidth}px`);
+  }, [normalizedSidebarWidth]);
 
   useEffect(() => {
     setSidebarWidthState(clampSidebarWidthValue(storedSidebarWidth));

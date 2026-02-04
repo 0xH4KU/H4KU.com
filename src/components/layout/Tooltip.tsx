@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { setRuntimeCssVars } from '@/utils/runtimeCssVars';
 import styles from './Tooltip.module.css';
 
 interface TooltipProps {
@@ -17,7 +18,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
   clickable = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
   const timeoutRef = useRef<number | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -34,9 +34,9 @@ export const Tooltip: React.FC<TooltipProps> = ({
         : positionProp;
 
     setPlacement(finalPlacement);
-    setPosition({
-      x: rect.left + rect.width / 2,
-      y: finalPlacement === 'bottom' ? rect.bottom + 8 : rect.top - 8,
+    setRuntimeCssVars({
+      '--tooltip-x': `${rect.left + rect.width / 2}px`,
+      '--tooltip-y': `${finalPlacement === 'bottom' ? rect.bottom + 8 : rect.top - 8}px`,
     });
     setIsVisible(true);
   };
@@ -122,12 +122,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && (
         <div
           className={`${styles.tooltip} ${placement === 'bottom' ? styles['tooltip--bottom'] : ''}`}
-          style={
-            {
-              '--tooltip-x': `${position.x}px`,
-              '--tooltip-y': `${position.y}px`,
-            } as React.CSSProperties
-          }
         >
           {content}
         </div>

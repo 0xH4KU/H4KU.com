@@ -1,11 +1,10 @@
 # Security headers (Cloudflare Pages + Netlify compatible)
 # NOTE:
-# - We keep 'unsafe-inline' for styles because the UI uses a small number of dynamic
-#   inline styles for positioning (crosshair, tooltips, etc). Dropping it would require
-#   a deeper refactor to avoid style attributes entirely.
+# - We avoid 'unsafe-inline' for styles by using external stylesheets and CSP-approved
+#   inline blocks via sha256 hashes (for critical CSS only).
 # - Script execution remains limited to our bundles and Cloudflare Turnstile.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com 'sha256-kDlmBmHqqRya4Kw7yFFJC0CNgH3x9oK/sFhBp82TyHg=' 'sha256-otRsTaBSThTMC+xJ4aFVo4i+n+7GBQK8LqRZ3Ug0QYE=' 'sha256-A2NiuLoKoVprxOrG/9Gzsfz2EWb5Fl607rEbJlh2TOk='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.H4KU.COM https://*.workers.dev https://*.sentry.io https://*.ingest.sentry.io https://challenges.cloudflare.com https://static.cloudflareinsights.com; frame-src https://challenges.cloudflare.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://static.cloudflareinsights.com 'sha256-kDlmBmHqqRya4Kw7yFFJC0CNgH3x9oK/sFhBp82TyHg=' 'sha256-otRsTaBSThTMC+xJ4aFVo4i+n+7GBQK8LqRZ3Ug0QYE=' 'sha256-A2NiuLoKoVprxOrG/9Gzsfz2EWb5Fl607rEbJlh2TOk='; style-src 'self' 'sha256-kH83meDlYF8clguFFvJcVc0OoqGpn1veTAUSAoTR5nU='; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.h4ku.com https://*.workers.dev https://*.sentry.io https://*.ingest.sentry.io https://challenges.cloudflare.com https://static.cloudflareinsights.com; frame-src https://challenges.cloudflare.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), geolocation=(), microphone=(), interest-cohort=()
   X-Content-Type-Options: nosniff

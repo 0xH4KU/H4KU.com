@@ -9,6 +9,7 @@
   height: 1px;
   left: 0;
   right: 0;
+  transform: translateY(var(--crosshair-line-y, 0px));
   background: var(--color-primary);
   opacity: 0.8;
   box-shadow:
@@ -20,6 +21,8 @@
   width: 1px;
   top: 0;
   bottom: 0;
+  left: 0;
+  transform: translateX(var(--crosshair-line-x, 0px));
   background: var(--color-primary);
   opacity: 0.8;
   box-shadow:
@@ -33,6 +36,8 @@
   pointer-events: none;
   width: 6px;
   height: 6px;
+  left: var(--crosshair-x, 0px);
+  top: var(--crosshair-y, 0px);
   border-radius: 50%;
   background: var(--color-primary);
   transform: translate(-50%, -50%);
@@ -60,6 +65,12 @@
   position: fixed;
   z-index: 10000;
   pointer-events: none;
+  left: 0;
+  top: 0;
+  transform: translate(
+    var(--crosshair-label-x, 0px),
+    var(--crosshair-label-y, 0px)
+  );
   padding: 4px 8px;
   font-size: var(--font-size-xxs);
   border: 1px solid var(--color-primary);

@@ -11,6 +11,11 @@
  */
 
 import { isValidEmail } from '../../src/shared/emailValidation';
+import {
+  APP_ORIGIN,
+  CF_PAGES_PREVIEW_ORIGIN_REGEX,
+  WWW_APP_ORIGIN,
+} from '../../src/config/domains';
 
 // =============================================================================
 // Configuration
@@ -41,10 +46,10 @@ const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/sit
  * - https://pr-123.h4ku-com.pages.dev
  */
 export const ALLOWED_ORIGINS = [
-  'https://H4KU.COM',
-  'https://www.H4KU.COM',
+  APP_ORIGIN,
+  WWW_APP_ORIGIN,
   // Cloudflare Pages preview deployments (see JSDoc above for regex explanation)
-  /^https:\/\/[a-z0-9-]+\.h4ku-com\.pages\.dev$/,
+  CF_PAGES_PREVIEW_ORIGIN_REGEX,
   // Local development
   'http://localhost:5173',
   'http://localhost:4173',
@@ -123,9 +128,10 @@ export async function verifyTurnstile(
 export function isOriginAllowed(origin: string | null): boolean {
   if (!origin) return false;
 
+  const normalizedOrigin = origin.toLowerCase();
   return ALLOWED_ORIGINS.some((allowed) => {
     if (typeof allowed === 'string') {
-      return allowed === origin;
+      return allowed.toLowerCase() === normalizedOrigin;
     }
     // RegExp
     return allowed.test(origin);

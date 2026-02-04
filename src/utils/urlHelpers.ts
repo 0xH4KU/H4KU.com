@@ -2,6 +2,9 @@
  * Utilities for safely handling user-provided URLs (e.g., CMS/social links).
  */
 
+import { APP_ORIGIN } from '@/config/domains';
+import { ROUTE_SEGMENTS } from '@/config/routes';
+
 export interface SafeUrlInfo {
   href: string;
   isExternal: boolean;
@@ -48,7 +51,7 @@ export function getSafeUrl(
   }
 }
 
-const DEFAULT_APP_ORIGIN = 'https://H4KU.COM';
+const DEFAULT_APP_ORIGIN = APP_ORIGIN;
 
 const getAppOrigin = () => {
   if (typeof window !== 'undefined' && window.location?.origin) {
@@ -87,7 +90,8 @@ export const buildFolderUrl = (path: string[]) => {
     return buildAppUrl('/');
   }
   const folderPath = path.join('/');
-  return buildAppUrl(`/folder/${folderPath}`);
+  return buildAppUrl(`/${ROUTE_SEGMENTS.FOLDER}/${folderPath}`);
 };
 
-export const buildPageUrl = (pageId: string) => buildAppUrl(`/page/${pageId}`);
+export const buildPageUrl = (pageId: string) =>
+  buildAppUrl(`/${ROUTE_SEGMENTS.PAGE}/${pageId}`);

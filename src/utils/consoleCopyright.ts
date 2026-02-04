@@ -1,4 +1,6 @@
 import { getActiveFingerprint } from './fingerprint';
+import { APP_ORIGIN } from '@/config/domains';
+import { ROUTE_SEGMENTS } from '@/config/routes';
 import { secureClear, secureLog, secureWarn } from '@/utils/secureConsole';
 
 /**
@@ -111,7 +113,10 @@ export const displayConsoleCopyright = (): void => {
   // Contact info
   secureLog('%c📧 CONTACT:', styles.warning);
   secureLog('%c   Email: CONTACT@H4KU.COM', styles.info);
-  secureLog('%c   License: https://H4KU.COM/page/license', styles.license);
+  secureLog(
+    `%c   License: ${APP_ORIGIN}/${ROUTE_SEGMENTS.PAGE}/license`,
+    styles.license
+  );
 
   secureLog('');
 
