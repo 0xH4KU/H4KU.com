@@ -111,7 +111,7 @@ connect-src 'self' https://api.H4KU.COM ...
 
 ---
 
-### ~~8. [P1][Perf] 移除内联 CSS 变量的 unsafe-inline 依赖~~
+### 8. [P1][Perf] 移除内联 CSS 变量的 unsafe-inline 依赖
 
 **位置**: `public/_headers:8`
 
@@ -121,10 +121,12 @@ style-src 'self' 'unsafe-inline';
 
 **问题**: 削弱 CSP 安全性
 
+**状态**: 已回退 - 构建过程会内联 CSS bundle，其 hash 在每次构建时变化，使用静态 hash 不可行。需要在构建时动态生成 CSP hash 并注入。
+
 **方案**:
 
-1. 审计所有 `style=` 属性使用
-2. 改用 CSS class 或 CSS 变量
+1. 修改构建脚本，在内联 CSS 后计算其 sha256 hash
+2. 动态注入 hash 到 `_headers` 和 `index.html`
 3. 移除 `unsafe-inline`
 
 **验收**: CSP 不包含 `unsafe-inline`，页面正常渲染
