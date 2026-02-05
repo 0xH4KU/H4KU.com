@@ -41,7 +41,10 @@ const FocusTrapHarness: React.FC<HarnessProps> = ({
           {hasFocusableChildren ? (
             <>
               <button data-testid="first">First</button>
-              <button data-testid="initial" ref={withInitial ? initialRef : null}>
+              <button
+                data-testid="initial"
+                ref={withInitial ? initialRef : null}
+              >
                 Second
               </button>
               <button data-testid="last">Last</button>

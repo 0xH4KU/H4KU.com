@@ -172,7 +172,11 @@ export function useLocalStorage<T>(
         if (isCorrupted) {
           reportError(
             `[useLocalStorage] Corrupted storage event for key "${key}", resetting to fallback.`,
-            { scope: 'storage:event-corrupted', logMode: 'always', extra: { key } }
+            {
+              scope: 'storage:event-corrupted',
+              logMode: 'always',
+              extra: { key },
+            }
           );
           setStoredValue(initialValueRef.current);
           try {

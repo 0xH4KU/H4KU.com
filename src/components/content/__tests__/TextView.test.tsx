@@ -270,7 +270,9 @@ describe('TextView', () => {
 
       render(<TextView page={mockPage} onClose={mockOnClose} />);
 
-      const closeButton = screen.getByRole('button', { name: /close document/i });
+      const closeButton = screen.getByRole('button', {
+        name: /close document/i,
+      });
       expect(closeButton).toBeInTheDocument();
       expect(closeButton.tagName).toBe('BUTTON');
     });

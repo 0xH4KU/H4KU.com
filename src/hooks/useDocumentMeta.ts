@@ -53,7 +53,8 @@ export const useDocumentMeta = () => {
     };
 
     if (lightboxImage && lightboxImage.itemType === 'work') {
-      const title = normalizeText(lightboxImage.title) || lightboxImage.filename;
+      const title =
+        normalizeText(lightboxImage.title) || lightboxImage.filename;
       const description = buildDescription(
         lightboxImage.description,
         DEFAULT_META.description

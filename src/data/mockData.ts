@@ -268,7 +268,9 @@ const parsedPages: Page[] = pagesData.map(pageData => {
     content: pageData.content.trim(),
     folderId,
     ...(order !== undefined ? { order } : {}),
-    ...(pageData.hidden !== undefined ? { hidden: Boolean(pageData.hidden) } : {}),
+    ...(pageData.hidden !== undefined
+      ? { hidden: Boolean(pageData.hidden) }
+      : {}),
   };
 });
 
