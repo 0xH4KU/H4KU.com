@@ -276,7 +276,8 @@ describe('useCrosshair', () => {
     );
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'pointerdown',
-      expect.any(Function)
+      expect.any(Function),
+      { passive: true, capture: true }
     );
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'keydown',
@@ -323,7 +324,7 @@ describe('useCrosshair', () => {
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'pointerdown',
       expect.any(Function),
-      { passive: true }
+      { passive: true, capture: true }
     );
   });
 

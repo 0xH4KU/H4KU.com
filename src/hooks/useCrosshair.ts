@@ -155,15 +155,22 @@ export function useCrosshair() {
       setShowCrosshair(prev => !prev);
     };
 
+    const pointerListenerOptions = { passive: true, capture: true } as const;
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('pointerdown', handlePointerDown, {
-      passive: true,
-    });
+    window.addEventListener(
+      'pointerdown',
+      handlePointerDown,
+      pointerListenerOptions
+    );
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener(
+        'pointerdown',
+        handlePointerDown,
+        pointerListenerOptions
+      );
       window.removeEventListener('keydown', handleKeyDown);
       if (animationFrame !== null) {
         cancelAnimationFrame(animationFrame);
