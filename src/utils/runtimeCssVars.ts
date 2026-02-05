@@ -66,7 +66,7 @@ const findRuntimeRule = (): CSSStyleRule | null => {
   // Search from the end so we pick the last matching rule in cascade order.
   const sheets = Array.from(document.styleSheets);
   for (let i = sheets.length - 1; i >= 0; i -= 1) {
-    const sheet = sheets[i];
+    const sheet = sheets[i]!;
     let rules: CSSRuleList;
     try {
       rules = sheet.cssRules;
