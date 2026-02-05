@@ -110,6 +110,21 @@ describe('useCrosshair', () => {
     expect(result.current.mousePos).toEqual({ x: 420, y: 180 });
   });
 
+  it('should ignore pointer down events at 0,0', () => {
+    const { result } = renderHook(() => useCrosshair());
+    const initialPos = result.current.mousePos;
+
+    act(() => {
+      const pointerEvent = new PointerEvent('pointerdown', {
+        clientX: 0,
+        clientY: 0,
+      });
+      window.dispatchEvent(pointerEvent);
+    });
+
+    expect(result.current.mousePos).toEqual(initialPos);
+  });
+
   it('should use requestAnimationFrame for mouse move updates', () => {
     renderHook(() => useCrosshair());
 

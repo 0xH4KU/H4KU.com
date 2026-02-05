@@ -77,6 +77,10 @@ export function useCrosshair() {
       clientY: number;
       target: EventTarget | null;
     }) => {
+      if (event.clientX === 0 && event.clientY === 0) {
+        return;
+      }
+
       latestPointerRef.current = {
         x: event.clientX,
         y: event.clientY,
