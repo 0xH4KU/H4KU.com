@@ -29,7 +29,8 @@ describe('reportError', () => {
     expect(secureWarn).not.toHaveBeenCalled();
     expect(reportMonitoringError).toHaveBeenCalledTimes(1);
 
-    const [, , context] = reportMonitoringError.mock.calls[0];
+    const call = reportMonitoringError.mock.calls[0] ?? [];
+    const context = call[2];
     expect(context?.tags).toEqual({ env: 'test' });
   });
 
@@ -47,7 +48,8 @@ describe('reportError', () => {
       key: 'value',
     });
 
-    const [, , context] = reportMonitoringError.mock.calls[0];
+    const call = reportMonitoringError.mock.calls[0] ?? [];
+    const context = call[2];
     expect(context).toEqual({
       componentStack: 'stack',
       tags: { scope: 'storage', env: 'test' },
@@ -71,7 +73,8 @@ describe('reportError', () => {
   it('builds monitoring context without tags when only componentStack exists', () => {
     reportError('stacked', { logMode: 'always', componentStack: 'stack' });
 
-    const [, , context] = reportMonitoringError.mock.calls[0];
+    const call = reportMonitoringError.mock.calls[0] ?? [];
+    const context = call[2];
     expect(context).toEqual({ componentStack: 'stack' });
   });
 });

@@ -243,6 +243,18 @@
         overscroll-behavior-y: none;
       }
 
+      /* Force early font usage to validate preload (invisible placeholder). */
+      body::before {
+        content: '0';
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        font-family: 'ProFont';
+        font-weight: 400;
+      }
+
       #root {
         overflow: hidden;
         min-height: 100vh;
