@@ -7,6 +7,14 @@ import {
 } from '../urlHelpers';
 
 describe('urlHelpers', () => {
+  it('returns null for null, undefined, empty, and hash-only values', () => {
+    expect(getSafeUrl(null)).toBeNull();
+    expect(getSafeUrl(undefined)).toBeNull();
+    expect(getSafeUrl('')).toBeNull();
+    expect(getSafeUrl('#')).toBeNull();
+    expect(getSafeUrl('  ')).toBeNull();
+  });
+
   it('blocks unsafe protocols like javascript:', () => {
     expect(getSafeUrl('javascript:alert(1)')).toBeNull();
     expect(getSafeUrl('data:text/html;base64,abcd')).toBeNull();

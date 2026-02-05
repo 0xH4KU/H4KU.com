@@ -128,4 +128,40 @@ describe('updateDocumentMeta', () => {
       document.querySelector('link[rel="canonical"]')?.getAttribute('href')
     ).toBe('https://h4ku.com/about');
   });
+
+  it('uses ogTitle for twitterTitle when twitterTitle is not provided', () => {
+    const metaWithOgOnly = {
+      title: 'Base Title',
+      description: 'Base desc',
+      url: 'https://example.com',
+      image: 'https://example.com/image.png',
+      ogTitle: 'Custom OG Title',
+    };
+
+    updateDocumentMeta(metaWithOgOnly);
+
+    expect(
+      document
+        .querySelector('meta[name="twitter:title"]')
+        ?.getAttribute('content')
+    ).toBe('Custom OG Title');
+  });
+
+  it('uses ogDescription for twitterDescription when twitterDescription is not provided', () => {
+    const metaWithOgOnly = {
+      title: 'Base Title',
+      description: 'Base desc',
+      url: 'https://example.com',
+      image: 'https://example.com/image.png',
+      ogDescription: 'Custom OG Description',
+    };
+
+    updateDocumentMeta(metaWithOgOnly);
+
+    expect(
+      document
+        .querySelector('meta[name="twitter:description"]')
+        ?.getAttribute('content')
+    ).toBe('Custom OG Description');
+  });
 });

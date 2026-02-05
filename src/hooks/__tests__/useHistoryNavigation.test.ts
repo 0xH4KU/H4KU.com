@@ -99,4 +99,45 @@ describe('useHistoryNavigation', () => {
     expect(result.current.pathname).toBe('/next');
     vi.unstubAllEnvs();
   });
+
+  it('does not push when navigating to the same path without replace', () => {
+    const pushSpy = vi.spyOn(window.history, 'pushState');
+    const { result } = renderHook(() => useHistoryNavigation());
+
+    act(() => {
+      result.current.navigate('/same');
+    });
+    const initialCalls = pushSpy.mock.calls.length;
+
+    act(() => {
+      result.current.navigate('/same');
+    });
+
+    expect(pushSpy.mock.calls.length).toBe(initialCalls);
+    expect(result.current.pathname).toBe('/same');
+  });
+
+  it('applies BASE_URL root mapping correctly', () => {
+    vi.stubEnv('BASE_URL', '/base');
+    window.history.replaceState({}, '', '/base/');
+
+    const { result } = renderHook(() => useHistoryNavigation());
+
+    act(() => {
+      result.current.navigate('/');
+    });
+
+    expect(window.location.pathname).toBe('/base/');
+    vi.unstubAllEnvs();
+  });
+
+  it('normalizes empty path to /', () => {
+    const { result } = renderHook(() => useHistoryNavigation());
+
+    act(() => {
+      result.current.navigate('');
+    });
+
+    expect(result.current.pathname).toBe('/');
+  });
 });

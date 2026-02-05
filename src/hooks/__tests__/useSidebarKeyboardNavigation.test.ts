@@ -119,6 +119,18 @@ describe('useSidebarKeyboardNavigation', () => {
     });
 
     expect(setFocusedIndex).toHaveBeenCalledTimes(2);
+
+    // Verify the ArrowDown updater increments when not at end
+    const downUpdater = setFocusedIndex.mock.calls[0][0] as (prev: number) => number;
+    expect(downUpdater(0)).toBe(1);
+    // At the end, stays at same index
+    expect(downUpdater(items.length - 1)).toBe(items.length - 1);
+
+    // Verify the ArrowUp updater decrements when not at start
+    const upUpdater = setFocusedIndex.mock.calls[1][0] as (prev: number) => number;
+    expect(upUpdater(1)).toBe(0);
+    // At start, stays at 0
+    expect(upUpdater(0)).toBe(0);
   });
 
   it('invokes handleNavigate on Enter in normal mode', () => {
@@ -146,17 +158,29 @@ describe('useSidebarKeyboardNavigation', () => {
       sidebarResults: results,
       allVisibleItems: [],
     });
-    const { handleSearchResultSelect } = hookResult.result.current;
+    const { handleSearchResultSelect, setFocusedIndex } = hookResult.result.current;
 
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    });
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
     });
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     });
 
     expect(handleSearchResultSelect).toHaveBeenCalledTimes(1);
-    // 具體 index 行為由上層搜尋元件測試覆蓋
+
+    // Verify ArrowDown updater in search mode
+    const downUpdater = setFocusedIndex.mock.calls[0][0] as (prev: number) => number;
+    expect(downUpdater(0)).toBe(1);
+    expect(downUpdater(results.length - 1)).toBe(results.length - 1);
+
+    // Verify ArrowUp updater in search mode
+    const upUpdater = setFocusedIndex.mock.calls[1][0] as (prev: number) => number;
+    expect(upUpdater(1)).toBe(0);
+    expect(upUpdater(0)).toBe(0);
   });
 
   it('resets focus on Escape in search mode', () => {
@@ -201,5 +225,117 @@ describe('useSidebarKeyboardNavigation', () => {
     });
 
     expect(setFocusedIndex).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it('does not invoke handleSearchResultSelect when focusedIndex is negative in search mode', () => {
+    const results = [createFolderResult()];
+    const hookResult = renderHook(() => {
+      const handleSearchResultSelect = vi.fn();
+      const setFocusedIndex = vi.fn();
+
+      useSidebarKeyboardNavigation({
+        isSidebarOpen: true,
+        sidebarQuery: 'doc',
+        sidebarResults: results,
+        allVisibleItems: [],
+        focusedIndex: -1,
+        setFocusedIndex,
+        handleSearchResultSelect,
+        handleNavigate: vi.fn(),
+        sidebarElement,
+      });
+
+      return { handleSearchResultSelect };
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    });
+
+    expect(hookResult.result.current.handleSearchResultSelect).not.toHaveBeenCalled();
+  });
+
+  it('does not invoke handleNavigate when focusedIndex is negative in normal mode', () => {
+    const items: SidebarEntry[] = [createFolder()];
+    const hookResult = renderHook(() => {
+      const handleNavigate = vi.fn();
+      const setFocusedIndex = vi.fn();
+
+      useSidebarKeyboardNavigation({
+        isSidebarOpen: true,
+        sidebarQuery: '',
+        sidebarResults: [],
+        allVisibleItems: items,
+        focusedIndex: -1,
+        setFocusedIndex,
+        handleSearchResultSelect: vi.fn(),
+        handleNavigate,
+        sidebarElement,
+      });
+
+      return { handleNavigate };
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    });
+
+    expect(hookResult.result.current.handleNavigate).not.toHaveBeenCalled();
+  });
+
+  it('does not invoke handleSearchResultSelect when result is undefined in search mode', () => {
+    const results = [createFolderResult()];
+    const hookResult = renderHook(() => {
+      const handleSearchResultSelect = vi.fn();
+      const setFocusedIndex = vi.fn();
+
+      useSidebarKeyboardNavigation({
+        isSidebarOpen: true,
+        sidebarQuery: 'doc',
+        sidebarResults: results,
+        allVisibleItems: [],
+        focusedIndex: 99, // out of bounds
+        setFocusedIndex,
+        handleSearchResultSelect,
+        handleNavigate: vi.fn(),
+        sidebarElement,
+      });
+
+      return { handleSearchResultSelect };
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    });
+
+    expect(hookResult.result.current.handleSearchResultSelect).not.toHaveBeenCalled();
+  });
+
+  it('does not invoke handleNavigate when item is undefined in normal mode', () => {
+    const items: SidebarEntry[] = [createFolder()];
+    const hookResult = renderHook(() => {
+      const handleNavigate = vi.fn();
+      const setFocusedIndex = vi.fn();
+
+      useSidebarKeyboardNavigation({
+        isSidebarOpen: true,
+        sidebarQuery: '',
+        sidebarResults: [],
+        allVisibleItems: items,
+        focusedIndex: 99, // out of bounds
+        setFocusedIndex,
+        handleSearchResultSelect: vi.fn(),
+        handleNavigate,
+        sidebarElement,
+      });
+
+      return { handleNavigate };
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    });
+
+    expect(hookResult.result.current.handleNavigate).not.toHaveBeenCalled();
   });
 });

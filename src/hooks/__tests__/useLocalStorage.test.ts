@@ -233,4 +233,49 @@ describe('useLocalStorage', () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+  it('should sanitize boolean values from storage', () => {
+    localStorage.setItem('bool-key', JSON.stringify(true));
+
+    const { result } = renderHook(() => useLocalStorage('bool-key', false));
+
+    expect(result.current[0]).toBe(true);
+  });
+
+  it('should fallback boolean when stored value is not boolean', () => {
+    localStorage.setItem('bool-key', JSON.stringify('not-a-boolean'));
+
+    const { result } = renderHook(() => useLocalStorage('bool-key', false));
+
+    expect(result.current[0]).toBe(false);
+  });
+
+  it('should handle removeItem failure during corrupted storage event cleanup', () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const originalRemoveItem = localStorage.removeItem;
+    localStorage.removeItem = vi.fn(() => {
+      throw new DOMException('SecurityError');
+    });
+
+    const { result } = renderHook(() =>
+      useLocalStorage('fail-cleanup', 'initial')
+    );
+
+    act(() => {
+      const storageEvent = new Event('storage');
+      Object.defineProperty(storageEvent, 'key', { value: 'fail-cleanup' });
+      Object.defineProperty(storageEvent, 'newValue', {
+        value: 'invalid JSON {]',
+      });
+      window.dispatchEvent(storageEvent);
+    });
+
+    expect(result.current[0]).toBe('initial');
+
+    localStorage.removeItem = originalRemoveItem;
+    consoleErrorSpy.mockRestore();
+  });
 });

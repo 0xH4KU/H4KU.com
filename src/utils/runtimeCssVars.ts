@@ -12,9 +12,7 @@ const matchesRuntimeSelector = (selectorText: string): boolean => {
     .includes(RUNTIME_VARS_SELECTOR);
 };
 
-const findRuntimeRuleInRules = (
-  rules: CSSRuleList
-): CSSStyleRule | null => {
+const findRuntimeRuleInRules = (rules: CSSRuleList): CSSStyleRule | null => {
   for (const rule of Array.from(rules)) {
     if (rule.type === CSSRule.STYLE_RULE) {
       const styleRule = rule as CSSStyleRule;
@@ -24,8 +22,7 @@ const findRuntimeRuleInRules = (
       continue;
     }
 
-    const nestedRules = (rule as CSSRule & { cssRules?: CSSRuleList })
-      .cssRules;
+    const nestedRules = (rule as CSSRule & { cssRules?: CSSRuleList }).cssRules;
     if (nestedRules) {
       const nestedMatch = findRuntimeRuleInRules(nestedRules);
       if (nestedMatch) {

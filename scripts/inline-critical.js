@@ -229,6 +229,9 @@ const run = () => {
 
   let html = read(INDEX_PATH);
 
+  // Collect hashes from existing inline styles (e.g., critical CSS with @font-face)
+  const existingStyleHashes = collectExistingStyleHashes(html);
+
   const cssResult = inlineMainCss(html);
   html = cssResult.html;
 
@@ -239,30 +242,25 @@ const run = () => {
   html = addSelectiveModulePreloads(html);
   html = addCssPreloads(html);
 
-  // Write HTML first (without CSP hash updates)
-  write(INDEX_PATH, html);
-
-  // Re-read the written HTML and calculate hashes from actual file content
-  // This ensures hashes match exactly what the browser will see
-  const finalHtml = read(INDEX_PATH);
-  const finalStyleHashes = [
-    ...collectExistingStyleHashes(finalHtml),
+  // Combine all style hashes: existing critical CSS + bundled CSS
+  const allStyleHashes = [
+    ...existingStyleHashes,
     cssResult.hash,
   ].filter(Boolean);
 
-  const finalCspHashes = {
+  const cspHashes = {
     scriptHash: themeHash,
-    styleHashes: finalStyleHashes,
+    styleHashes: allStyleHashes,
   };
 
-  // Update both HTML meta CSP and _headers with correct hashes
-  const htmlWithCorrectCsp = updateCspMeta(finalHtml, finalCspHashes);
-  write(INDEX_PATH, htmlWithCorrectCsp);
-  updateHeadersFile(finalCspHashes);
+  html = updateCspMeta(html, cspHashes);
+
+  write(INDEX_PATH, html);
+  updateHeadersFile(cspHashes);
 
   const messages = [];
   if (cssResult.inlined) messages.push('inline css');
-  if (finalStyleHashes.length) messages.push(`${finalStyleHashes.length} style hashes injected`);
+  if (allStyleHashes.length) messages.push(`${allStyleHashes.length} style hashes injected`);
   if (themeHash) messages.push('inline theme-init');
   console.log(
     `Post-build optimization complete: ${messages.length ? messages.join(', ') : 'no changes'}`

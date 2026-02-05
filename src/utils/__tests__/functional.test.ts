@@ -174,6 +174,39 @@ describe('functional utilities', () => {
         );
         expect(result).toBe('apple, banana, or cherry');
       });
+
+      it('falls back to manual formatting when Intl.ListFormat is unavailable', () => {
+        const original = globalThis.Intl;
+        // @ts-expect-error — removing Intl to test fallback
+        globalThis.Intl = undefined;
+
+        try {
+          expect(formatList(['a', 'b'])).toBe('a and b');
+          expect(formatList(['a', 'b'], 'en', 'disjunction')).toBe('a or b');
+          expect(formatList(['a', 'b', 'c'])).toBe('a, b, and c');
+          expect(formatList(['a', 'b', 'c'], 'en', 'disjunction')).toBe(
+            'a, b, or c'
+          );
+        } finally {
+          globalThis.Intl = original;
+        }
+      });
+
+      it('falls back to manual formatting when Intl.ListFormat.format throws', () => {
+        const OriginalListFormat = Intl.ListFormat;
+        // @ts-expect-error — mocking ListFormat to throw
+        Intl.ListFormat = class {
+          format() {
+            throw new Error('format failed');
+          }
+        };
+
+        try {
+          expect(formatList(['x', 'y', 'z'])).toBe('x, y, and z');
+        } finally {
+          Intl.ListFormat = OriginalListFormat;
+        }
+      });
     });
 
     describe('capitalize', () => {
@@ -223,6 +256,15 @@ describe('functional utilities', () => {
 
       it('handles already camelCase', () => {
         expect(toCamelCase('helloWorld')).toBe('helloWorld');
+      });
+
+      it('handles trailing delimiters with no following char', () => {
+        expect(toCamelCase('hello-')).toBe('hello');
+        expect(toCamelCase('hello_')).toBe('hello');
+      });
+
+      it('lowercases leading uppercase', () => {
+        expect(toCamelCase('Hello-world')).toBe('helloWorld');
       });
     });
   });

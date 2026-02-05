@@ -71,4 +71,69 @@ describe('runtimeCssVars', () => {
 
     expect(rule.style.getPropertyValue('--vh')).toBe('12px');
   });
+
+  it('falls back to documentElement when setProperty throws on the rule', () => {
+    const rule = mountRuntimeVarsRule();
+    const original = rule.style.setProperty.bind(rule.style);
+    let callCount = 0;
+
+    rule.style.setProperty = (...args: Parameters<CSSStyleDeclaration['setProperty']>) => {
+      callCount++;
+      // Let the first call (cache-priming) succeed, then throw
+      if (callCount > 1) {
+        throw new Error('setProperty failed');
+      }
+      return original(...args);
+    };
+
+    // First call primes the cache
+    setRuntimeCssVar('--a', '1');
+    // Second call should throw and fall back to documentElement
+    setRuntimeCssVar('--b', '2');
+
+    expect(document.documentElement.style.getPropertyValue('--b')).toBe('2');
+  });
+
+  it('falls back to documentElement when setProperty throws in batch mode', () => {
+    const rule = mountRuntimeVarsRule();
+    const original = rule.style.setProperty.bind(rule.style);
+    let callCount = 0;
+
+    rule.style.setProperty = (...args: Parameters<CSSStyleDeclaration['setProperty']>) => {
+      callCount++;
+      if (callCount > 1) {
+        throw new Error('setProperty failed');
+      }
+      return original(...args);
+    };
+
+    // First call primes the cache
+    setRuntimeCssVar('--prime', '0');
+    // Batch call — the first entry should throw and fall back
+    setRuntimeCssVars({ '--x': '10', '--y': '20' });
+
+    expect(document.documentElement.style.getPropertyValue('--x')).toBe('10');
+  });
+
+  it('no-ops when documentElement is null in fallback path', () => {
+    const originalDocumentElement = Object.getOwnPropertyDescriptor(
+      Document.prototype,
+      'documentElement'
+    );
+
+    // Mock documentElement to return null
+    Object.defineProperty(document, 'documentElement', {
+      value: null,
+      configurable: true,
+    });
+
+    // No rule mounted, will attempt fallback to documentElement which is null
+    expect(() => setRuntimeCssVar('--test', 'value')).not.toThrow();
+    expect(() => setRuntimeCssVars({ '--test2': 'value2' })).not.toThrow();
+
+    // Restore
+    if (originalDocumentElement) {
+      Object.defineProperty(document, 'documentElement', originalDocumentElement);
+    }
+  });
 });
