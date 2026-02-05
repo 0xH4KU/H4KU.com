@@ -4,7 +4,6 @@
  * Post-build optimizer
  *
  * - Inline tiny, render-blocking assets (theme-init.js, main CSS) into index.html
- * - Add preload hint for the main JS bundle
  * - Update CSP (index + _headers) with hashes that allow the inlined theme script and CSS
  */
 
@@ -86,43 +85,6 @@ const inlineMainCss = html => {
   const nextHtml = html.replace(cssMatch[0], styleTag);
 
   return { html: nextHtml, hash, inlined: true };
-};
-
-const addMainPreload = html => {
-  const scriptMatch =
-    /<script\s+type=["']module["']\s+[^>]*src=["']([^"']*main-[^"']+\.js)["']([^>]*)><\/script>/i.exec(
-      html
-    );
-
-  if (!scriptMatch) {
-    return { html, updated: false };
-  }
-
-  const [fullTag, src, tailAttrs] = scriptMatch;
-  const hasCrossorigin = /crossorigin/i.test(tailAttrs);
-  const preload = `<link rel="preload" href="${src}" as="script"${
-    hasCrossorigin ? ' crossorigin' : ''
-  } fetchpriority="high">`;
-
-  const alreadyHasPreload = html.includes(preload);
-
-  const needsDefer = !/defer/i.test(fullTag);
-  const withDefer = needsDefer
-    ? fullTag.replace('<script ', '<script defer ')
-    : fullTag;
-  const newScriptTag = /fetchpriority=/i.test(withDefer)
-    ? withDefer
-    : withDefer.replace('<script ', '<script fetchpriority="high" ');
-
-  let replacement = newScriptTag;
-  if (!alreadyHasPreload) {
-    replacement = `${preload}\n    ${newScriptTag}`;
-  }
-
-  return {
-    html: html.replace(fullTag, replacement),
-    updated: true,
-  };
 };
 
 const stripModulePreloads = html => {
@@ -274,9 +236,6 @@ const run = () => {
   const { html: htmlWithTheme, hash: themeHash } = inlineThemeInit(html);
   html = htmlWithTheme;
 
-  const preloadResult = addMainPreload(html);
-  html = preloadResult.html;
-
   html = stripModulePreloads(html);
   html = addSelectiveModulePreloads(html);
   html = addCssPreloads(html);
@@ -301,8 +260,6 @@ const run = () => {
   if (cssResult.inlined) messages.push('inline css');
   if (allStyleHashes.length) messages.push(`${allStyleHashes.length} style hashes injected`);
   if (themeHash) messages.push('inline theme-init');
-  if (preloadResult.updated) messages.push('preload main bundle');
-
   console.log(
     `Post-build optimization complete: ${messages.length ? messages.join(', ') : 'no changes'}`
   );
