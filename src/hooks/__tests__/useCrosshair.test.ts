@@ -96,6 +96,20 @@ describe('useCrosshair', () => {
     expect(result.current.mousePos).toEqual({ x: 300, y: 200 });
   });
 
+  it('should update mouse position on pointer down', () => {
+    const { result } = renderHook(() => useCrosshair());
+
+    act(() => {
+      const pointerEvent = new PointerEvent('pointerdown', {
+        clientX: 420,
+        clientY: 180,
+      });
+      window.dispatchEvent(pointerEvent);
+    });
+
+    expect(result.current.mousePos).toEqual({ x: 420, y: 180 });
+  });
+
   it('should use requestAnimationFrame for mouse move updates', () => {
     renderHook(() => useCrosshair());
 
@@ -261,6 +275,10 @@ describe('useCrosshair', () => {
       expect.any(Function)
     );
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'pointerdown',
+      expect.any(Function)
+    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'keydown',
       expect.any(Function)
     );
@@ -299,6 +317,11 @@ describe('useCrosshair', () => {
 
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'mousemove',
+      expect.any(Function),
+      { passive: true }
+    );
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      'pointerdown',
       expect.any(Function),
       { passive: true }
     );

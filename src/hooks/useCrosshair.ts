@@ -72,7 +72,11 @@ export function useCrosshair() {
 
     let animationFrame: number | null = null;
 
-    const handleMouseMove = (event: MouseEvent) => {
+    const updatePointerState = (event: {
+      clientX: number;
+      clientY: number;
+      target: EventTarget | null;
+    }) => {
       latestPointerRef.current = {
         x: event.clientX,
         y: event.clientY,
@@ -106,6 +110,14 @@ export function useCrosshair() {
         setMousePos(latestPointerRef.current);
         animationFrame = null;
       });
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      updatePointerState(event);
+    };
+
+    const handlePointerDown = (event: PointerEvent) => {
+      updatePointerState(event);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -144,10 +156,14 @@ export function useCrosshair() {
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('pointerdown', handlePointerDown, {
+      passive: true,
+    });
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
       if (animationFrame !== null) {
         cancelAnimationFrame(animationFrame);
