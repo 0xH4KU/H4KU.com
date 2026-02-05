@@ -193,18 +193,15 @@ describe('functional utilities', () => {
       });
 
       it('falls back to manual formatting when Intl.ListFormat.format throws', () => {
-        const OriginalListFormat = Intl.ListFormat;
-        // @ts-expect-error — mocking ListFormat to throw
-        Intl.ListFormat = class {
-          format() {
-            throw new Error('format failed');
-          }
+        const originalFormat = Intl.ListFormat.prototype.format;
+        Intl.ListFormat.prototype.format = () => {
+          throw new Error('format failed');
         };
 
         try {
           expect(formatList(['x', 'y', 'z'])).toBe('x, y, and z');
         } finally {
-          Intl.ListFormat = OriginalListFormat;
+          Intl.ListFormat.prototype.format = originalFormat;
         }
       });
     });

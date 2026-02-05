@@ -103,12 +103,12 @@
       "brotli": false,
       "gzip": false
     },
-    {
-      "name": "animation-vendor",
-      "path": "dist/assets/anim-*.js",
-      "limit": "100 KB",
-      "brotli": false,
-      "gzip": false
-    }
+  {
+    "name": "monitoring-vendor",
+    "path": "dist/assets/mon-*.js",
+    "limit": "420 KB",
+    "brotli": false,
+    "gzip": false
+  }
   ]
 }

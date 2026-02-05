@@ -77,7 +77,9 @@ describe('runtimeCssVars', () => {
     const original = rule.style.setProperty.bind(rule.style);
     let callCount = 0;
 
-    rule.style.setProperty = (...args: Parameters<CSSStyleDeclaration['setProperty']>) => {
+    rule.style.setProperty = (
+      ...args: Parameters<CSSStyleDeclaration['setProperty']>
+    ) => {
       callCount++;
       // Let the first call (cache-priming) succeed, then throw
       if (callCount > 1) {
@@ -99,7 +101,9 @@ describe('runtimeCssVars', () => {
     const original = rule.style.setProperty.bind(rule.style);
     let callCount = 0;
 
-    rule.style.setProperty = (...args: Parameters<CSSStyleDeclaration['setProperty']>) => {
+    rule.style.setProperty = (
+      ...args: Parameters<CSSStyleDeclaration['setProperty']>
+    ) => {
       callCount++;
       if (callCount > 1) {
         throw new Error('setProperty failed');
@@ -133,7 +137,11 @@ describe('runtimeCssVars', () => {
 
     // Restore
     if (originalDocumentElement) {
-      Object.defineProperty(document, 'documentElement', originalDocumentElement);
+      Object.defineProperty(
+        document,
+        'documentElement',
+        originalDocumentElement
+      );
     }
   });
 });

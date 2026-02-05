@@ -121,13 +121,21 @@ describe('useSidebarKeyboardNavigation', () => {
     expect(setFocusedIndex).toHaveBeenCalledTimes(2);
 
     // Verify the ArrowDown updater increments when not at end
-    const downUpdater = setFocusedIndex.mock.calls[0][0] as (prev: number) => number;
+    const downCall = setFocusedIndex.mock.calls[0];
+    if (!downCall) {
+      throw new Error('Expected ArrowDown to call setFocusedIndex');
+    }
+    const downUpdater = downCall[0] as (prev: number) => number;
     expect(downUpdater(0)).toBe(1);
     // At the end, stays at same index
     expect(downUpdater(items.length - 1)).toBe(items.length - 1);
 
     // Verify the ArrowUp updater decrements when not at start
-    const upUpdater = setFocusedIndex.mock.calls[1][0] as (prev: number) => number;
+    const upCall = setFocusedIndex.mock.calls[1];
+    if (!upCall) {
+      throw new Error('Expected ArrowUp to call setFocusedIndex');
+    }
+    const upUpdater = upCall[0] as (prev: number) => number;
     expect(upUpdater(1)).toBe(0);
     // At start, stays at 0
     expect(upUpdater(0)).toBe(0);
@@ -158,7 +166,8 @@ describe('useSidebarKeyboardNavigation', () => {
       sidebarResults: results,
       allVisibleItems: [],
     });
-    const { handleSearchResultSelect, setFocusedIndex } = hookResult.result.current;
+    const { handleSearchResultSelect, setFocusedIndex } =
+      hookResult.result.current;
 
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
@@ -173,12 +182,20 @@ describe('useSidebarKeyboardNavigation', () => {
     expect(handleSearchResultSelect).toHaveBeenCalledTimes(1);
 
     // Verify ArrowDown updater in search mode
-    const downUpdater = setFocusedIndex.mock.calls[0][0] as (prev: number) => number;
+    const downCall = setFocusedIndex.mock.calls[0];
+    if (!downCall) {
+      throw new Error('Expected ArrowDown to call setFocusedIndex');
+    }
+    const downUpdater = downCall[0] as (prev: number) => number;
     expect(downUpdater(0)).toBe(1);
     expect(downUpdater(results.length - 1)).toBe(results.length - 1);
 
     // Verify ArrowUp updater in search mode
-    const upUpdater = setFocusedIndex.mock.calls[1][0] as (prev: number) => number;
+    const upCall = setFocusedIndex.mock.calls[1];
+    if (!upCall) {
+      throw new Error('Expected ArrowUp to call setFocusedIndex');
+    }
+    const upUpdater = upCall[0] as (prev: number) => number;
     expect(upUpdater(1)).toBe(0);
     expect(upUpdater(0)).toBe(0);
   });
@@ -252,7 +269,9 @@ describe('useSidebarKeyboardNavigation', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     });
 
-    expect(hookResult.result.current.handleSearchResultSelect).not.toHaveBeenCalled();
+    expect(
+      hookResult.result.current.handleSearchResultSelect
+    ).not.toHaveBeenCalled();
   });
 
   it('does not invoke handleNavigate when focusedIndex is negative in normal mode', () => {
@@ -308,7 +327,9 @@ describe('useSidebarKeyboardNavigation', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     });
 
-    expect(hookResult.result.current.handleSearchResultSelect).not.toHaveBeenCalled();
+    expect(
+      hookResult.result.current.handleSearchResultSelect
+    ).not.toHaveBeenCalled();
   });
 
   it('does not invoke handleNavigate when item is undefined in normal mode', () => {
