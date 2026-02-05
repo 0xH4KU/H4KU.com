@@ -244,15 +244,19 @@
       }
 
       /* Force early font usage to validate preload (invisible placeholder). */
-      body::before {
-        content: '0';
+      .font-preload {
         position: absolute;
-        width: 0;
-        height: 0;
+        left: -9999px;
+        top: 0;
+        width: 1px;
+        height: 1px;
         overflow: hidden;
-        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
         font-family: 'ProFont';
         font-weight: 400;
+        font-size: 16px;
+        line-height: 1;
       }
 
       #root {
@@ -290,6 +294,7 @@
     </style>
   </head>
   <body>
+    <span class="font-preload" aria-hidden="true">A</span>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
