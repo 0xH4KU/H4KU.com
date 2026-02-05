@@ -5,7 +5,7 @@
  *
  * - Inline tiny, render-blocking assets (theme-init.js, main CSS) into index.html
  * - Add preload hint for the main JS bundle
- * - Update CSP (index + _headers) with a hash that allows the inlined theme script
+ * - Update CSP (index + _headers) with hashes that allow the inlined theme script and CSS
  */
 
 import crypto from 'node:crypto';
@@ -25,6 +25,9 @@ const read = filePath => fs.readFileSync(filePath, 'utf8');
 const write = (filePath, content) =>
   fs.writeFileSync(filePath, content, 'utf8');
 
+const computeHash = content =>
+  `sha256-${crypto.createHash('sha256').update(content).digest('base64')}`;
+
 const ensureDistAssets = () => {
   if (!fs.existsSync(INDEX_PATH)) {
     throw new Error('dist/index.html not found. Run the Vite build step first.');
@@ -39,10 +42,7 @@ const inlineThemeInit = html => {
 
   if (inlineMatch) {
     const rawInline = inlineMatch[1].trim();
-    const hash = `sha256-${crypto
-      .createHash('sha256')
-      .update(rawInline)
-      .digest('base64')}`;
+    const hash = computeHash(rawInline);
     return { html, hash, inlined: false };
   }
 
@@ -57,10 +57,7 @@ const inlineThemeInit = html => {
   }
 
   const rawScript = read(THEME_INIT_PATH).trim();
-  const hash = `sha256-${crypto
-    .createHash('sha256')
-    .update(rawScript)
-    .digest('base64')}`;
+  const hash = computeHash(rawScript);
 
   const inlineTag = `<script id="theme-init-inline" data-inline="true">${rawScript}</script>`;
   const nextHtml = html.replace(scriptMatch[0], inlineTag);
@@ -74,20 +71,21 @@ const inlineMainCss = html => {
       html
     );
   if (!cssMatch) {
-    return { html, inlined: false };
+    return { html, hash: null, inlined: false };
   }
 
   const cssHref = cssMatch[1];
   const cssPath = path.join(DIST_DIR, cssHref.replace(/^\//, ''));
   if (!fs.existsSync(cssPath)) {
-    return { html, inlined: false };
+    return { html, hash: null, inlined: false };
   }
 
   const cssContent = read(cssPath).trim();
+  const hash = computeHash(cssContent);
   const styleTag = `<style data-inline="bundle">${cssContent}</style>`;
   const nextHtml = html.replace(cssMatch[0], styleTag);
 
-  return { html: nextHtml, inlined: true };
+  return { html: nextHtml, hash, inlined: true };
 };
 
 const addMainPreload = html => {
@@ -177,7 +175,7 @@ const addCssPreloads = html => {
   return html.replace(marker, `${marker}\n    ${links}`);
 };
 
-const injectHashIntoCsp = (policy, hash) => {
+const injectScriptHashIntoCsp = (policy, hash) => {
   if (!hash) return policy;
   if (policy.includes(hash)) return policy;
 
@@ -187,25 +185,49 @@ const injectHashIntoCsp = (policy, hash) => {
   return policy.replace(needle, `${needle} '${hash}'`);
 };
 
-const updateCspMeta = (html, hash) => {
-  if (!hash) return html;
+const injectStyleHashIntoCsp = (policy, hash) => {
+  if (!hash) return policy;
+  if (policy.includes(hash)) return policy;
 
+  // Replace 'unsafe-inline' with the specific hash for better security
+  const unsafeInlinePattern = /style-src\s+'self'\s+'unsafe-inline'/;
+  if (unsafeInlinePattern.test(policy)) {
+    return policy.replace(unsafeInlinePattern, `style-src 'self' '${hash}'`);
+  }
+
+  // If no unsafe-inline, just add the hash after 'self'
+  const styleSrcPattern = /style-src\s+'self'/;
+  if (styleSrcPattern.test(policy)) {
+    return policy.replace(styleSrcPattern, `style-src 'self' '${hash}'`);
+  }
+
+  return policy;
+};
+
+const updateCspPolicy = (policy, { scriptHash, styleHash }) => {
+  let updated = policy;
+  updated = injectScriptHashIntoCsp(updated, scriptHash);
+  updated = injectStyleHashIntoCsp(updated, styleHash);
+  return updated;
+};
+
+const updateCspMeta = (html, hashes) => {
   return html.replace(
     /(<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]+content=["'])([^"]+)(["'][^>]*>)/i,
     (_, prefix, content, suffix) =>
-      `${prefix}${injectHashIntoCsp(content, hash)}${suffix}`
+      `${prefix}${updateCspPolicy(content, hashes)}${suffix}`
   );
 };
 
-const updateHeadersFile = (hash, headersPath = HEADERS_PATH) => {
-  if (!hash || !fs.existsSync(headersPath)) {
+const updateHeadersFile = (hashes, headersPath = HEADERS_PATH) => {
+  if (!fs.existsSync(headersPath)) {
     return;
   }
 
   const content = read(headersPath);
   const updated = content.replace(
     /(Content-Security-Policy:\s*)([^\n]+)/,
-    (_, prefix, policy) => `${prefix}${injectHashIntoCsp(policy, hash)}`
+    (_, prefix, policy) => `${prefix}${updateCspPolicy(policy, hashes)}`
   );
 
   write(headersPath, updated);
@@ -229,13 +251,19 @@ const run = () => {
   html = addSelectiveModulePreloads(html);
   html = addCssPreloads(html);
 
-  html = updateCspMeta(html, themeHash);
+  const cspHashes = {
+    scriptHash: themeHash,
+    styleHash: cssResult.hash,
+  };
+
+  html = updateCspMeta(html, cspHashes);
 
   write(INDEX_PATH, html);
-  updateHeadersFile(themeHash);
+  updateHeadersFile(cspHashes);
 
   const messages = [];
   if (cssResult.inlined) messages.push('inline css');
+  if (cssResult.hash) messages.push('css hash injected');
   if (themeHash) messages.push('inline theme-init');
   if (preloadResult.updated) messages.push('preload main bundle');
 

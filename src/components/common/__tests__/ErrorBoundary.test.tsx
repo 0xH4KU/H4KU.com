@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ErrorBoundary } from '../ErrorBoundary';
 
-// Mock the monitoring service
-vi.mock('@/services/monitoring', () => ({
+// Mock the reportError utility
+vi.mock('@/utils/reportError', () => ({
   reportError: vi.fn(),
 }));
 
@@ -124,8 +124,8 @@ describe('ErrorBoundary', () => {
       );
     });
 
-    it('reports error to monitoring service', async () => {
-      const { reportError } = await import('@/services/monitoring');
+    it('reports error to reportError utility', async () => {
+      const { reportError } = await import('@/utils/reportError');
 
       render(
         <ErrorBoundary>
@@ -135,8 +135,8 @@ describe('ErrorBoundary', () => {
 
       expect(reportError).toHaveBeenCalledWith(
         expect.any(Error),
-        expect.any(Object),
         expect.objectContaining({
+          scope: 'error-boundary',
           tags: expect.objectContaining({
             referenceId: expect.any(String),
           }),

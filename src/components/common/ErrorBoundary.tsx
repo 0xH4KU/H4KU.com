@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { reportError } from '@/services/monitoring';
+import { reportError } from '@/utils/reportError';
 import styles from './ErrorBoundary.module.css';
 
 interface Props {
@@ -51,10 +51,10 @@ export class ErrorBoundary extends Component<Props, State> {
       copyStatus: 'idle',
     });
 
-    reportError(error, errorInfo, {
-      ...(errorInfo.componentStack
-        ? { componentStack: errorInfo.componentStack }
-        : {}),
+    reportError(error, {
+      scope: 'error-boundary',
+      info: errorInfo,
+      componentStack: errorInfo.componentStack ?? undefined,
       tags: { referenceId },
       extra: { timestamp },
     });

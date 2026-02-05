@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import {
   ContentView,
   Crosshair,
@@ -26,13 +26,13 @@ const SearchPanelLazy = lazy(() => import('@/components/layout/SearchPanel'));
 const AppContent: React.FC = () => {
   const { isSidebarOpen, closeSidebar } = useSidebarContext();
   const { width } = useWindowSize();
-  const domainCheckRef = useRef<DomainCheckResult>({
-    isAllowed: true,
-    currentDomain: '',
-    shouldBlock: false,
+  const [securityState, setSecurityState] = useState<{
+    domainCheck: DomainCheckResult;
+    allowedDomains: string[];
+  }>({
+    domainCheck: { isAllowed: true, currentDomain: '', shouldBlock: false },
+    allowedDomains: [],
   });
-  const allowedDomainsRef = useRef<string[]>([]);
-  const [, forceSecurityRerender] = useState(0);
   const prefersReducedMotion = useReducedMotion();
   useDocumentMeta();
 
@@ -60,9 +60,10 @@ const AppContent: React.FC = () => {
         const result = verifyDomain();
         if (cancelled) return;
 
-        domainCheckRef.current = result;
-        allowedDomainsRef.current = getAllowedDomains();
-        forceSecurityRerender(version => version + 1);
+        setSecurityState({
+          domainCheck: result,
+          allowedDomains: getAllowedDomains(),
+        });
         logDomainVerification(result);
         injectAllFingerprints();
 
@@ -125,8 +126,7 @@ const AppContent: React.FC = () => {
     };
   }, [showOverlay]);
 
-  const domainCheckResult = domainCheckRef.current;
-  const allowedDomains = allowedDomainsRef.current;
+  const { domainCheck: domainCheckResult, allowedDomains } = securityState;
 
   return (
     <div

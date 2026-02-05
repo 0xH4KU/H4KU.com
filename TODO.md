@@ -111,7 +111,7 @@ connect-src 'self' https://api.H4KU.COM ...
 
 ---
 
-### 8. [P1][Perf] 移除内联 CSS 变量的 unsafe-inline 依赖
+### ~~8. [P1][Perf] 移除内联 CSS 变量的 unsafe-inline 依赖~~
 
 **位置**: `public/_headers:8`
 
@@ -120,8 +120,6 @@ style-src 'self' 'unsafe-inline';
 ```
 
 **问题**: 削弱 CSP 安全性
-
-**状态**: 已回退 - 构建过程会内联 CSS bundle，其 hash 在每次构建时变化，使用静态 hash 不可行。需要在构建时动态生成 CSP hash 并注入。
 
 **方案**:
 
@@ -221,7 +219,7 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
-### 21. [P2][DX] 统一 reportError API
+### ~~21. [P2][DX] 统一 reportError API~~
 
 **位置**: `src/components/common/ErrorBoundary.tsx` vs `src/utils/reportError.ts`
 
@@ -243,7 +241,7 @@ reportError(error, { scope, level, logMode, extra });
 
 ---
 
-### 22. [P2][Arch] 审视 App.tsx 状态管理技巧
+### ~~22. [P2][Arch] 审视 App.tsx 状态管理技巧~~
 
 **位置**: `src/App.tsx`
 
@@ -330,7 +328,7 @@ Crawl-delay: 1
 
 ---
 
-### 23. [P3][Type] mockData 结构语义变更
+### ~~23. [P3][Type] mockData 结构语义变更~~
 
 **位置**: `src/data/mockData.ts`
 
@@ -392,8 +390,8 @@ npm run test:e2e
 | 优先级 | 任务数 | 已完成 | 待处理 |
 | ------ | ------ | ------ | ------ |
 | P0     | 5      | 5      | 0      |
-| P1     | 5      | 4      | 1      |
-| P2     | 7      | 5      | 2      |
-| P3     | 6      | 5      | 1      |
+| P1     | 5      | 5      | 0      |
+| P2     | 7      | 7      | 0      |
+| P3     | 6      | 6      | 0      |
 
-**建议执行顺序**: P1 #8 -> P2 #21, #22 -> P3 #23
+**全部完成**
