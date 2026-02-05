@@ -6,7 +6,7 @@ _Testing philosophy, tooling, and expectations for H4KU.COM._
 
 - **Runner**: Vitest 4 (jsdom)
 - **Library**: React Testing Library (`@testing-library/react` + `@testing-library/user-event`)
-- **Suite size**: ~49 specs (45 unit/integration, 4 Playwright E2E) as of January 2026
+- **Suite size**: 48 test files with ~600 specs (unit/integration), 4 Playwright E2E as of February 2026
 - **Coverage**: 90% global thresholds (lines/functions/statements), 85% branches
 - **E2E**: Playwright smoke suite (`npm run test:e2e`) covers contact two-step flow (Turnstile bypass token injected), global search, and mobile/desktop sidebar navigation.
 - **Philosophy**: test behaviours, not implementation details; keep suites fast and deterministic.
@@ -26,9 +26,11 @@ src/
 ├── hooks/
 │   ├── useLocalStorage.ts
 │   ├── useDeferredLoading.ts
+│   ├── useDocumentMeta.ts
 │   └── __tests__/
 │       ├── useLocalStorage.test.ts
-│       └── useDeferredLoading.test.ts
+│       ├── useDeferredLoading.test.ts
+│       └── useDocumentMeta.test.tsx
 ├── utils/
 │   ├── navigation.ts
 │   ├── integrity.ts

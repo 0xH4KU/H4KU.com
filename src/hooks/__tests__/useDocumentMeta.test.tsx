@@ -6,7 +6,7 @@ import { DEFAULT_META } from '@/config/seo';
 import type { Page, WorkItem } from '@/types';
 
 const navigationState = {
-  currentView: null as { type: 'txt'; data: Page } | { type: 'folder'; data: any } | null,
+  currentView: null as { type: 'txt'; data: Page } | { type: 'folder'; data: Record<string, unknown> } | null,
   currentPath: ['home'],
 };
 

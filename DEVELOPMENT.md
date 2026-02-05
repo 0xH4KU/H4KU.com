@@ -102,9 +102,16 @@ public/content/homepage/**/* (source assets)
 
 ### Monitoring & Error Handling
 
-- `src/services/monitoring.ts` wraps Sentry initialisation; set `VITE_SENTRY_DSN` to enable crash reporting (the app gracefully no-ops when it’s missing).
-- `src/components/common/ErrorBoundary.tsx` reports every error via the monitoring service, shows a friendlier fallback with recovery steps, and exposes a copy-to-clipboard crash report that includes the reference code.
+- `src/services/monitoring.ts` wraps Sentry initialisation; set `VITE_SENTRY_DSN` to enable crash reporting (the app gracefully no-ops when it's missing).
+- `src/utils/reportError.ts` provides a unified error reporting API used across the codebase. It accepts `reportError(error, { scope, level, logMode, tags, extra, info, componentStack })`, routes to Sentry via monitoring.ts, and logs to the console in development.
+- `src/components/common/ErrorBoundary.tsx` uses the unified `reportError` API to report caught errors, shows a friendlier fallback with recovery steps, and exposes a copy-to-clipboard crash report that includes the reference code.
 - Each reference code is sent as a Sentry tag so the support address (`CONTACT@H4KU.COM`) can correlate user reports with telemetry.
+
+### Document Meta (`src/hooks/useDocumentMeta.ts`)
+
+- Dynamically updates `<title>`, `<meta>` (description, OG, Twitter), and `<link rel="canonical">` as the user navigates.
+- Defaults are defined in `src/config/seo.ts`; page views, folder views, and lightbox images each produce context-specific metadata.
+- Low-level DOM manipulation lives in `src/utils/documentMeta.ts` (upsert helpers for meta/link tags).
 
 ### Security & Anti-tamper
 

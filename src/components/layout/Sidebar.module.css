@@ -79,7 +79,7 @@
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 0;
   transition:
     background-color var(--transition-fast),
     color var(--transition-fast),
@@ -140,7 +140,7 @@
   background: var(--color-background);
   color: var(--color-text);
   font-size: var(--font-size-md);
-  border-radius: 6px;
+  border-radius: 0;
   outline: none;
   transition:
     border-color var(--transition-fast),
@@ -177,7 +177,7 @@
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: 0;
   padding: 0;
   transition:
     background-color var(--transition-fast),
@@ -210,7 +210,7 @@
 
 .sidebar-content::-webkit-scrollbar-thumb {
   background: var(--color-primary-30);
-  border-radius: 4px;
+  border-radius: 0;
   transition: background var(--transition-fast);
 }
 
@@ -297,7 +297,7 @@
     border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.15s ease-out;
   user-select: none;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0;
   margin-right: 12px;
   border: none;
   background: none;
@@ -378,7 +378,7 @@
     box-shadow 0.2s ease-out;
   user-select: none;
   min-height: 48px;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0;
   margin-right: 12px;
   position: relative;
   width: 100%;
@@ -525,7 +525,7 @@
   padding: 6px;
   margin: -4px;
   appearance: none;
-  border-radius: 3px;
+  border-radius: 0;
   min-width: 24px;
   min-height: 24px;
 }
@@ -576,7 +576,7 @@
 .social-icon {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: 0;
   background: rgba(0, 0, 0, 0.03);
   border: 1px solid transparent;
   cursor: pointer;
@@ -663,7 +663,7 @@
   width: 2px;
   height: 40px;
   background: transparent;
-  border-radius: 2px;
+  border-radius: 0;
   transition: background var(--transition-fast);
 }
 

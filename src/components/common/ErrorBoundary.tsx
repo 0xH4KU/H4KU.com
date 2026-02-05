@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
     reportError(error, {
       scope: 'error-boundary',
       info: errorInfo,
-      componentStack: errorInfo.componentStack ?? undefined,
+      ...(errorInfo.componentStack ? { componentStack: errorInfo.componentStack } : {}),
       tags: { referenceId },
       extra: { timestamp },
     });

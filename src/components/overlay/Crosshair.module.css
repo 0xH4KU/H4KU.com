@@ -38,7 +38,7 @@
   height: 6px;
   left: var(--crosshair-x, 0px);
   top: var(--crosshair-y, 0px);
-  border-radius: 50%;
+  border-radius: 0;
   background: var(--color-primary);
   transform: translate(-50%, -50%);
   box-shadow:

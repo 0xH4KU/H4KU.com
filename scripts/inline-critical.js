@@ -185,29 +185,56 @@ const injectScriptHashIntoCsp = (policy, hash) => {
   return policy.replace(needle, `${needle} '${hash}'`);
 };
 
-const injectStyleHashIntoCsp = (policy, hash) => {
-  if (!hash) return policy;
-  if (policy.includes(hash)) return policy;
+const injectStyleHashIntoCsp = (policy, hashes) => {
+  if (!hashes || hashes.length === 0) return policy;
 
-  // Replace 'unsafe-inline' with the specific hash for better security
+  // Filter out hashes that are already in the policy
+  const newHashes = hashes.filter(hash => hash && !policy.includes(hash));
+  if (newHashes.length === 0) return policy;
+
+  const hashString = newHashes.map(h => `'${h}'`).join(' ');
+
+  // Replace 'unsafe-inline' with the specific hashes for better security
   const unsafeInlinePattern = /style-src\s+'self'\s+'unsafe-inline'/;
   if (unsafeInlinePattern.test(policy)) {
-    return policy.replace(unsafeInlinePattern, `style-src 'self' '${hash}'`);
+    return policy.replace(unsafeInlinePattern, `style-src 'self' ${hashString}`);
   }
 
-  // If no unsafe-inline, just add the hash after 'self'
+  // If already has hashes, append new ones
+  const existingHashPattern = /style-src\s+'self'(\s+'sha256-[^']+')*/;
+  if (existingHashPattern.test(policy)) {
+    return policy.replace(existingHashPattern, match => `${match} ${hashString}`);
+  }
+
+  // If no unsafe-inline, just add the hashes after 'self'
   const styleSrcPattern = /style-src\s+'self'/;
   if (styleSrcPattern.test(policy)) {
-    return policy.replace(styleSrcPattern, `style-src 'self' '${hash}'`);
+    return policy.replace(styleSrcPattern, `style-src 'self' ${hashString}`);
   }
 
   return policy;
 };
 
-const updateCspPolicy = (policy, { scriptHash, styleHash }) => {
+const collectExistingStyleHashes = html => {
+  // Find all <style> tags that are NOT the bundled CSS (no data-inline="bundle")
+  const styleRegex = /<style(?![^>]*data-inline="bundle")[^>]*>([\s\S]*?)<\/style>/gi;
+  const hashes = [];
+  let match;
+
+  while ((match = styleRegex.exec(html)) !== null) {
+    const content = match[1].trim();
+    if (content) {
+      hashes.push(computeHash(content));
+    }
+  }
+
+  return hashes;
+};
+
+const updateCspPolicy = (policy, { scriptHash, styleHashes }) => {
   let updated = policy;
   updated = injectScriptHashIntoCsp(updated, scriptHash);
-  updated = injectStyleHashIntoCsp(updated, styleHash);
+  updated = injectStyleHashIntoCsp(updated, styleHashes);
   return updated;
 };
 
@@ -238,6 +265,9 @@ const run = () => {
 
   let html = read(INDEX_PATH);
 
+  // Collect hashes from existing inline styles (e.g., critical CSS with @font-face)
+  const existingStyleHashes = collectExistingStyleHashes(html);
+
   const cssResult = inlineMainCss(html);
   html = cssResult.html;
 
@@ -251,9 +281,15 @@ const run = () => {
   html = addSelectiveModulePreloads(html);
   html = addCssPreloads(html);
 
+  // Combine all style hashes: existing critical CSS + bundled CSS
+  const allStyleHashes = [
+    ...existingStyleHashes,
+    cssResult.hash,
+  ].filter(Boolean);
+
   const cspHashes = {
     scriptHash: themeHash,
-    styleHash: cssResult.hash,
+    styleHashes: allStyleHashes,
   };
 
   html = updateCspMeta(html, cspHashes);
@@ -263,7 +299,7 @@ const run = () => {
 
   const messages = [];
   if (cssResult.inlined) messages.push('inline css');
-  if (cssResult.hash) messages.push('css hash injected');
+  if (allStyleHashes.length) messages.push(`${allStyleHashes.length} style hashes injected`);
   if (themeHash) messages.push('inline theme-init');
   if (preloadResult.updated) messages.push('preload main bundle');
 

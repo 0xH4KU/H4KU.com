@@ -39,17 +39,25 @@ H4KU.COM/
 │   │   ├── useCrosshair.ts
 │   │   ├── useDebounce.ts
 │   │   ├── useDeferredLoading.ts
+│   │   ├── useDocumentMeta.ts  # Dynamic document meta tags
+│   │   ├── useFocusTrap.ts
+│   │   ├── useHistoryNavigation.ts
 │   │   ├── useInertFallback.ts
 │   │   ├── useLocalStorage.ts
 │   │   ├── useReducedMotion.ts
 │   │   ├── useSidebar.ts
+│   │   ├── useSidebarKeyboardNavigation.ts
 │   │   ├── useSidebarResize.ts
 │   │   └── useWindowSize.ts
 │   ├── utils/               # Pure utility functions
 │   │   ├── color.ts         # Color manipulation utilities
+│   │   ├── documentMeta.ts  # SEO meta tag management
+│   │   ├── domainCheck.ts   # Domain verification
 │   │   ├── frontmatter.ts   # Markdown parsing
 │   │   ├── functional.ts    # Functional programming helpers
+│   │   ├── integrity.ts     # Content integrity verification
 │   │   ├── navigation.ts    # Navigation helpers
+│   │   ├── reportError.ts   # Unified error reporting API
 │   │   ├── searchNavigation.ts # Shared search selection handler
 │   │   ├── secureConsole.ts # Console shims that survive minification
 │   │   ├── sortHelpers.ts   # Sorting logic
@@ -63,7 +71,10 @@ H4KU.COM/
 │   │   └── _aggregated.json # Build-time aggregated data
 │   ├── config/              # Application configuration
 │   │   ├── constants.ts
-│   │   └── contact.ts
+│   │   ├── contact.ts
+│   │   ├── domains.ts       # Domain whitelist
+│   │   ├── routes.ts        # Route definitions
+│   │   └── seo.ts           # SEO metadata defaults
 │   ├── types/               # TypeScript definitions
 │   │   └── index.ts
 │   ├── tests/               # Test utilities
@@ -75,7 +86,8 @@ H4KU.COM/
 │   └── main.tsx             # Entry point
 ├── scripts/
 │   ├── build-data.js        # Content aggregation script
-│   └── cms.js               # Legacy CMS importer
+│   ├── cms.js               # Content sync (scans public/content)
+│   └── inline-critical.js   # Post-build CSP hash injection
 ├── public/                  # Static assets
 │   ├── fonts/
 │   ├── content/             # Original content source
@@ -83,7 +95,8 @@ H4KU.COM/
 │   └── robots.txt
 ├── vite.config.ts           # Vite build configuration
 ├── vitest.config.ts         # Vitest test configuration
-└── tsconfig.json            # TypeScript compiler config
+├── tsconfig.json            # TypeScript compiler config
+└── .nvmrc                   # Node.js version (20)
 ```
 
 ## Architecture
@@ -248,7 +261,7 @@ After editing any of the above, run `npm run cms` (regenerates JSON + `_aggregat
 ## Testing
 
 - Runner: Vitest 4 + Testing Library (jsdom)
-- Suite size: ~49 specs (45 unit/integration, 4 Playwright E2E) as of January 2026
+- Suite size: 48 test files with ~600 specs (unit/integration), 4 Playwright E2E as of February 2026
 - Coverage: 90% global thresholds (lines/functions/statements) and 85% for branches
 
 Focus areas:

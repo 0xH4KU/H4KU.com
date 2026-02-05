@@ -6,7 +6,7 @@
   background: var(--color-text);
   color: var(--color-surface);
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: var(--font-size-sm);
   white-space: nowrap;
   z-index: 99999;

@@ -139,7 +139,7 @@
   padding: 4px 12px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 12px;
   transition: all 0.2s ease;
 }
