@@ -1,6 +1,7 @@
 const RUNTIME_VARS_SELECTOR = 'html[data-runtime-vars]';
 
 let cachedRule: CSSStyleRule | null = null;
+let cachedSheetCount: number | null = null;
 let lastSearchAt = 0;
 const SEARCH_THROTTLE_MS = 500;
 const fallbackProps = new Set<string>();
@@ -13,11 +14,14 @@ const matchesRuntimeSelector = (selectorText: string): boolean => {
 };
 
 const findRuntimeRuleInRules = (rules: CSSRuleList): CSSStyleRule | null => {
+  // Return the *last* matching rule in this list to respect cascade order.
+  let found: CSSStyleRule | null = null;
+
   for (const rule of Array.from(rules)) {
     if (rule.type === CSSRule.STYLE_RULE) {
       const styleRule = rule as CSSStyleRule;
       if (matchesRuntimeSelector(styleRule.selectorText)) {
-        return styleRule;
+        found = styleRule;
       }
       continue;
     }
@@ -26,21 +30,31 @@ const findRuntimeRuleInRules = (rules: CSSRuleList): CSSStyleRule | null => {
     if (nestedRules) {
       const nestedMatch = findRuntimeRuleInRules(nestedRules);
       if (nestedMatch) {
-        return nestedMatch;
+        found = nestedMatch;
       }
     }
   }
 
-  return null;
+  return found;
 };
 
 const findRuntimeRule = (): CSSStyleRule | null => {
-  if (cachedRule) {
-    return cachedRule;
-  }
-
   if (typeof document === 'undefined') {
     return null;
+  }
+
+  const sheetCount = document.styleSheets.length;
+  // CSS chunks can be injected after initial load (e.g., lazy routes / components).
+  // If stylesheets changed, the previously cached rule may be overridden by a newer
+  // identical selector, causing runtime vars to fall back to defaults (0px).
+  if (cachedSheetCount !== null && cachedSheetCount !== sheetCount) {
+    cachedRule = null;
+    cachedSheetCount = null;
+    lastSearchAt = 0; // bypass throttle on stylesheet changes
+  }
+
+  if (cachedRule) {
+    return cachedRule;
   }
 
   const now = Date.now();
@@ -49,7 +63,10 @@ const findRuntimeRule = (): CSSStyleRule | null => {
   }
   lastSearchAt = now;
 
-  for (const sheet of Array.from(document.styleSheets)) {
+  // Search from the end so we pick the last matching rule in cascade order.
+  const sheets = Array.from(document.styleSheets);
+  for (let i = sheets.length - 1; i >= 0; i -= 1) {
+    const sheet = sheets[i];
     let rules: CSSRuleList;
     try {
       rules = sheet.cssRules;
@@ -60,10 +77,12 @@ const findRuntimeRule = (): CSSStyleRule | null => {
     const match = findRuntimeRuleInRules(rules);
     if (match) {
       cachedRule = match;
+      cachedSheetCount = sheetCount;
       return match;
     }
   }
 
+  cachedSheetCount = sheetCount;
   return null;
 };
 
@@ -108,6 +127,8 @@ export const setRuntimeCssVar = (name: string, value: string): void => {
     rule.style.setProperty(propName, value);
     clearFallbackStyleProp(propName);
   } catch {
+    cachedRule = null;
+    cachedSheetCount = null;
     setFallbackStyleProp(propName, value);
   }
 };
@@ -129,6 +150,8 @@ export const setRuntimeCssVars = (
       rule.style.setProperty(propName, normalizedValue);
       clearFallbackStyleProp(propName);
     } catch {
+      cachedRule = null;
+      cachedSheetCount = null;
       setFallbackStyleProp(propName, normalizedValue);
     }
   });
@@ -136,6 +159,7 @@ export const setRuntimeCssVars = (
 
 export const resetRuntimeCssVarsCache = (): void => {
   cachedRule = null;
+  cachedSheetCount = null;
   lastSearchAt = 0;
   fallbackProps.clear();
 };

@@ -76,14 +76,34 @@ export function useCrosshair() {
       clientX: number;
       clientY: number;
       target: EventTarget | null;
+      isTrusted?: boolean;
     }) => {
-      if (event.clientX === 0 && event.clientY === 0) {
+      let nextX = event.clientX;
+      let nextY = event.clientY;
+
+      // Ignore synthetic (untrusted) events at (0,0) position
+      // These are often triggered by analytics scripts like Cloudflare Web Analytics
+      if (event.isTrusted === false && nextX === 0 && nextY === 0) {
+        return;
+      }
+
+      if (nextX === 0 && nextY === 0) {
+        const target =
+          event.target instanceof HTMLElement ? event.target : null;
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          nextX = Math.round(rect.left + rect.width / 2);
+          nextY = Math.round(rect.top + rect.height / 2);
+        }
+      }
+
+      if (nextX === 0 && nextY === 0) {
         return;
       }
 
       latestPointerRef.current = {
-        x: event.clientX,
-        y: event.clientY,
+        x: nextX,
+        y: nextY,
       };
 
       // Check for interactive elements

@@ -72,6 +72,36 @@ describe('runtimeCssVars', () => {
     expect(rule.style.getPropertyValue('--vh')).toBe('12px');
   });
 
+  it('prefers the last runtime rule when multiple stylesheets define it', () => {
+    const firstRule = mountRuntimeVarsRule();
+
+    setRuntimeCssVar('--crosshair-x', '10px');
+    expect(firstRule.style.getPropertyValue('--crosshair-x')).toBe('10px');
+
+    const secondStyleEl = document.createElement('style');
+    secondStyleEl.textContent = 'html[data-runtime-vars]{--crosshair-x:0px;}';
+    document.head.appendChild(secondStyleEl);
+
+    try {
+      const sheet = secondStyleEl.sheet as CSSStyleSheet | null;
+      if (!sheet) {
+        throw new Error('Missing stylesheet');
+      }
+      const secondRule = sheet.cssRules[0] as CSSStyleRule | undefined;
+      if (!secondRule) {
+        throw new Error('Missing css rule');
+      }
+
+      // Adding a new stylesheet should invalidate the cached rule and update
+      // the newest (last) matching rule in cascade order.
+      setRuntimeCssVar('--crosshair-x', '20px');
+      expect(secondRule.style.getPropertyValue('--crosshair-x')).toBe('20px');
+      expect(firstRule.style.getPropertyValue('--crosshair-x')).toBe('10px');
+    } finally {
+      secondStyleEl.remove();
+    }
+  });
+
   it('falls back to documentElement when setProperty throws on the rule', () => {
     const rule = mountRuntimeVarsRule();
     const original = rule.style.setProperty.bind(rule.style);
