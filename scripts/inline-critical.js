@@ -184,8 +184,10 @@ const collectExistingStyleHashes = html => {
   let match;
 
   while ((match = styleRegex.exec(html)) !== null) {
-    const content = match[1].trim();
-    if (content) {
+    const content = match[1];
+    // Skip empty styles, but hash the original content (no trim)
+    // Browser computes hash on exact content including whitespace
+    if (content.trim()) {
       hashes.push(computeHash(content));
     }
   }
