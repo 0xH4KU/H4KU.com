@@ -100,10 +100,10 @@ const SearchPanel: React.FC = () => {
       const total = categorizedResults[category].length;
       const limit = visibleLimits[category];
       const items = categorizedResults[category].slice(0, limit);
-      const formattedItems = items.map(result => ({
-        ...result,
-        meta: formatResultMeta(result),
-      }));
+      const formattedItems: FormattedResult[] = items.map(result => {
+        const meta = formatResultMeta(result);
+        return meta ? { ...result, meta } : result;
+      });
 
       return {
         category,
@@ -159,7 +159,10 @@ const SearchPanel: React.FC = () => {
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && flattenedResults.length > 0) {
-      handleSelect(flattenedResults[selectedIndex]);
+      const selectedResult = flattenedResults[selectedIndex];
+      if (selectedResult) {
+        handleSelect(selectedResult);
+      }
     } else if (event.key === 'ArrowDown') {
       event.preventDefault();
       setSelectedIndex(prev =>

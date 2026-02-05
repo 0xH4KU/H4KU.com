@@ -3,6 +3,7 @@ import {
   deserializePersistedState,
   serializePersistedState,
 } from '@/services/statePersistence';
+import { reportError } from '@/utils/reportError';
 
 const isBrowser = () => typeof window !== 'undefined' && !!window.localStorage;
 
@@ -25,7 +26,11 @@ export function useLocalStorage<T>(
         try {
           return sanitize(value, fallback);
         } catch (error) {
-          console.error(`Error sanitizing localStorage key "${key}":`, error);
+          reportError(error, {
+            scope: 'storage:sanitize',
+            logMode: 'always',
+            extra: { key },
+          });
           return fallback;
         }
       }
@@ -70,7 +75,11 @@ export function useLocalStorage<T>(
       const serialized = serializePersistedState(key, valueToPersist);
       window.localStorage.setItem(key, serialized);
     } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
+      reportError(error, {
+        scope: 'storage:set',
+        logMode: 'always',
+        extra: { key },
+      });
     }
   };
 
@@ -108,8 +117,9 @@ export function useLocalStorage<T>(
       );
       const sanitized = applySanitizer(value, initialValue);
       if (isCorrupted) {
-        console.error(
-          `[useLocalStorage] Corrupted value detected for key "${key}", resetting to fallback.`
+        reportError(
+          `[useLocalStorage] Corrupted value detected for key "${key}", resetting to fallback.`,
+          { scope: 'storage:corrupted', logMode: 'always', extra: { key } }
         );
         persistValue(sanitized);
         return sanitized;
@@ -117,7 +127,11 @@ export function useLocalStorage<T>(
       persistSanitizedValue(value, sanitized, needsHydration);
       return sanitized;
     } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
+      reportError(error, {
+        scope: 'storage:read',
+        logMode: 'always',
+        extra: { key },
+      });
       return initialValue;
     }
   };
@@ -156,31 +170,40 @@ export function useLocalStorage<T>(
           initialValueRef.current
         );
         if (isCorrupted) {
-          console.error(
-            `[useLocalStorage] Corrupted storage event for key "${key}", resetting to fallback.`
+          reportError(
+            `[useLocalStorage] Corrupted storage event for key "${key}", resetting to fallback.`,
+            { scope: 'storage:event-corrupted', logMode: 'always', extra: { key } }
           );
           setStoredValue(initialValueRef.current);
           try {
             window.localStorage.removeItem(key);
           } catch (cleanupError) {
-            console.warn(
-              `Unable to clear corrupted localStorage key "${key}":`,
-              cleanupError
-            );
+            reportError(cleanupError, {
+              scope: 'storage:event-cleanup',
+              level: 'warn',
+              logMode: 'always',
+              extra: { key },
+            });
           }
           return;
         }
         setStoredValue(applySanitizer(value, initialValueRef.current));
       } catch (error) {
-        console.error(`Error parsing storage event for key "${key}":`, error);
+        reportError(error, {
+          scope: 'storage:event-parse',
+          logMode: 'always',
+          extra: { key },
+        });
         setStoredValue(initialValueRef.current);
         try {
           window.localStorage.removeItem(key);
         } catch (cleanupError) {
-          console.warn(
-            `Unable to reset corrupted localStorage key "${key}":`,
-            cleanupError
-          );
+          reportError(cleanupError, {
+            scope: 'storage:event-reset',
+            level: 'warn',
+            logMode: 'always',
+            extra: { key },
+          });
         }
       }
     };

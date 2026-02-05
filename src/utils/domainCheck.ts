@@ -145,14 +145,15 @@ export const verifyDomain = (): DomainCheckResult => {
   const hostname = window.location.hostname;
   const isAllowed = isDomainAllowed(hostname);
   const enforcementEnabled = isDomainLockEnabled();
+  const message = isAllowed
+    ? null
+    : `Unauthorized deployment detected on domain: ${hostname}`;
 
   return {
     isAllowed,
     currentDomain: hostname,
     shouldBlock: enforcementEnabled ? !isAllowed : false,
-    message: isAllowed
-      ? undefined
-      : `Unauthorized deployment detected on domain: ${hostname}`,
+    ...(message ? { message } : {}),
   };
 };
 

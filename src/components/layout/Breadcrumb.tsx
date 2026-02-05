@@ -51,7 +51,10 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ segments, onSelect }) => {
 
     // Truncate: always show first (home) and last few segments
     const result: Array<BreadcrumbSegment | 'ellipsis'> = [];
-    result.push(segments[0]); // Always show home
+    const firstSegment = segments[0];
+    if (firstSegment) {
+      result.push(firstSegment); // Always show home
+    }
 
     // Calculate how many segments to show after ellipsis
     // Reserve 1 for home, 1 for ellipsis, rest for last segments

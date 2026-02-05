@@ -49,7 +49,9 @@ describe('TextView', () => {
 
       render(<TextView page={mockPage} onClose={mockOnClose} />);
 
-      const closeButton = screen.getByRole('button', { name: /×/ });
+      const closeButton = screen.getByRole('button', {
+        name: /close document/i,
+      });
       expect(closeButton).toBeInTheDocument();
     });
 
@@ -64,7 +66,9 @@ describe('TextView', () => {
 
       render(<TextView page={mockPage} onClose={mockOnClose} />);
 
-      const closeButton = screen.getByRole('button', { name: /×/ });
+      const closeButton = screen.getByRole('button', {
+        name: /close document/i,
+      });
       await user.click(closeButton);
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
@@ -266,7 +270,7 @@ describe('TextView', () => {
 
       render(<TextView page={mockPage} onClose={mockOnClose} />);
 
-      const closeButton = screen.getByRole('button', { name: /×/ });
+      const closeButton = screen.getByRole('button', { name: /close document/i });
       expect(closeButton).toBeInTheDocument();
       expect(closeButton.tagName).toBe('BUTTON');
     });

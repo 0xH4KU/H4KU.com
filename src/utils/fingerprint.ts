@@ -253,14 +253,21 @@ export const extractFingerprint = (): Partial<BuildFingerprint> | null => {
 
   const buildId = meta.getAttribute('content');
   const timestampStr = meta.getAttribute('data-timestamp');
-  const timestamp = timestampStr ? parseInt(timestampStr, 10) : 0;
-  const signature = meta.getAttribute('data-signature') || undefined;
+  const timestamp = timestampStr ? parseInt(timestampStr, 10) : null;
+  const signature = meta.getAttribute('data-signature');
 
-  return {
-    buildId: buildId || undefined,
-    timestamp: timestamp || undefined,
-    signature,
-  };
+  const partial: Partial<BuildFingerprint> = {};
+  if (buildId) {
+    partial.buildId = buildId;
+  }
+  if (timestamp !== null && !Number.isNaN(timestamp)) {
+    partial.timestamp = timestamp;
+  }
+  if (signature) {
+    partial.signature = signature;
+  }
+
+  return partial;
 };
 
 /**

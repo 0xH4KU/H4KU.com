@@ -66,6 +66,9 @@ export function partition<T>(
 
   for (let i = 0; i < input.length; i++) {
     const element = input[i];
+    if (element === undefined) {
+      continue;
+    }
     if (predicate(element, i)) {
       pass.push(element);
     } else {
@@ -215,7 +218,7 @@ export function formatList(
   type: 'conjunction' | 'disjunction' = 'conjunction'
 ): string {
   if (items.length === 0) return '';
-  if (items.length === 1) return items[0];
+  if (items.length === 1) return items[0] ?? '';
 
   if (typeof Intl !== 'undefined' && 'ListFormat' in Intl) {
     try {
@@ -228,12 +231,12 @@ export function formatList(
   // Manual fallback
   if (items.length === 2) {
     const conj = type === 'conjunction' ? 'and' : 'or';
-    return `${items[0]} ${conj} ${items[1]}`;
+    return `${items[0] ?? ''} ${conj} ${items[1] ?? ''}`;
   }
 
   const conj = type === 'conjunction' ? 'and' : 'or';
   const allButLast = items.slice(0, -1).join(', ');
-  return `${allButLast}, ${conj} ${items[items.length - 1]}`;
+  return `${allButLast}, ${conj} ${items[items.length - 1] ?? ''}`;
 }
 
 /**

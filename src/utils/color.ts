@@ -34,9 +34,14 @@ export function parseRgbString(rgbString: string): RGB | null {
 
   if (!match) return null;
 
-  const r = parseInt(match[1], 10);
-  const g = parseInt(match[2], 10);
-  const b = parseInt(match[3], 10);
+  const rValue = match[1];
+  const gValue = match[2];
+  const bValue = match[3];
+  if (!rValue || !gValue || !bValue) return null;
+
+  const r = parseInt(rValue, 10);
+  const g = parseInt(gValue, 10);
+  const b = parseInt(bValue, 10);
 
   if (r > 255 || g > 255 || b > 255) return null;
 
@@ -53,9 +58,14 @@ export function parseRgbaString(rgbaString: string): RGBA | null {
 
   if (!match) return null;
 
-  const r = parseInt(match[1], 10);
-  const g = parseInt(match[2], 10);
-  const b = parseInt(match[3], 10);
+  const rValue = match[1];
+  const gValue = match[2];
+  const bValue = match[3];
+  if (!rValue || !gValue || !bValue) return null;
+
+  const r = parseInt(rValue, 10);
+  const g = parseInt(gValue, 10);
+  const b = parseInt(bValue, 10);
   const a = match[4] ? parseFloat(match[4]) : 1;
 
   if (r > 255 || g > 255 || b > 255 || a > 1) return null;
@@ -73,9 +83,12 @@ export function parseHexString(hex: string): RGB | null {
   let r: number, g: number, b: number;
 
   if (cleaned.length === 3) {
-    r = parseInt(cleaned[0] + cleaned[0], 16);
-    g = parseInt(cleaned[1] + cleaned[1], 16);
-    b = parseInt(cleaned[2] + cleaned[2], 16);
+    const rChar = cleaned.charAt(0);
+    const gChar = cleaned.charAt(1);
+    const bChar = cleaned.charAt(2);
+    r = parseInt(rChar + rChar, 16);
+    g = parseInt(gChar + gChar, 16);
+    b = parseInt(bChar + bChar, 16);
   } else if (cleaned.length === 6 || cleaned.length === 8) {
     r = parseInt(cleaned.slice(0, 2), 16);
     g = parseInt(cleaned.slice(2, 4), 16);

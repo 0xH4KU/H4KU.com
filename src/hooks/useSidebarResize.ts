@@ -122,6 +122,9 @@ export function useSidebarResize({
         return;
       }
       const touch = event.touches[0];
+      if (!touch) {
+        return;
+      }
       scheduleDragUpdate(touch.clientX);
     };
 

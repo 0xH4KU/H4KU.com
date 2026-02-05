@@ -114,8 +114,9 @@ describe('statePersistence', () => {
 
     clearPersistedState([STORAGE_KEYS.THEME]);
     expect(warnSpy).toHaveBeenCalledWith(
-      `[persistence] Unable to clear key "${STORAGE_KEYS.THEME}":`,
-      expect.any(Error)
+      '[persistence:clear]',
+      expect.any(Error),
+      { key: STORAGE_KEYS.THEME }
     );
 
     window.localStorage.removeItem = originalRemoveItem;

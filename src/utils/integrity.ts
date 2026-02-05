@@ -19,7 +19,7 @@ const encodeUtf8Fallback = (value: string): Uint8Array => {
   const bytes: number[] = [];
 
   for (let i = 0; i < encoded.length; i += 1) {
-    const char = encoded[i];
+    const char = encoded.charAt(i);
     if (char === '%') {
       const hex = encoded.substring(i + 1, i + 3);
       bytes.push(parseInt(hex, 16));
@@ -77,6 +77,10 @@ const SHA256_CONSTANTS: readonly number[] = [
 const rotr = (value: number, amount: number) =>
   (value >>> amount) | (value << (32 - amount));
 
+const getByte = (buffer: Uint8Array, index: number) => buffer[index] ?? 0;
+const getWord = (buffer: Uint32Array, index: number) => buffer[index] ?? 0;
+const getConstant = (index: number) => SHA256_CONSTANTS[index] ?? 0;
+
 const padMessage = (message: Uint8Array): Uint8Array => {
   const length = message.length;
   const bitLength = length * 8;
@@ -105,26 +109,38 @@ const sha256Internal = (input: string): string => {
   for (let offset = 0; offset < data.length; offset += 64) {
     for (let i = 0; i < 16; i += 1) {
       const index = offset + i * 4;
-      w[i] =
-        (data[index] << 24) |
-        (data[index + 1] << 16) |
-        (data[index + 2] << 8) |
-        data[index + 3];
+      const b0 = getByte(data, index);
+      const b1 = getByte(data, index + 1);
+      const b2 = getByte(data, index + 2);
+      const b3 = getByte(data, index + 3);
+      w[i] = (b0 << 24) | (b1 << 16) | (b2 << 8) | b3;
     }
 
     for (let i = 16; i < 64; i += 1) {
-      const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
-      const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
-      w[i] = (((w[i - 16] + s0) | 0) + ((w[i - 7] + s1) | 0)) | 0;
+      const w15 = getWord(w, i - 15);
+      const w2 = getWord(w, i - 2);
+      const w16 = getWord(w, i - 16);
+      const w7 = getWord(w, i - 7);
+      const s0 = rotr(w15, 7) ^ rotr(w15, 18) ^ (w15 >>> 3);
+      const s1 = rotr(w2, 17) ^ rotr(w2, 19) ^ (w2 >>> 10);
+      w[i] = (((w16 + s0) | 0) + ((w7 + s1) | 0)) | 0;
     }
 
-    let [a, b, c, d, e, f, g, h] = hash;
+    let a = getWord(hash, 0);
+    let b = getWord(hash, 1);
+    let c = getWord(hash, 2);
+    let d = getWord(hash, 3);
+    let e = getWord(hash, 4);
+    let f = getWord(hash, 5);
+    let g = getWord(hash, 6);
+    let h = getWord(hash, 7);
 
     for (let i = 0; i < 64; i += 1) {
       const s1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
       const ch = (e & f) ^ (~e & g);
       const temp1 =
-        (((((h + s1) | 0) + ((ch + SHA256_CONSTANTS[i]) | 0)) | 0) + w[i]) | 0;
+        (((((h + s1) | 0) + ((ch + getConstant(i)) | 0)) | 0) + getWord(w, i)) |
+        0;
       const s0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
       const maj = (a & b) ^ (a & c) ^ (b & c);
       const temp2 = (s0 + maj) | 0;
@@ -139,14 +155,14 @@ const sha256Internal = (input: string): string => {
       a = (temp1 + temp2) | 0;
     }
 
-    hash[0] = (hash[0] + a) | 0;
-    hash[1] = (hash[1] + b) | 0;
-    hash[2] = (hash[2] + c) | 0;
-    hash[3] = (hash[3] + d) | 0;
-    hash[4] = (hash[4] + e) | 0;
-    hash[5] = (hash[5] + f) | 0;
-    hash[6] = (hash[6] + g) | 0;
-    hash[7] = (hash[7] + h) | 0;
+    hash[0] = (getWord(hash, 0) + a) | 0;
+    hash[1] = (getWord(hash, 1) + b) | 0;
+    hash[2] = (getWord(hash, 2) + c) | 0;
+    hash[3] = (getWord(hash, 3) + d) | 0;
+    hash[4] = (getWord(hash, 4) + e) | 0;
+    hash[5] = (getWord(hash, 5) + f) | 0;
+    hash[6] = (getWord(hash, 6) + g) | 0;
+    hash[7] = (getWord(hash, 7) + h) | 0;
   }
 
   return Array.from(hash)

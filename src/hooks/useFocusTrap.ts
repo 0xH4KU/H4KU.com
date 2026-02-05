@@ -101,6 +101,9 @@ export const useFocusTrap = ({
 
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
+      if (!firstElement || !lastElement) {
+        return;
+      }
       const activeElement = document.activeElement as HTMLElement | null;
 
       if (event.shiftKey) {

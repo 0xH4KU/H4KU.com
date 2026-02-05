@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from '@/config/constants';
+import { reportError } from '@/utils/reportError';
 
 export type PersistenceKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
 
@@ -118,7 +119,12 @@ export const clearPersistedState = (keys?: PersistenceKey[]) => {
     try {
       window.localStorage.removeItem(key);
     } catch (error) {
-      console.warn(`[persistence] Unable to clear key "${key}":`, error);
+      reportError(error, {
+        scope: 'persistence:clear',
+        level: 'warn',
+        logMode: 'always',
+        extra: { key },
+      });
     }
   });
 };

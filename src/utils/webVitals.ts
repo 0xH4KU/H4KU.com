@@ -52,11 +52,12 @@ export const startWebVitals = (report: VitalsReporter = () => {}) => {
     const entries = list.getEntries();
     const last = entries[entries.length - 1];
     if (!last) return;
+    const navType = navigationType();
     report({
       name: 'LCP',
       value: last.startTime,
       rating: getRating('LCP', last.startTime),
-      navigationType: navigationType(),
+      ...(navType ? { navigationType: navType } : {}),
     });
   });
   lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
@@ -73,11 +74,12 @@ export const startWebVitals = (report: VitalsReporter = () => {}) => {
       return;
     const latency =
       (first as PerformanceEventTiming).processingStart - first.startTime;
+    const navType = navigationType();
     report({
       name: 'FID',
       value: latency,
       rating: getRating('FID', latency),
-      navigationType: navigationType(),
+      ...(navType ? { navigationType: navType } : {}),
     });
   });
   fidObserver.observe({ type: 'first-input', buffered: true });
@@ -93,11 +95,12 @@ export const startWebVitals = (report: VitalsReporter = () => {}) => {
       };
       if (!shift.hadRecentInput) {
         clsValue += shift.value;
+        const navType = navigationType();
         report({
           name: 'CLS',
           value: clsValue,
           rating: getRating('CLS', clsValue),
-          navigationType: navigationType(),
+          ...(navType ? { navigationType: navType } : {}),
         });
       }
     }

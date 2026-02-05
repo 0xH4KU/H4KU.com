@@ -36,6 +36,9 @@ const TopBar: React.FC = () => {
   const handleSelectPath = useCallback(
     (index: number) => {
       const segment = breadcrumbSegments[index];
+      if (!segment) {
+        return;
+      }
       handleBreadcrumbSelect(segment.id, index);
     },
     [breadcrumbSegments, handleBreadcrumbSelect]

@@ -22,6 +22,7 @@ const createWrapper = () => {
 
 describe('LightboxProvider', () => {
   const gallery = [createWorkItem('img-1'), createWorkItem('img-2')];
+  const firstImage = gallery[0]!;
 
   beforeEach(() => {
     // reset hook state per test via fresh renderHook
@@ -33,7 +34,7 @@ describe('LightboxProvider', () => {
     });
 
     act(() => {
-      result.current.openLightbox(gallery[0], gallery);
+      result.current.openLightbox(firstImage, gallery);
     });
     expect(result.current.lightboxIndex).toBe(0);
 
@@ -59,7 +60,7 @@ describe('LightboxProvider', () => {
     });
 
     act(() => {
-      result.current.openLightbox(gallery[0], gallery);
+      result.current.openLightbox(firstImage, gallery);
     });
     expect(result.current.lightboxGallery).toHaveLength(2);
 
@@ -101,7 +102,7 @@ describe('LightboxProvider', () => {
     });
 
     act(() => {
-      result.current.openLightbox(gallery[0], []);
+      result.current.openLightbox(firstImage, []);
     });
 
     const indexBefore = result.current.lightboxIndex;

@@ -376,6 +376,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       }
 
       const targetId = nextPath[nextPath.length - 1];
+      if (!targetId) {
+        lastUpdateSourceRef.current = 'app';
+        return { path: ['home'], view: null };
+      }
       // O(1) lookup using navigation map
       const folder = findFolderById(mockData.folders, targetId, navMap);
       if (folder) {
@@ -413,6 +417,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       setNavState(currentState => {
         const targetPath = currentState.path.slice(0, index + 1);
         const targetId = targetPath[targetPath.length - 1];
+        if (!targetId) {
+          return currentState;
+        }
 
         // O(1) lookup using navigation map
         const folder = findFolderById(mockData.folders, targetId, navMap);

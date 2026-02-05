@@ -4,6 +4,7 @@ import { mockData } from '@/data/mockData';
 import { savePendingContact } from '@/services/contact';
 import { isValidEmail, normalizeEmail } from '@/shared/emailValidation';
 import { PAGE_IDS, ROUTES } from '@/config/routes';
+import { reportError } from '@/utils/reportError';
 import styles from './ContactForm.module.css';
 
 interface FormData {
@@ -48,7 +49,11 @@ export function ContactForm() {
 
     // Honeypot validation - hidden field filled means bot
     if (honeypot) {
-      console.warn('Bot detected via honeypot');
+      reportError('Bot detected via honeypot', {
+        scope: 'contact:honeypot',
+        level: 'warn',
+        logMode: 'dev',
+      });
       setStatus({
         type: 'success',
         message: "Message sent successfully! I'll get back to you soon.",
@@ -94,7 +99,10 @@ export function ContactForm() {
         message: formData.message,
       });
     } catch (error) {
-      console.error('Failed to save pending contact submission', error);
+      reportError(error, {
+        scope: 'contact:save-pending',
+        logMode: 'always',
+      });
       setStatus({
         type: 'error',
         message:

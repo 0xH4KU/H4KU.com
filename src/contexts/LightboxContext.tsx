@@ -58,7 +58,11 @@ export const LightboxProvider = ({ children }: { children: ReactNode }) => {
         return prev;
       }
       const next = (prev + 1) % currentGallery.length;
-      setLightboxImage(currentGallery[next]);
+      const nextItem = currentGallery[next];
+      if (!nextItem) {
+        return prev;
+      }
+      setLightboxImage(nextItem);
       return next;
     });
   }, []);
@@ -70,7 +74,11 @@ export const LightboxProvider = ({ children }: { children: ReactNode }) => {
         return prev;
       }
       const next = (prev - 1 + currentGallery.length) % currentGallery.length;
-      setLightboxImage(currentGallery[next]);
+      const nextItem = currentGallery[next];
+      if (!nextItem) {
+        return prev;
+      }
+      setLightboxImage(nextItem);
       return next;
     });
   }, []);

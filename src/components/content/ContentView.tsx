@@ -136,12 +136,12 @@ const ContentView: React.FC = () => {
                   />
                 ) : (
                   <LazyImage
-                    className={styles['work-thumb']}
+                    className={styles['work-thumb'] ?? ''}
                     src={'thumb' in item ? item.thumb : ''}
                     alt={item.filename}
-                    sources={
-                      item.itemType === 'work' ? item.sources : undefined
-                    }
+                    {...(item.itemType === 'work' && item.sources
+                      ? { sources: item.sources }
+                      : {})}
                     sizes={IMAGE_CONFIG.GRID_SIZES}
                     priority={shouldPrioritize}
                     fetchPriority={shouldPrioritize ? 'high' : 'auto'}

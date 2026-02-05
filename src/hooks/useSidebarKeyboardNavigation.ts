@@ -58,13 +58,11 @@ export const useSidebarKeyboardNavigation = (
             state.setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
             break;
           case 'Enter':
-            if (
-              state.focusedIndex >= 0 &&
-              state.sidebarResults[state.focusedIndex]
-            ) {
-              state.handleSearchResultSelect(
-                state.sidebarResults[state.focusedIndex]
-              );
+            if (state.focusedIndex >= 0) {
+              const result = state.sidebarResults[state.focusedIndex];
+              if (result) {
+                state.handleSearchResultSelect(result);
+              }
             }
             break;
           case 'Escape':
@@ -87,11 +85,11 @@ export const useSidebarKeyboardNavigation = (
           state.setFocusedIndex(prev => (prev > 0 ? prev - 1 : 0));
           break;
         case 'Enter':
-          if (
-            state.focusedIndex >= 0 &&
-            state.allVisibleItems[state.focusedIndex]
-          ) {
-            state.handleNavigate(state.allVisibleItems[state.focusedIndex]);
+          if (state.focusedIndex >= 0) {
+            const item = state.allVisibleItems[state.focusedIndex];
+            if (item) {
+              state.handleNavigate(item);
+            }
           }
           break;
         case 'Escape':

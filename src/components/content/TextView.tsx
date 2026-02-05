@@ -88,7 +88,12 @@ export const TextView: React.FC<TextViewProps> = ({ page, onClose }) => {
             height="36"
           />
           <h1 className={styles['txt-title']}>{page.name}</h1>
-          <button onClick={onClose} className={styles['close-btn']}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles['close-btn']}
+            aria-label="Close document"
+          >
             ×
           </button>
         </div>

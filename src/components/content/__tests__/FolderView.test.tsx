@@ -465,7 +465,10 @@ describe('FolderView', () => {
 
       expect(mockOnOpenLightbox).toHaveBeenCalledTimes(1);
       // Verify the call structure (item and gallery array)
-      const [clickedItem, gallery] = mockOnOpenLightbox.mock.calls[0];
+      const call = mockOnOpenLightbox.mock.calls[0];
+      expect(call).toBeDefined();
+      if (!call) return;
+      const [clickedItem, gallery] = call;
       expect(clickedItem).toHaveProperty('id');
       expect(clickedItem).toHaveProperty('filename');
       expect(Array.isArray(gallery)).toBe(true);

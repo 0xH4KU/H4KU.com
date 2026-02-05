@@ -76,7 +76,7 @@ export const verifyComponentSignature = async (
     isValid,
     expected: expectedSignature.signature,
     actual: actualSignature,
-    tamperedAt: isValid ? undefined : new Date(),
+    ...(isValid ? {} : { tamperedAt: new Date() }),
   };
 };
 

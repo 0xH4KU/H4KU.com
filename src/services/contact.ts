@@ -1,5 +1,6 @@
 import { CONTACT_CONFIG, isContactEndpointConfigured } from '@/config/contact';
 import { SESSION_STORAGE_KEYS } from '@/config/constants';
+import { reportError } from '@/utils/reportError';
 
 export interface ContactPayload {
   name: string;
@@ -48,9 +49,11 @@ export function savePendingContact(payload: PendingContactPayload) {
     );
   } catch (error) {
     // Swallow storage errors (Safari private mode, quota, etc.)
-    if (import.meta.env.DEV) {
-      console.warn('[contact] failed to save pending payload', error);
-    }
+    reportError(error, {
+      scope: 'contact:save-pending',
+      level: 'warn',
+      logMode: 'dev',
+    });
   }
 }
 
@@ -82,9 +85,11 @@ export function loadPendingContact(): PendingContactPayload | null {
 
     return { name, email, message };
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[contact] failed to load pending payload', error);
-    }
+    reportError(error, {
+      scope: 'contact:load-pending',
+      level: 'warn',
+      logMode: 'dev',
+    });
     return null;
   }
 }
@@ -94,9 +99,11 @@ export function clearPendingContact() {
   try {
     window.sessionStorage.removeItem(PENDING_CONTACT_KEY);
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[contact] failed to clear pending payload', error);
-    }
+    reportError(error, {
+      scope: 'contact:clear-pending',
+      level: 'warn',
+      logMode: 'dev',
+    });
   }
 }
 
@@ -131,7 +138,7 @@ export async function submitContactRequest(
       method: 'POST',
       headers: DEFAULT_HEADERS,
       body: JSON.stringify(payload),
-      signal: mergedSignal ?? undefined,
+      signal: mergedSignal ?? null,
       credentials: 'omit',
       mode: 'cors',
     });

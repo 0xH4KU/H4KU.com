@@ -163,7 +163,7 @@ style-src 'self' 'unsafe-inline';
 
 ## P2 - 中优先级（1 月内）
 
-### 11. [P2][A11y] 完善可访问性标记
+### ~~11. [P2][A11y] 完善可访问性标记~~
 
 **缺失项**:
 
@@ -175,7 +175,7 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
-### 12. [P2][SEO] 动态 meta 标签
+### ~~12. [P2][SEO] 动态 meta 标签~~
 
 **位置**: `index.html`
 
@@ -187,7 +187,7 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
-### 13. [P2][Test] 提升测试覆盖率
+### ~~13. [P2][Test] 提升测试覆盖率~~
 
 **当前状态**: 44 测试文件，覆盖率约 54%
 
@@ -201,7 +201,7 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
-### 14. [P2][CI] 合并 size-check 和 codeql workflow
+### ~~14. [P2][CI] 合并 size-check 和 codeql workflow~~
 
 **位置**: `.github/workflows/size-check.yml`, `.github/workflows/codeql.yml`
 
@@ -211,7 +211,7 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
-### 15. [P2][Perf] 减少不必要的重渲染
+### ~~15. [P2][Perf] 减少不必要的重渲染~~
 
 **位置**: `App.tsx`
 
@@ -221,9 +221,55 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
+### 21. [P2][DX] 统一 reportError API
+
+**位置**: `src/components/common/ErrorBoundary.tsx` vs `src/utils/reportError.ts`
+
+**问题**: 存在两个不同签名的 `reportError`：
+- `ErrorBoundary` 使用 `@/services/monitoring` 的旧版本（3 参数）
+- 其他文件使用 `@/utils/reportError` 的新版本（2 参数）
+
+```typescript
+// 旧 API（ErrorBoundary）
+reportError(error, errorInfo, { componentStack, tags, extra });
+
+// 新 API（其他文件）
+reportError(error, { scope, level, logMode, extra });
+```
+
+**方案**: 更新 `ErrorBoundary` 使用新版 `reportError`，统一调用方式
+
+**验收**: 全局只有一个 `reportError` 导入来源
+
+---
+
+### 22. [P2][Arch] 审视 App.tsx 状态管理技巧
+
+**位置**: `src/App.tsx`
+
+**问题**: 使用 `useRef` + `forceSecurityRerender` 代替正统 `useState`
+
+```typescript
+const domainCheckRef = useRef<DomainCheckResult>({...});
+const [, forceSecurityRerender] = useState(0);
+// ...
+forceSecurityRerender(version => version + 1);
+```
+
+**风险**:
+- 竞态条件：ref 更新与 rerender 之间有其他副作用
+- 开发可读性降低
+- 违反 React 惯用模式
+
+**方案**: 评估是否真的需要此优化，考虑回退到 `useState`
+
+**验收**: 代码审查确认设计合理性
+
+---
+
 ## P3 - 低优先级（可选）
 
-### 16. [P3][DX] Node.js 版本锁定
+### ~~16. [P3][DX] Node.js 版本锁定~~
 
 **位置**: `ci.yml`
 
@@ -233,7 +279,7 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
-### 17. [P3][CSS] 减少 !important 使用
+### ~~17. [P3][CSS] 减少 !important 使用~~
 
 **统计**: 6 处 `!important`
 
@@ -243,7 +289,7 @@ style-src 'self' 'unsafe-inline';
 
 ---
 
-### 18. [P3][Security] robots.txt 增强
+### ~~18. [P3][Security] robots.txt 增强~~
 
 **位置**: `public/robots.txt`
 
@@ -261,7 +307,7 @@ Crawl-delay: 1
 
 ---
 
-### 19. [P3][Observability] 统一错误处理策略
+### ~~19. [P3][Observability] 统一错误处理策略~~
 
 **问题**: 错误处理不一致（有的 console.warn，有的 reportError，有的静默）
 
@@ -269,7 +315,7 @@ Crawl-delay: 1
 
 ---
 
-### 20. [P3][TS] 启用更严格的 TypeScript 配置
+### ~~20. [P3][TS] 启用更严格的 TypeScript 配置~~
 
 **位置**: `tsconfig.json`
 
@@ -281,6 +327,28 @@ Crawl-delay: 1
 ```
 
 **验收**: 逐步启用，修复类型错误
+
+---
+
+### 23. [P3][Type] mockData 结构语义变更
+
+**位置**: `src/data/mockData.ts`
+
+**问题**: 属性处理从直接赋值改为条件展开
+
+```typescript
+// 旧方式（属性存在但值为 undefined）
+{ date: work.date, title: work.title }
+
+// 新方式（属性可能不存在）
+{ ...(work.date ? { date: work.date } : {}) }
+```
+
+**风险**: 依赖 `'date' in item` 或 `item.hasOwnProperty('date')` 的代码行为会改变
+
+**方案**: 搜索所有属性存在性检查，确认无影响
+
+**验收**: `grep -r "hasOwnProperty\|'.*' in " src/` 无相关问题
 
 ---
 
@@ -321,11 +389,11 @@ npm run test:e2e
 
 ## 工作量估算
 
-| 优先级 | 任务数 | 预估工作量 |
-| ------ | ------ | ---------- |
-| P0     | 5      | 1-2 小时   |
-| P1     | 5      | 1-2 周     |
-| P2     | 5      | 2-4 周     |
-| P3     | 5      | 可选       |
+| 优先级 | 任务数 | 已完成 | 待处理 |
+| ------ | ------ | ------ | ------ |
+| P0     | 5      | 5      | 0      |
+| P1     | 5      | 4      | 1      |
+| P2     | 7      | 5      | 2      |
+| P3     | 6      | 5      | 1      |
 
-**建议执行顺序**: P0 全部 -> P1 逐个 -> P2 按需
+**建议执行顺序**: P1 #8 -> P2 #21, #22 -> P3 #23

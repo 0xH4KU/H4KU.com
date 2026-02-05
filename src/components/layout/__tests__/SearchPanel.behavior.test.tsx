@@ -157,18 +157,18 @@ describe('SearchPanel interactions', () => {
   it('submits selection via keyboard navigation', async () => {
     render(<SearchPanel />);
     const folderButton = getResultButtonByLabel('Folder One');
-    expect(folderButton).toHaveClass(styles['search-result--selected']);
+    expect(folderButton).toHaveClass(styles['search-result--selected'] ?? '');
 
     await userEvent.keyboard('{ArrowDown}');
     const pageButton = getResultButtonByLabel('Doc');
-    expect(pageButton).toHaveClass(styles['search-result--selected']);
+    expect(pageButton).toHaveClass(styles['search-result--selected'] ?? '');
 
     await userEvent.keyboard('{Enter}');
     expect(navigationMock.navigateTo).toHaveBeenCalledWith(pageResult.page);
     expect(searchUIState.closeSearch).toHaveBeenCalled();
 
     await userEvent.keyboard('{ArrowUp}');
-    expect(folderButton).toHaveClass(styles['search-result--selected']);
+    expect(folderButton).toHaveClass(styles['search-result--selected'] ?? '');
   });
 
   it('invokes navigateTo for folder results and updates query text', async () => {

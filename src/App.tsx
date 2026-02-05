@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   ContentView,
   Crosshair,
@@ -12,8 +12,11 @@ import { AppProviders } from '@/contexts/AppProviders';
 import { useSidebarContext } from '@/contexts/SidebarContext';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { use100vh } from '@/hooks/use100vh';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { SIDEBAR_CONFIG } from '@/config/constants';
 import type { DomainCheckResult } from '@/utils/domainCheck';
+import { reportError } from '@/utils/reportError';
 import styles from './App.module.css';
 
 // Lazy load heavy components
@@ -23,14 +26,15 @@ const SearchPanelLazy = lazy(() => import('@/components/layout/SearchPanel'));
 const AppContent: React.FC = () => {
   const { isSidebarOpen, closeSidebar } = useSidebarContext();
   const { width } = useWindowSize();
-  const [domainCheckResult, setDomainCheckResult] = useState<DomainCheckResult>(
-    {
-      isAllowed: true,
-      currentDomain: '',
-      shouldBlock: false,
-    }
-  );
-  const [allowedDomains, setAllowedDomains] = useState<string[]>([]);
+  const domainCheckRef = useRef<DomainCheckResult>({
+    isAllowed: true,
+    currentDomain: '',
+    shouldBlock: false,
+  });
+  const allowedDomainsRef = useRef<string[]>([]);
+  const [, forceSecurityRerender] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
+  useDocumentMeta();
 
   use100vh();
   const isCompactViewport =
@@ -56,8 +60,9 @@ const AppContent: React.FC = () => {
         const result = verifyDomain();
         if (cancelled) return;
 
-        setDomainCheckResult(result);
-        setAllowedDomains(getAllowedDomains());
+        domainCheckRef.current = result;
+        allowedDomainsRef.current = getAllowedDomains();
+        forceSecurityRerender(version => version + 1);
         logDomainVerification(result);
         injectAllFingerprints();
 
@@ -67,9 +72,11 @@ const AppContent: React.FC = () => {
           displayDevCopyright();
         }
       } catch (error) {
-        if (import.meta.env.DEV) {
-          console.warn('[security:init] failed', error);
-        }
+        reportError(error, {
+          scope: 'security:init',
+          level: 'warn',
+          logMode: 'dev',
+        });
       }
     };
 
@@ -79,6 +86,27 @@ const AppContent: React.FC = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const className = 'reduced-motion';
+    const root = document.documentElement;
+    if (prefersReducedMotion) {
+      document.body.classList.add(className);
+      root.classList.add(className);
+    } else {
+      document.body.classList.remove(className);
+      root.classList.remove(className);
+    }
+
+    return () => {
+      document.body.classList.remove(className);
+      root.classList.remove(className);
+    };
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -96,6 +124,9 @@ const AppContent: React.FC = () => {
       document.body.classList.remove(className);
     };
   }, [showOverlay]);
+
+  const domainCheckResult = domainCheckRef.current;
+  const allowedDomains = allowedDomainsRef.current;
 
   return (
     <div

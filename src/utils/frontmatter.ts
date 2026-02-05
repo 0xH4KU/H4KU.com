@@ -15,7 +15,11 @@ export function parseFrontmatter(content: string): {
     return { data: {}, content };
   }
 
-  const [, frontmatter, body] = match;
+  const frontmatter = match[1];
+  const body = match[2];
+  if (frontmatter === undefined || body === undefined) {
+    return { data: {}, content };
+  }
   const data: Frontmatter = {};
 
   // Parse simple YAML frontmatter (key: value pairs)

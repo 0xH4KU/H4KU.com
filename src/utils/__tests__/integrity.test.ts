@@ -94,8 +94,7 @@ describe('integrity utilities', () => {
     const originalEncoder = globalThis.TextEncoder;
     vi.resetModules();
     try {
-      (globalThis as { TextEncoder?: typeof TextEncoder }).TextEncoder =
-        undefined;
+      delete (globalThis as { TextEncoder?: typeof TextEncoder }).TextEncoder;
 
       const module = await import('../integrity');
       const payload = { text: 'unicode 🌌 payload' };

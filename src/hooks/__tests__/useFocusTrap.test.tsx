@@ -28,9 +28,9 @@ const FocusTrapHarness: React.FC<HarnessProps> = ({
   useFocusTrap({
     containerRef,
     active,
-    initialFocusRef: withInitial ? initialRef : undefined,
-    onEscape,
-    restoreFocus,
+    ...(withInitial ? { initialFocusRef: initialRef } : {}),
+    ...(onEscape ? { onEscape } : {}),
+    ...(restoreFocus !== undefined ? { restoreFocus } : {}),
   });
 
   return (
@@ -41,10 +41,7 @@ const FocusTrapHarness: React.FC<HarnessProps> = ({
           {hasFocusableChildren ? (
             <>
               <button data-testid="first">First</button>
-              <button
-                data-testid="initial"
-                ref={withInitial ? initialRef : undefined}
-              >
+              <button data-testid="initial" ref={withInitial ? initialRef : null}>
                 Second
               </button>
               <button data-testid="last">Last</button>

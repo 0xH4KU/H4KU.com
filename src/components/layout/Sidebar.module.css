@@ -817,7 +817,7 @@
 
 @media (max-width: 1024px) {
   .sidebar {
-    width: min(320px, 82vw) !important;
+    width: min(320px, 82vw);
     /* Fixed width for compact viewports */
     z-index: 1000;
   }

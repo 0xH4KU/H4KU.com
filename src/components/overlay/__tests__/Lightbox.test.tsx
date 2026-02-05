@@ -35,7 +35,10 @@ const LightboxOpener = ({
     if (gallery.length === 0) {
       return;
     }
-    openLightbox(gallery[safeIndex], gallery);
+    const selected = gallery[safeIndex];
+    if (selected) {
+      openLightbox(selected, gallery);
+    }
   }, [gallery, openLightbox, safeIndex]);
 
   return null;
@@ -49,7 +52,12 @@ const renderLightbox = (
     <StrictMode>
       <LightboxProvider>
         <Lightbox />
-        <LightboxOpener gallery={gallery} initialIndex={options.initialIndex} />
+        <LightboxOpener
+          gallery={gallery}
+          {...(options.initialIndex !== undefined
+            ? { initialIndex: options.initialIndex }
+            : {})}
+        />
       </LightboxProvider>
     </StrictMode>
   );
@@ -254,8 +262,13 @@ describe('Lightbox navigation', () => {
 
     const sources = document.querySelectorAll('source');
     expect(sources).toHaveLength(2);
-    expect(sources[0].getAttribute('type')).toBe('image/avif');
-    expect(sources[1].getAttribute('media')).toBe('(max-width: 900px)');
+    const firstSource = sources[0];
+    const secondSource = sources[1];
+    expect(firstSource).toBeDefined();
+    expect(secondSource).toBeDefined();
+    if (!firstSource || !secondSource) return;
+    expect(firstSource.getAttribute('type')).toBe('image/avif');
+    expect(secondSource.getAttribute('media')).toBe('(max-width: 900px)');
   });
 
   it('invokes previous navigation on ArrowLeft key press', () => {

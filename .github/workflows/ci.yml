@@ -9,6 +9,9 @@ on:
     branches:
       - main
       - develop
+  schedule:
+    # Run at 6:00 AM UTC every Monday
+    - cron: '0 6 * * 1'
 
 # Cancel in-progress runs for the same workflow
 concurrency:
@@ -20,6 +23,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -39,6 +43,7 @@ jobs:
   format:
     name: Format Check
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,7 +51,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -58,6 +63,7 @@ jobs:
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,7 +71,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -77,6 +83,7 @@ jobs:
   test:
     name: Test & Coverage
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     env:
       VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || 'https://example.com/contact' }}
     steps:
@@ -86,7 +93,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -116,6 +123,7 @@ jobs:
   integrity-check:
     name: Content Integrity Check
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,7 +131,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -136,6 +144,7 @@ jobs:
   e2e-test:
     name: E2E Tests
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     timeout-minutes: 60
     env:
       VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || '/api/contact' }}
@@ -149,7 +158,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -175,6 +184,7 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -182,7 +192,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -191,10 +201,40 @@ jobs:
       - name: Run security suite
         run: npm run ci:security
 
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript-typescript']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'
+
   # License compliance check
   license-check:
     name: License Check
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -202,7 +242,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -223,6 +263,7 @@ jobs:
   deps-check:
     name: Dependencies Check
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     continue-on-error: true
     steps:
       - name: Checkout
@@ -231,7 +272,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -249,10 +290,89 @@ jobs:
           path: coverage/npm-outdated.json
           retention-days: 7
 
+  size-check:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    env:
+      VITE_CONTACT_ENDPOINT: ${{ secrets.VITE_CONTACT_ENDPOINT || 'https://example.com/contact' }}
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install size-limit
+        run: npm install --no-save size-limit @size-limit/preset-app @size-limit/file
+
+      - name: Check bundle size
+        run: npx size-limit
+
+      - name: Save PR branch sizes
+        if: github.event_name == 'pull_request'
+        run: |
+          # Save PR branch sizes
+          npx size-limit --json > /tmp/pr-size.json || true
+
+          # Save PR dist sizes for comparison
+          du -sh dist/ > /tmp/pr-dist-size.txt
+          find dist/assets -type f -name "*.js" -exec du -h {} \; | sort -rh > /tmp/pr-js-sizes.txt
+
+      - name: Compare with main branch
+        if: github.event_name == 'pull_request'
+        run: |
+          # Reset any local changes (including generated files)
+          git reset --hard HEAD
+          git clean -fdx
+
+          # Checkout main branch
+          git fetch origin main
+          git checkout origin/main
+
+          # Build main branch
+          npm ci
+          npm run build
+
+          # Save main branch sizes
+          npx size-limit --json > /tmp/main-size.json || true
+          du -sh dist/ > /tmp/main-dist-size.txt
+          find dist/assets -type f -name "*.js" -exec du -h {} \; | sort -rh > /tmp/main-js-sizes.txt
+
+          echo "## Bundle Size Comparison" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### PR Branch vs Main Branch" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "PR Branch:" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/pr-dist-size.txt >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Main Branch:" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/main-dist-size.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Report bundle analysis
+        run: |
+          echo "## Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### File Sizes (gzipped)" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find dist/assets -type f \( -name "*.js" -o -name "*.css" \) -exec sh -c 'gzip -c "$1" | wc -c | awk "{printf \"%s: %s KB\\n\", \"$1\", \$1/1024}"' _ {} \; >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
   # Build job runs after all checks pass
   build:
     name: Build
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     needs: [lint, format, type-check, test, integrity-check, e2e-test, security, license-check]
     # deps-check is continue-on-error, so not included in needs
     env:
@@ -264,7 +384,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies

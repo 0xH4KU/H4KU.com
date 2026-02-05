@@ -63,6 +63,7 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
   const depthIndex = Math.min(Math.max(depth, 0), 20);
   const indentClass = styles[`indent-${depthIndex}`] ?? styles['indent-0'];
   const childFolders = folder.children ?? [];
+  const contextMenuProps = onContextMenu ? { onContextMenu } : {};
 
   return (
     <>
@@ -107,7 +108,7 @@ export const FolderTreeItem: React.FC<FolderTreeItemProps> = ({
               onNavigate={onNavigate}
               expandedFolders={expandedFolders}
               isPinned={false}
-              onContextMenu={onContextMenu}
+              {...contextMenuProps}
             />
           ))}
         </>

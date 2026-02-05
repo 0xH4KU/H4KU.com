@@ -98,8 +98,13 @@ const getClient = async (): Promise<SentryClient | null> => {
   // Start loading
   const loadPromise = import('@sentry/browser')
     .then(Sentry => {
+      const dsn = SENTRY_DSN;
+      if (!dsn) {
+        state = { status: 'disabled' };
+        return null;
+      }
       Sentry.init({
-        dsn: SENTRY_DSN,
+        dsn,
         release: APP_VERSION,
         environment: APP_ENV,
         tracesSampleRate: 0.05,

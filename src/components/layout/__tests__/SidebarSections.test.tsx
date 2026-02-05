@@ -131,6 +131,9 @@ describe('SidebarSections', () => {
     fireEvent.contextMenu(button);
     expect(onContextMenu).toHaveBeenCalledTimes(1);
     // 第二個參數是 SidebarEntry，本測試只需要確認有帶入原始 item 即可。
-    expect(onContextMenu.mock.calls[0][1]).toEqual(page);
+    const call = onContextMenu.mock.calls[0];
+    expect(call).toBeDefined();
+    if (!call) return;
+    expect(call[1]).toEqual(page);
   });
 });

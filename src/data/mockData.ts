@@ -155,9 +155,9 @@ const buildOptimizedSources = (image: ImageFile) => {
   image.sources?.forEach(source => {
     if (isValidSourceEntry(source)) {
       sources.push({
-        type: source.type,
         srcSet: source.srcSet,
-        media: source.media,
+        ...(source.type ? { type: source.type } : {}),
+        ...(source.media ? { media: source.media } : {}),
       });
     }
   });
@@ -229,9 +229,9 @@ folderEntries.forEach(entry => {
     name: entry.name,
     type: 'folder',
     parentId: entry.parentId ?? null,
-    description: entry.description,
-    order: entry.order,
-    hidden: entry.hidden,
+    ...(entry.description ? { description: entry.description } : {}),
+    ...(entry.order !== undefined ? { order: entry.order } : {}),
+    ...(entry.hidden !== undefined ? { hidden: entry.hidden } : {}),
     children: [],
     items: [],
   });
@@ -258,6 +258,7 @@ const parsedPages: Page[] = pagesData.map(pageData => {
   const fallbackId = pageData.id || 'untitled';
   const filename = pageData.filename || 'Untitled.txt';
   const folderId = normalizeId(pageData.folderId ?? null);
+  const order = normalizeOrder(pageData.order);
 
   return {
     id: pageData.id || fallbackId,
@@ -266,9 +267,8 @@ const parsedPages: Page[] = pagesData.map(pageData => {
     type: 'txt',
     content: pageData.content.trim(),
     folderId,
-    date: undefined,
-    order: normalizeOrder(pageData.order),
-    hidden: Boolean(pageData.hidden),
+    ...(order !== undefined ? { order } : {}),
+    ...(pageData.hidden !== undefined ? { hidden: Boolean(pageData.hidden) } : {}),
   };
 });
 
@@ -296,34 +296,37 @@ const pushItemToFolder = (folderId: string | null, item: WorkItem) => {
 images.forEach(work => {
   const folderId = normalizeId(work.folderId);
   const type = work.itemType || (work.thumb && work.full ? 'work' : 'page');
+  const order = normalizeOrder(work.order);
+  const tags = work.tags && work.tags.length > 0 ? work.tags : undefined;
 
   if (type === 'page') {
     const workItem: WorkItem = {
       itemType: 'page',
       id: work.id,
       filename: work.filename,
-      date: work.date,
       content: work.content ?? '',
-      title: work.title,
-      description: work.description,
-      tags: work.tags,
-      order: normalizeOrder(work.order),
+      ...(work.date ? { date: work.date } : {}),
+      ...(work.title ? { title: work.title } : {}),
+      ...(work.description ? { description: work.description } : {}),
+      ...(tags ? { tags } : {}),
+      ...(order !== undefined ? { order } : {}),
     };
     pushItemToFolder(folderId, workItem);
   } else {
     const imageSource = work.full ?? '';
+    const sources = buildOptimizedSources(work);
     const workItem: WorkItem = {
       itemType: 'work',
       id: work.id,
       filename: work.filename,
-      date: work.date,
       thumb: work.thumb ?? imageSource,
       full: imageSource,
-      sources: buildOptimizedSources(work),
-      title: work.title,
-      description: work.description,
-      tags: work.tags,
-      order: normalizeOrder(work.order),
+      ...(work.date ? { date: work.date } : {}),
+      ...(sources ? { sources } : {}),
+      ...(work.title ? { title: work.title } : {}),
+      ...(work.description ? { description: work.description } : {}),
+      ...(tags ? { tags } : {}),
+      ...(order !== undefined ? { order } : {}),
     };
     pushItemToFolder(folderId, workItem);
   }
@@ -331,14 +334,15 @@ images.forEach(work => {
 
 // Attach folder-assigned pages as text work items
 folderPages.forEach(page => {
+  const order = page.order;
   const pageItem: WorkItem = {
     itemType: 'page',
     id: page.id,
     filename: page.filename ?? page.name,
-    date: page.date,
     content: page.content,
     title: page.name,
-    order: page.order,
+    ...(page.date ? { date: page.date } : {}),
+    ...(order !== undefined ? { order } : {}),
   };
   pushItemToFolder(page.folderId ?? null, pageItem);
 });
@@ -358,8 +362,8 @@ const finalizeFolder = (folder: Folder): Folder => {
 
   return {
     ...folder,
-    items,
-    children,
+    ...(items ? { items } : {}),
+    ...(children ? { children } : {}),
   };
 };
 

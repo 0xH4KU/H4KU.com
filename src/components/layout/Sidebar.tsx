@@ -19,6 +19,7 @@ import { Folder, Page, SearchResult } from '@/types';
 import { DEBOUNCE_DELAYS, SIDEBAR_CONFIG } from '@/config/constants';
 import { buildAppUrl, buildFolderUrl, buildPageUrl } from '@/utils/urlHelpers';
 import { navigateFromSearchResult } from '@/utils/searchNavigation';
+import { reportError } from '@/utils/reportError';
 import { SidebarView } from './SidebarView';
 import type { SidebarEntry } from './Sidebar.types';
 
@@ -221,7 +222,10 @@ const Sidebar: React.FC = () => {
       }
 
       navigator.clipboard.writeText(url).catch(error => {
-        console.error('Failed to copy link:', error);
+        reportError(error, {
+          scope: 'sidebar:copy-link',
+          logMode: 'always',
+        });
       });
     },
     [getItemUrl]

@@ -180,7 +180,10 @@ describe('SidebarContext', () => {
       });
 
       expect(timers.length).toBe(2);
-      expect(timers[0].cleared).toBe(true);
+      const firstTimer = timers[0];
+      expect(firstTimer).toBeDefined();
+      if (!firstTimer) return;
+      expect(firstTimer.cleared).toBe(true);
 
       timers[1]?.callback?.();
     } finally {

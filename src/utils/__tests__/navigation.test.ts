@@ -18,7 +18,7 @@ describe('navigation utils', () => {
     id,
     name,
     type: 'folder',
-    children,
+    ...(children !== undefined ? { children } : {}),
   });
 
   const mockFolders: Folder[] = [
@@ -43,8 +43,13 @@ describe('navigation utils', () => {
       const result = flattenFolders(folders);
 
       expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({ folder: folders[0], path: ['a'] });
-      expect(result[1]).toEqual({ folder: folders[1], path: ['b'] });
+      const first = result[0];
+      const second = result[1];
+      expect(first).toBeDefined();
+      expect(second).toBeDefined();
+      if (!first || !second) return;
+      expect(first).toEqual({ folder: folders[0], path: ['a'] });
+      expect(second).toEqual({ folder: folders[1], path: ['b'] });
     });
 
     it('should flatten nested folders', () => {
@@ -54,16 +59,25 @@ describe('navigation utils', () => {
       expect(result).toHaveLength(8);
 
       // Check root level
-      expect(result[0].path).toEqual(['2024']);
-      expect(result[0].folder.id).toBe('2024');
+      const root = result[0];
+      expect(root).toBeDefined();
+      if (!root) return;
+      expect(root.path).toEqual(['2024']);
+      expect(root.folder.id).toBe('2024');
 
       // Check nested level
-      expect(result[1].path).toEqual(['2024', 'jan']);
-      expect(result[1].folder.id).toBe('jan');
+      const nested = result[1];
+      expect(nested).toBeDefined();
+      if (!nested) return;
+      expect(nested.path).toEqual(['2024', 'jan']);
+      expect(nested.folder.id).toBe('jan');
 
       // Check deeply nested
-      expect(result[3].path).toEqual(['2024', 'feb', 'week1']);
-      expect(result[3].folder.id).toBe('week1');
+      const deep = result[3];
+      expect(deep).toBeDefined();
+      if (!deep) return;
+      expect(deep.path).toEqual(['2024', 'feb', 'week1']);
+      expect(deep.folder.id).toBe('week1');
     });
 
     it('should handle empty array', () => {
@@ -76,7 +90,10 @@ describe('navigation utils', () => {
       const result = flattenFolders(folders);
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({
+      const only = result[0];
+      expect(only).toBeDefined();
+      if (!only) return;
+      expect(only).toEqual({
         folder: folders[0],
         path: ['single'],
       });
